@@ -1,0 +1,11 @@
+Tested on Ubuntu 22.04, pygame 2.1.2 (SDL 2.0.16, Python 3.10.4)
+
+
+Install Python 3.10.
+
+Run
+
+pip3 install pgzero
+
+This will install numpy and pygame as well.
+
