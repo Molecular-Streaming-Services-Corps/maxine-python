@@ -1,5 +1,9 @@
 import pgzrun
 import random
+import numpy as np
+
+# Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
+#import matplotlib_pygame
 
 TITLE = 'Maxine\'s Quest'
 WIDTH = 1800
@@ -25,6 +29,11 @@ def draw():
     #screen.fill((128, 128, 0))
     draw_background()
     
+    # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
+    #matplotlib_pygame.draw_graph(screen)
+    
+    draw_graph(screen)
+    
     pore.draw()
 
     # Draw Maxine or explosion2
@@ -46,8 +55,55 @@ def draw_background():
         for y in range(0, HEIGHT, tile_size):
             screen.blit('background_living_tissue', (x, y))
 
+i = 0
+def draw_graph(screen):
+    global i
+    # Draw a rectangle behind the graph
+    RED = (200, 0, 0)
+    BLACK = (0, 0, 0)
+    GREEN = (0, 200, 0)
+    BOX = Rect((9, 99), (302, 82))
+    screen.draw.filled_rect(BOX, GREEN)
+    
+    num_boxes = 100
+    
+    # Sample data for the graph
+    x_data = list(range(0, num_boxes))
+    x_data = [(x + i) % num_boxes for x in x_data]
+    inputs = [2*np.pi*x/num_boxes for x in x_data]
+    y_data = np.sin(inputs)  # update the data.
+    #print('i', i)
+    #print('x_data:', x_data)
+    #print('inputs:', inputs)
+    #print('y_data:', y_data)
+    
+    # Calculate the color and location of each rectangle and draw it
+    MIN_VALUE = -1.0
+    MAX_VALUE = +1.0
+    for x, y in enumerate(y_data):
+        if y < 0:
+            scale_factor = y / MIN_VALUE
+            # Shades of red
+            color = (255 * scale_factor, 0, 0)
+        else:
+            scale_factor = y / MAX_VALUE
+            # Shades of blue
+            color = (0, 0, 255 * scale_factor)
+        
+        rect = Rect((10 + 300.0 / num_boxes * x , 100), (300 / num_boxes, 80))
+        
+        screen.draw.filled_rect(rect, color)
+
+step_count = 0
 def update():
-    global score
+    global score, i, step_count
+    step_count += 1
+    if step_count % 10 == 0:
+        i += 1
+        #print('update(): i:', i)
+
+    if keyboard.q:
+        import sys; sys.exit(0)
 
     # Move Maxine.
     if maxine.alive:
