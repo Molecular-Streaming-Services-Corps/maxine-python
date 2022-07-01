@@ -21,7 +21,10 @@ dead_cells = set()
 score = 0
 
 def draw():
-    screen.fill((128, 128, 0))
+    # Murky green background color
+    #screen.fill((128, 128, 0))
+    draw_background()
+    
     pore.draw()
 
     # Draw Maxine or explosion2
@@ -35,6 +38,13 @@ def draw():
         screen.blit(cell.sprite_name, (cell.x, cell.y))
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
+
+def draw_background():
+    tile_size = 144
+
+    for x in range(0, WIDTH, tile_size):
+        for y in range(0, HEIGHT, tile_size):
+            screen.blit('background_living_tissue', (x, y))
 
 def update():
     global score
