@@ -1,0 +1,26 @@
+Hi!
+
+I don't know if you still need this, but you need to use the pygame package that pygame zero is based on.
+
+Code: Select all
+
+import pgzrun
+import pygame
+
+alien = Actor('alien')
+alien._surf = pygame.transform.scale(alien._surf, (new_width, new_height))
+alien._update_pos()
+
+def draw():
+	alien.draw()
+
+pgzrun.go()
+
+The first line (alien._surf = pygame....) resizes the image.
+The second line (alien._update_...) updates the anchors (i.e. alien.right, etc.)
+
+I didn't test extensively, but hopefully that helps!
+
+https://forums.raspberrypi.com/viewtopic.php?t=224159
+
+
