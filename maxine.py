@@ -13,7 +13,7 @@ maxine.sprite_name = 'maxine'
 maxine.alive = True
 
 pore = Actor('pore')
-pore.pos = (WIDTH/2, HEIGHT/2)
+pore.center = (WIDTH/2, HEIGHT/2)
 
 cells = set()
 dead_cells = set()
@@ -51,7 +51,7 @@ def update():
             maxine.bottom += 6
         
         # Detect if Maxine gets too close to the pore. (She'll explode!)
-        dist = maxine.distance_to((pore.x, pore.y))
+        dist = maxine.distance_to(pore.center)
         if dist < 100:
             kill_maxine()
     
