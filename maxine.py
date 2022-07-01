@@ -9,7 +9,8 @@ MAXINE_START = (100, 56)
 
 maxine = Actor('maxine')
 maxine.pos = MAXINE_START
-maxine_sprite_name = 'maxine'
+maxine.sprite_name = 'maxine'
+maxine.alive = True
 
 pore = Actor('pore')
 pore.pos = (WIDTH/2, HEIGHT/2)
@@ -21,10 +22,12 @@ score = 0
 
 def draw():
     screen.fill((128, 128, 0))
-    maxine.draw()
     pore.draw()
+
+    # Draw Maxine or explosion2
+    screen.blit(maxine.sprite_name, (maxine.x, maxine.y))
     
-    # Draw either a cell or the explosion
+    # Draw either a cell or explosion1
     for cell in cells:
         screen.blit(cell.sprite_name, (cell.x, cell.y))
 
@@ -37,19 +40,20 @@ def update():
     global score
 
     # Move Maxine.
-    if keyboard.left:
-        maxine.left -= 6
-    elif keyboard.right:
-        maxine.left += 6
-    if keyboard.up:
-        maxine.top -= 6
-    elif keyboard.down:
-        maxine.bottom += 6
-    
-    # Detect if Maxine gets too close to the pore. (She'll fall in or get zapped or something)
-    dist = maxine.distance_to((pore.x, pore.y))
-    if dist < 100:
-        maxine.left, maxine.top = MAXINE_START
+    if maxine.alive:
+        if keyboard.left:
+            maxine.left -= 6
+        elif keyboard.right:
+            maxine.left += 6
+        if keyboard.up:
+            maxine.top -= 6
+        elif keyboard.down:
+            maxine.bottom += 6
+        
+        # Detect if Maxine gets too close to the pore. (She'll explode!)
+        dist = maxine.distance_to((pore.x, pore.y))
+        if dist < 100:
+            kill_maxine()
     
     # Can't remove items from a set during iteration.
     to_remove = []
@@ -91,6 +95,23 @@ def update():
         if cell.bottom < 0:
             cell.deltay *= -1
 
+# Maxine functions
+
+def kill_maxine():
+    sounds.eep.play()
+    maxine.sprite_name = 'explosion2'
+    maxine.alive = False
+    
+    delay = 1.0
+    clock.schedule_unique(reset_maxine, delay)
+
+def reset_maxine():
+    maxine.pos = MAXINE_START
+    maxine.sprite_name = 'maxine'
+    maxine.alive = True
+
+# Cell functions
+
 def add_cell():
     cell_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
         'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
@@ -106,13 +127,14 @@ def add_cell():
 	
     cells.add(cell)
 
-    clock.schedule_unique(add_cell, 7.0)
+    delay = random.randrange(5, 8)
+    clock.schedule_unique(add_cell, delay)
 
 def kill_cell(cell):
     #print('kill_cell('+cell(str)+')')
     dead_cells.add(cell)
     cell.sprite_name = 'explosion1'
-    # Set a disappear timer in frames.
+    # Set a disappear timer in frames. Using the clock didn't work for some reason.
     cell.disappear_timer = 15
  
     # Don't know why this good code doesn't work. remove_dead_cell never gets called.
