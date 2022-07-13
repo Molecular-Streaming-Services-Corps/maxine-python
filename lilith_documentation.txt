@@ -1,0 +1,48 @@
+Documentation of the binary message based on the ArrayData class. There are 16 bytes of metadata and then sample_count instances of 16 bit ints or uints for the samples.
+
+      this.sample_count = (dv.byteLength-16)/2;
+      this.websock_type = dv.getUint16(0);
+      this.channel      = dv.getUint16(2);
+      this.stride       = dv.getUint32(4);
+      this.start_high   = dv.getUint32(8);
+      this.start_low    = dv.getUint32(12);
+
+      this.start = (this.start_high << 32) | this.start_low;
+      this.end   = this.start + this.stride * this.sample_count;
+
+      if (this.end != 0) {
+        this.samples = new Int16Array(this.message, 16, this.sample_count)
+      }
+
+
+The method ManagedGraph.process_websocket_message. Uses the same message as ArrayData but gives different variable names to the metadata variables at the start of the message.
+    var typecode = dv.getUint16(0);
+It only processes typecode 0 which is an update. I (Jade) don't know if there are other typecodes.
+
+WebSocket protocol is either 'ws' for old-fashioned HTTP or 'wss' for HTTPS.
+  webSocket = new WebSocket(WebSocketProtocol + "://" + window.location.host + dirname(window.location.pathname) + "session");
+You need an authorization header. dirname just seems to remove the word spike_hunter.
+It also has a custom pinging system that unlike the built-in one in websockets, isn't automated by Python.
+
+
+Now I'm looking at webSocket.onmessage which is the event handler for receiving a WebSocket message. When the typecode is 1 the binary message contains a string with JSON metadata.
+      case 1: // WEBSOCK_JSON_DATA    1
+
+    ...msg.slice(2)
+This is a WebSocket function that takes byte 2 (i.e. the third byte) and onward to the rest of the binary message. It is then decoded. The JSON data is in utf-8.
+
+      case 106: // WEBSOCK_GAME_DATA        106
+Code 106 sets up a new game.
+Typecode 0 is an update, 104 is WEBSOCK_DEVICE_CLOSED and 105 is WEBSOCK_NEW_FILE.
+
+
+
+
+And now for the "sending" part of the protocol.
+export function request_data(sample_start_low, sample_length, sample_stride) {
+Called in follow_data() but apparently that's not used :(
+Not sure if request_data is used anywhere either.
+
+Also need to use subscribe_data. Called in set_game_subscriptions.
+
+
