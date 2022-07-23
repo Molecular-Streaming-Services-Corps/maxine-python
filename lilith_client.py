@@ -20,6 +20,9 @@ UUID = b'\x04\xe9\xe5\x0c\xc5\xb9' # Seems to be the MAC address of Hackerboard.
 # For Player 3. Might be arbitrary. Included in all received packets.
 INDEX = 2
 
+metadata = {}
+pressed = []
+
 async def main():
     URI = PROTOCOL + HOST + PATH
     print('URI: ' + URI)
@@ -27,7 +30,6 @@ async def main():
     print('Connecting to websocket')
     async with websockets.connect(URI, extra_headers = HEADERS) as ws:
         print('Connected succesfully')
-        # convert to Python:  webSocket.binaryType = 'arraybuffer';
         #await ws.send("Hello world!")
         #await ws.recv()
         
@@ -45,15 +47,91 @@ async def main():
         print('Requested data')
         
         async for message in ws:
-            await print('Message received:', message)
+            print('Message received:', message)
+            code = get_typecode(message)
+            print('Message typecode:', code)
+            process_message(code, message)
+
+def get_typecode(message):
+    '''Get the typecode of a binary message from Lilith.
+    message is a bytes object and the big-endian uint16 at the start is the typecode.'''
+    ## The extra c's are because the format string has to cover every byte of the data.
+    s = struct.Struct('!H') #+ 'c' * (len(message) - 2))
+    data = s.unpack(message[0 : 2])
+    return data[0]
+    
+def process_message(code, message):
+    global pressed
+
+    # typecode 0: update
+    if code == 0:
+        print('[0] Current data update received')
+        data = SampleData(message)
+        print('process_message: sample count:', data.sample_count)
+            
+    # typecode 1: WEBSOCK_JSON_DATA
+    elif code == 1:
+        print('[1] JSON data received.')
+        json_string = message[2:].decode('unicode_escape')
+        print('process_message:', json_string)
+        data = json.loads(json_string)
+        metadata.update(data)
+        print('process message: all metadata:', metadata)
+    # typecode 104: WEBSOCK_DEVICE_CLOSED
+    elif code == 104:
+        print('[104] Device is closed.')
+    # typecode 107: WEBSOCK_NEW_JOYSTICK
+    elif code == 107:
+        # The joystick data is a uint16 in big-endian with bits to represent what's pressed.
+        s = struct.Struct('!H')
+        unpacked_tuple = s.unpack(message[2:4])
+        joystick_data = unpacked_tuple[0]
+        print('process_message: raw joystick data:', joystick_data)
+        pressed = process_joystick_data(joystick_data)
+        print('process_message: joystick used:', pressed)
+
+class SampleData:
+    '''self.start is equivalent to a uint64. It's broken into start_high for the high bits
+    and start_low for the low bits.'''
+    def __init__(self, message):
+        format_string = '!HHIII'
+        s = struct.Struct(format_string)
+        u = s.unpack(message[0:16])
+    
+        self.sample_count = (len(message) - 16) // 2
+        self.websock_type, self.channel, self.stride, self.start_high, self.start_low = u
+        
+        self.start = (self.start_high << 32) | self.start_low
+        self.end = self.start + self.stride * self.sample_count
+        
+        self.samples = message[16:]
+
+def process_joystick_data(joystick_data):
+    binary_string = bin(joystick_data)[2:]
+    return process_joystick_string(binary_string)
+
+def process_joystick_string(binary_string):
+    button_names = ['up', 'down', 'left', 'right', 'b1', 'b2']
+    all_buttons = ['js1_' + b for b in button_names] + ['not_used'] * 2 + ['js2_' + b for b in button_names] + ['not_used'] * 2
+    
+    pressed = []
+
+    for i, bit in enumerate(binary_string):
+        if bit == '0':
+            button = all_buttons[i]
+            if button != 'not_used':
+                pressed.append(button)
+                
+    return pressed
 
 async def get_metadata(key, ws):
-    format_string = 'HH' + ('s' * len(key))
+    format_string = '!HH' + ('s' * len(key))
     print('get_metadata:', format_string)
     s = struct.Struct(format_string)
     data = [1, 0] + [c.encode('ascii') for c in key]
     print('get_metadata:', data)
     packed_data = s.pack(*data)
+    print('get_metadata:', packed_data, type(packed_data))
     await ws.send(packed_data)
     return None
 
@@ -66,7 +144,7 @@ def run_ping(ws):
     asyncio.run(ping(ws))
 
 async def ping(ws):
-    s = struct.Struct('H')
+    s = struct.Struct('!H')
     # message type 100 is PING
     packed_data = s.pack(100)
     await ws.send(packed_data)
@@ -85,7 +163,7 @@ async def subscribe_data(ws, id, mac, file_id, stride, filter):
     # File ID
     # Stride
     # Filter
-    s = struct.Struct('HL6sLLL')
+    s = struct.Struct('!HL6sLLL')
     data = [102, id, mac, file_id, stride, filter]
     packed_data = s.pack(*data)
     await ws.send(packed_data)
@@ -101,7 +179,7 @@ async def request_data(ws, sample_start_low, sample_length, sample_stride):
     # sample_start_high
     # sample_start_low
     # sample_stride
-    s = struct.Struct('HHHlLLL')
+    s = struct.Struct('!HHHlLLL')
     data = [12, INDEX, 0, sample_length, 0, sample_start_low, sample_stride]
     packed_data = s.pack(*data)
     await ws.send(packed_data)

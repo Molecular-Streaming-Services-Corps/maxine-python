@@ -1,0 +1,12 @@
+This is Jade's documentation for the Lilith server side.
+
+Lilith has logs. Could be useful. If you can find them...
+
+Reading websocketdata.cpp
+    void WebSocketInfo::message
+Processes all sorts of messages on the server. Maybe the start button is necessary?
+
+Sends packets to a DemonController object which interfaces with the Teensy somehow. (Over the LAN?)
+
+The code in Lilith that receives a request_data message also sends some data. Same with the code for get_metadata. There's no explanation why we're not receiving messages.
+
