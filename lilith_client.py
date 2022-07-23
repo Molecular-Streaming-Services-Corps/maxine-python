@@ -22,6 +22,7 @@ INDEX = 2
 
 metadata = {}
 pressed = []
+channel = 0
 
 async def main():
     URI = PROTOCOL + HOST + PATH
@@ -61,14 +62,17 @@ def get_typecode(message):
     return data[0]
     
 def process_message(code, message):
-    global pressed
+    global pressed, channel
 
     # typecode 0: update
     if code == 0:
         print('[0] Current data update received')
         data = SampleData(message)
         print('process_message: sample count:', data.sample_count)
-            
+        # Maybe the empty current data message gives you a false channel
+        #print('process_message: found out channel:', data.channel)
+        #channel = data.channel
+         
     # typecode 1: WEBSOCK_JSON_DATA
     elif code == 1:
         print('[1] JSON data received.')
@@ -180,7 +184,7 @@ async def request_data(ws, sample_start_low, sample_length, sample_stride):
     # sample_start_low
     # sample_stride
     s = struct.Struct('!HHHlLLL')
-    data = [12, INDEX, 0, sample_length, 0, sample_start_low, sample_stride]
+    data = [12, INDEX, channel, sample_length, 0, sample_start_low, sample_stride]
     packed_data = s.pack(*data)
     await ws.send(packed_data)
     
