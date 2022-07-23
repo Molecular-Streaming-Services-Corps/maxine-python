@@ -3,6 +3,7 @@ import random
 import numpy as np
 
 import data
+import util
 
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
@@ -11,7 +12,7 @@ TITLE = 'Maxine\'s Quest'
 WIDTH = 1800
 HEIGHT = 900
 
-MAXINE_START = (100, 56)
+MAXINE_START = (200, 200)
 
 maxine = Actor('maxine')
 maxine.pos = MAXINE_START
@@ -25,6 +26,11 @@ cells = set()
 dead_cells = set()
 
 score = 0
+
+# Represents data from a stored file.
+d = None
+
+NUM_BOXES = 100
 
 def draw():
     # Murky green background color
@@ -58,7 +64,6 @@ def draw_background():
             screen.blit('background_living_tissue', (x, y))
 
 i = 0
-d = None
 def draw_graph(screen):
     global i, d
     # Draw a rectangle behind the graph
@@ -68,13 +73,11 @@ def draw_graph(screen):
     BOX = Rect((9, 99), (302, 82))
     screen.draw.filled_rect(BOX, GREEN)
     
-    num_boxes = 100
-    
     # Sample data for the graph
     if STANDALONE:
-        x_data = list(range(0, num_boxes))
-        x_data = [(x + i) % num_boxes for x in x_data]
-        inputs = [2*np.pi*x/num_boxes for x in x_data]
+        x_data = list(range(0, NUM_BOXES))
+        x_data = [(x + i) % NUM_BOXES for x in x_data]
+        inputs = [2*np.pi*x/NUM_BOXES for x in x_data]
         y_data = np.sin(inputs)  # update the data.
         #print('i', i)
         #print('x_data:', x_data)
@@ -86,12 +89,9 @@ def draw_graph(screen):
         max_value = +1.0
     elif LIVE:
         raise('Live mode not implemented')
-    else:
-        if d is None:
-            d = data.Data(num_boxes)
-            d.load_files(DATADIR)
-        
+    else:        
         d.get_one_frame_current()
+        d.advance_frame()
         y_data = d.boxes
         # In case the min or max value are 0
         min_value = np.min(y_data) - 1
@@ -109,13 +109,13 @@ def draw_graph(screen):
             # Shades of blue
             color = (0, 0, 255 * scale_factor)
         
-        rect = Rect((10 + 300.0 / num_boxes * x , 100), (300 / num_boxes, 80))
+        rect = Rect((10 + 300.0 / NUM_BOXES * x , 100), (300 / NUM_BOXES, 80))
         
         screen.draw.filled_rect(rect, color)
 
 step_count = 0
 def update():
-    global score, i, step_count
+    global score, i, step_count, d
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -125,20 +125,46 @@ def update():
         import sys; sys.exit(0)
 
     # Move Maxine.
+    # s is Maxine's speed per frame.
+    s = 6
+    
     if maxine.alive:
-        if keyboard.left:
-            maxine.left -= 6
-        elif keyboard.right:
-            maxine.left += 6
-        if keyboard.up:
-            maxine.top -= 6
-        elif keyboard.down:
-            maxine.bottom += 6
+        prev_pos = maxine.pos
+    
+        if STANDALONE:
+            if keyboard.left:
+                maxine.left -= s
+            elif keyboard.right:
+                maxine.left += s
+            if keyboard.up:
+                maxine.top -= s
+            elif keyboard.down:
+                maxine.bottom += s
+        elif LIVE:
+            pass
+        else:
+            controls = d.get_one_frame_joystick()
+            pressed = util.process_joystick_data(controls)
+            #print(step_count, controls, pressed)
+            if 'js2_left' in pressed:
+                maxine.left -= s
+            elif 'js2_right' in pressed:
+                maxine.left += s
+            if 'js2_up' in pressed:
+                maxine.top -= s
+            elif 'js2_down' in pressed:
+                maxine.bottom += s
+            
+            # Ignore the 2 joystick buttons for now.
         
         # Detect if Maxine gets too close to the pore. (She'll explode!)
         dist = maxine.distance_to(pore.center)
         if dist < 100:
             kill_maxine()
+        
+        # Stop Maxine at the edges of the screen.
+        if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
+            maxine.pos = prev_pos
     
     # Can't remove items from a set during iteration.
     to_remove = []
@@ -238,6 +264,10 @@ args = parse_arguments.parser.parse_args()
 STANDALONE = not args.datadir and not args.live
 LIVE = args.live and not args.datadir
 DATADIR = args.datadir
+
+if DATADIR:
+    d = data.Data(NUM_BOXES)
+    d.load_files(DATADIR)
 
 clock.schedule_unique(add_cell, 4.0)   
 
