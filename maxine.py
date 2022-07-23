@@ -216,6 +216,9 @@ def remove_dead_cell(cell):
 
 import parse_arguments
 args = parse_arguments.parser.parse_args()
+STANDALONE = args['datadir'] == None and not args['live']
+LIVE = args['live'] and not args['datadir']
+DATADIR = args['datadir']
 
 clock.schedule_unique(add_cell, 4.0)   
 
