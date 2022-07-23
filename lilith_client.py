@@ -5,6 +5,8 @@ import struct
 import binascii
 from threading import Timer
 
+import util
+
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
 HOST = 'lilith.demonpore.tv:3000/'
 MAC = '04e9e50cc5b9'
@@ -91,7 +93,7 @@ def process_message(code, message):
         unpacked_tuple = s.unpack(message[2:4])
         joystick_data = unpacked_tuple[0]
         print('process_message: raw joystick data:', joystick_data)
-        pressed = process_joystick_data(joystick_data)
+        pressed = util.process_joystick_data(joystick_data)
         print('process_message: joystick used:', pressed)
 
 class SampleData:
@@ -109,24 +111,6 @@ class SampleData:
         self.end = self.start + self.stride * self.sample_count
         
         self.samples = message[16:]
-
-def process_joystick_data(joystick_data):
-    binary_string = bin(joystick_data)[2:]
-    return process_joystick_string(binary_string)
-
-def process_joystick_string(binary_string):
-    button_names = ['up', 'down', 'left', 'right', 'b1', 'b2']
-    all_buttons = ['js1_' + b for b in button_names] + ['not_used'] * 2 + ['js2_' + b for b in button_names] + ['not_used'] * 2
-    
-    pressed = []
-
-    for i, bit in enumerate(binary_string):
-        if bit == '0':
-            button = all_buttons[i]
-            if button != 'not_used':
-                pressed.append(button)
-                
-    return pressed
 
 async def get_metadata(key, ws):
     format_string = '!HH' + ('s' * len(key))

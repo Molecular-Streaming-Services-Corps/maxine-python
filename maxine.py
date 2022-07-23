@@ -2,6 +2,8 @@ import pgzrun
 import random
 import numpy as np
 
+import data
+
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
 
@@ -56,8 +58,9 @@ def draw_background():
             screen.blit('background_living_tissue', (x, y))
 
 i = 0
+d = None
 def draw_graph(screen):
-    global i
+    global i, d
     # Draw a rectangle behind the graph
     RED = (200, 0, 0)
     BLACK = (0, 0, 0)
@@ -68,25 +71,41 @@ def draw_graph(screen):
     num_boxes = 100
     
     # Sample data for the graph
-    x_data = list(range(0, num_boxes))
-    x_data = [(x + i) % num_boxes for x in x_data]
-    inputs = [2*np.pi*x/num_boxes for x in x_data]
-    y_data = np.sin(inputs)  # update the data.
-    #print('i', i)
-    #print('x_data:', x_data)
-    #print('inputs:', inputs)
-    #print('y_data:', y_data)
+    if STANDALONE:
+        x_data = list(range(0, num_boxes))
+        x_data = [(x + i) % num_boxes for x in x_data]
+        inputs = [2*np.pi*x/num_boxes for x in x_data]
+        y_data = np.sin(inputs)  # update the data.
+        #print('i', i)
+        #print('x_data:', x_data)
+        #print('inputs:', inputs)
+        #print('y_data:', y_data)
     
-    # Calculate the color and location of each rectangle and draw it
-    MIN_VALUE = -1.0
-    MAX_VALUE = +1.0
+        # Calculate the color and location of each rectangle and draw it
+        min_value = -1.0
+        max_value = +1.0
+    elif LIVE:
+        raise('Live mode not implemented')
+    else:
+        if d is None:
+            d = data.Data(num_boxes)
+            d.load_files(DATADIR)
+        
+        d.get_one_frame_current()
+        y_data = d.boxes
+        # In case the min or max value are 0
+        min_value = np.min(y_data) - 1
+        max_value = np.max(y_data) + 1
+        
+        
+    # Plot the data
     for x, y in enumerate(y_data):
         if y < 0:
-            scale_factor = y / MIN_VALUE
+            scale_factor = y / min_value
             # Shades of red
             color = (255 * scale_factor, 0, 0)
         else:
-            scale_factor = y / MAX_VALUE
+            scale_factor = y / max_value
             # Shades of blue
             color = (0, 0, 255 * scale_factor)
         
@@ -216,9 +235,9 @@ def remove_dead_cell(cell):
 
 import parse_arguments
 args = parse_arguments.parser.parse_args()
-STANDALONE = args['datadir'] == None and not args['live']
-LIVE = args['live'] and not args['datadir']
-DATADIR = args['datadir']
+STANDALONE = not args.datadir and not args.live
+LIVE = args.live and not args.datadir
+DATADIR = args.datadir
 
 clock.schedule_unique(add_cell, 4.0)   
 
