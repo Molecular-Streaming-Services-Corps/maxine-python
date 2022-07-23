@@ -214,6 +214,9 @@ def remove_dead_cell(cell):
     #print('remove_dead_cell('+str(cell)+')')
     dead_cells.remove(cell)
 
+import parse_arguments
+args = parse_arguments.parser.parse_args()
+
 clock.schedule_unique(add_cell, 4.0)   
 
 music.play('subgenie') 
