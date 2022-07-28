@@ -90,4 +90,34 @@ class Data:
         ret = [(v - mid) / scale for v in self.boxes]
         
         return ret
+    
+    def middle_spike_exists(self):
+        sb = self.get_scaled_boxes()
+    
+        MIDPOINT = self.num_boxes // 2
+        BLUE_THRESHOLD = 0.5
+        
+        blue_enough_boxes = [(v > BLUE_THRESHOLD) for v in sb]
+        blue_fraction = self.count_true(blue_enough_boxes) / self.num_boxes
+        
+        #print('blue_fraction:', blue_fraction)
+        
+        # If at least 90% of the boxes are brightish blue
+        if blue_fraction > 0.9:
+            middle_box = sb[MIDPOINT]
+            # Find the first part of a red section at the midline. Ignore the
+            # later boxes in the same spike.
+            if middle_box < -0.5 and sb[MIDPOINT - 1] >= 0:
+                return True
+        
+        return False
+        
+    def count_true(self, array):
+        count = 0
+        for b in array:
+            if b == True:
+                count += 1
+        
+        return count
+        
         

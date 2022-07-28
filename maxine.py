@@ -91,8 +91,6 @@ def draw_graph(screen):
     elif LIVE:
         raise('Live mode not implemented')
     else:        
-        d.get_one_frame_current()
-        d.advance_frame()
         y_data = d.get_scaled_boxes()
         min_value = -1.0
         max_value = +1.0
@@ -127,6 +125,15 @@ def update():
 
     if keyboard.q:
         import sys; sys.exit(0)
+
+    # Advance the datafile and make a monster appear on a spike
+    if DATADIR:
+        d.get_one_frame_current()
+        d.advance_frame()
+        
+        if d.middle_spike_exists():
+            add_cell()
+
 
     # Move Maxine.
     # s is Maxine's speed per frame.
@@ -242,8 +249,9 @@ def add_cell():
 	
     cells.add(cell)
 
-    delay = random.randrange(5, 8)
-    clock.schedule_unique(add_cell, delay)
+    if STANDALONE:
+        delay = random.randrange(5, 8)
+        clock.schedule_unique(add_cell, delay)
 
 def kill_cell(cell):
     #print('kill_cell('+cell(str)+')')
@@ -273,7 +281,8 @@ if DATADIR:
     d = data.Data(NUM_BOXES)
     d.load_files(DATADIR)
 
-clock.schedule_unique(add_cell, 4.0)   
+if STANDALONE:
+    clock.schedule_unique(add_cell, 4.0)   
 
 music.play('subgenie') 
 
