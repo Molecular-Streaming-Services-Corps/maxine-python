@@ -10,6 +10,7 @@ class Data:
         self.sample_rate = 10**5
         self.current_frame = 0
         self.init_boxes()
+        self.no_more_data = False
     
     def init_boxes(self):
         self.boxes = [0] * self.num_boxes    
@@ -40,6 +41,7 @@ class Data:
             self.boxes = self.boxes[1:] + [frame_current]
         else:
             self.init_boxes()
+            self.no_more_data = True
         
         return None
         
@@ -70,4 +72,22 @@ class Data:
     
     def advance_frame(self):
         self.current_frame += 1
+    
+    def get_scaled_boxes(self):
+        '''Get the box values scaled to be from -1 to +1, where -1 represents
+        the lowest value in the boxes and +1 represents the highest.'''
+        if self.no_more_data:
+            return self.boxes # All 0s        
+        
+        min_v = np.min(self.boxes)
+        max_v = np.max(self.boxes)
+        range_ = max_v - min_v
+        scale = range_ / 2
+        mid = min_v + scale
+        
+        scale == 0.01
+        
+        ret = [(v - mid) / scale for v in self.boxes]
+        
+        return ret
         

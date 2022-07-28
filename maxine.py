@@ -70,6 +70,7 @@ def draw_graph(screen):
     RED = (200, 0, 0)
     BLACK = (0, 0, 0)
     GREEN = (0, 200, 0)
+    WHITE = (255, 255, 255)
     BOX = Rect((9, 99), (302, 82))
     screen.draw.filled_rect(BOX, GREEN)
     
@@ -92,15 +93,18 @@ def draw_graph(screen):
     else:        
         d.get_one_frame_current()
         d.advance_frame()
-        y_data = d.boxes
-        # In case the min or max value are 0
-        min_value = np.min(y_data) - 1
-        max_value = np.max(y_data) + 1
-        
-        
+        y_data = d.get_scaled_boxes()
+        min_value = -1.0
+        max_value = +1.0
+    
+    MIDPOINT = NUM_BOXES // 2
+    
     # Plot the data
     for x, y in enumerate(y_data):
-        if y < 0:
+        if x == MIDPOINT:
+            # A single white line
+            color = WHITE
+        elif y < 0:
             scale_factor = y / min_value
             # Shades of red
             color = (255 * scale_factor, 0, 0)
@@ -145,7 +149,7 @@ def update():
         else:
             controls = d.get_one_frame_joystick()
             pressed = util.process_joystick_data(controls)
-            print(step_count, controls, pressed)
+            #print(step_count, controls, pressed)
             if 'js1_left' in pressed:
                 maxine.left -= s
             elif 'js1_right' in pressed:
