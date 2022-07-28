@@ -145,14 +145,14 @@ def update():
         else:
             controls = d.get_one_frame_joystick()
             pressed = util.process_joystick_data(controls)
-            #print(step_count, controls, pressed)
-            if 'js2_left' in pressed:
+            print(step_count, controls, pressed)
+            if 'js1_left' in pressed:
                 maxine.left -= s
-            elif 'js2_right' in pressed:
+            elif 'js1_right' in pressed:
                 maxine.left += s
-            if 'js2_up' in pressed:
+            if 'js1_up' in pressed:
                 maxine.top -= s
-            elif 'js2_down' in pressed:
+            elif 'js1_down' in pressed:
                 maxine.bottom += s
             
             # Ignore the 2 joystick buttons for now.

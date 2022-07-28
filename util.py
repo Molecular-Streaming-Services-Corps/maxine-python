@@ -8,7 +8,7 @@ def process_joystick_string(binary_string):
     
     pressed = []
 
-    for i, bit in enumerate(binary_string):
+    for i, bit in enumerate(reversed(binary_string)):
         if bit == '0':
             button = all_buttons[i]
             if button != 'not_used':
