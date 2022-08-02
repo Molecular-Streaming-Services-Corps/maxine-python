@@ -2,7 +2,9 @@ import websocket
 import json
 import struct
 import binascii
-from threading import Timer
+from threading import Timer, Thread
+import time
+import queue
 
 # Enable websocket logging of exceptions
 import logging
@@ -55,7 +57,7 @@ def on_open(ws):
 
 
 def on_message(wsapp, message):
-    print('Message received:', message[:100])
+    print('Message received:', message[:10])
     code = get_typecode(message)
     print('Message typecode:', code)
     process_message(code, message)
@@ -64,6 +66,9 @@ def on_close(ws, close_status_code, close_msg):
     print(f"WebSocket closed with code {close_status_code} and message: {close_msg}")
 
 def main():
+    global q
+    q = queue.Queue()
+
     URI = PROTOCOL + HOST + PATH
     print('URI: ' + URI)
 
@@ -81,7 +86,7 @@ def get_typecode(message):
     return data[0]
     
 def process_message(code, message):
-    global pressed, channel
+    global pressed, channel, q
 
     # typecode 0: update
     if code == 0:
@@ -91,6 +96,8 @@ def process_message(code, message):
         # Maybe the empty current data message gives you a false channel
         #print('process_message: found out channel:', data.channel)
         #channel = data.channel
+        
+        q.put(data)
          
     # typecode 1: WEBSOCK_JSON_DATA
     elif code == 1:
@@ -135,6 +142,31 @@ class SampleData:
         print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
               self.websock_type, self.channel, self.stride, self.start, self.end) 
 
+def consume_samples():
+    global q
+
+    while True:
+        sd_list = consume_latest_samples(q)
+        
+        for i, sample_data in enumerate(sd_list):
+            print('(' + str(i) + ') consume_samples gets SampleData with start:', sample_data.start)
+        
+        time.sleep(1.0 / 60.0)
+
+def consume_latest_samples(q):
+    '''A non-blocking function that returns a list of any SampleData objects
+    that are on the queue (and removes them from the queue).'''
+    sd_list = []
+
+    while True:
+        try:
+            sample_data = q.get(False)
+            sd_list.append(sample_data)  
+            # If `False`, the program is not blocked. `Queue.Empty` is thrown if 
+            # the queue is empty
+        except queue.Empty:
+            return sd_list
+    
 
 def get_metadata(key, ws):
     format_string = '!HH' + ('s' * len(key))
@@ -210,5 +242,10 @@ def run_request_data(ws, sample_stride):
     request_data(ws, sample_stride)
 
 if __name__ == '__main__':
-    main()
+    # Run the interaction loop in another thread
+    t = Thread(target=main)
+    t.start()
+    
+    # Run this in the main thread
+    consume_samples()
     
