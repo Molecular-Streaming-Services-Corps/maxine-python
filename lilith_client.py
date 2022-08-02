@@ -143,6 +143,11 @@ class SampleData:
               self.websock_type, self.channel, self.stride, self.start, self.end) 
 
 def consume_samples():
+    '''Optional loop in a separate thread. It simulates the game loop. It
+    waits a 60th of a second and then pops any items on the queue (global
+    varialbe q). This function is only used in demo mode (running lilith_client
+    as a program. When lilith_client is used as a library you can use your own
+    game loop.'''
     global q
 
     while True:
