@@ -1,9 +1,15 @@
+# Installed packages.
 import pgzrun
-import random
 import numpy as np
 
+# Builtin packages.
+import random
+import threading
+
+# Local packages.
 import data
 import util
+import lilith_client
 
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
@@ -278,11 +284,17 @@ LIVE = args.live and not args.datadir
 DATADIR = args.datadir
 
 if DATADIR:
-    d = data.Data(NUM_BOXES)
+    d = data.PrerecordedData(NUM_BOXES)
     d.load_files(DATADIR)
 
-if STANDALONE:
+elif STANDALONE:
     clock.schedule_unique(add_cell, 4.0)   
+
+elif LIVE:
+    # Run the Lilith interaction loop in another thread
+    t = threading.Thread(target=lilith_client.main)
+    t.start()
+
 
 music.play('subgenie') 
 

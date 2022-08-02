@@ -1,4 +1,7 @@
+# Installed package.
 import websocket
+
+# Builtin packages
 import json
 import struct
 import binascii
@@ -12,6 +15,7 @@ logger = logging.getLogger('websocket')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
+# Local packages.
 import util
 import struct_definitions
 
@@ -35,6 +39,7 @@ INDEX = 2
 metadata = {}
 pressed = []
 channel = 0
+q = queue.Queue()
 
 sample_index = 0
 SAMPLES_PER_SECOND = 10**5
@@ -67,7 +72,6 @@ def on_close(ws, close_status_code, close_msg):
 
 def main():
     global q
-    q = queue.Queue()
 
     URI = PROTOCOL + HOST + PATH
     print('URI: ' + URI)
