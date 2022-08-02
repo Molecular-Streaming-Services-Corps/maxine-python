@@ -9,7 +9,9 @@ import util
 
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
 HOST = 'lilith.demonpore.tv:3000/'
-MAC = '04e9e50cc5b9'
+KENT_MAC = '04e9e50cc5b9'
+JONATHAN_MAC = '04e9e50c6a0b'
+MAC = JONATHAN_MAC
 PATH = 'game/' + MAC + '/' + 'session'
 
 # Set up authorization. It doesn't matter what the password is.
@@ -111,6 +113,10 @@ class SampleData:
         self.end = self.start + self.stride * self.sample_count
         
         self.samples = message[16:]
+        
+        print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
+              self.websock_type, self.channel, self.stride, self.start, self.end) 
+
 
 async def get_metadata(key, ws):
     format_string = '!HH' + ('s' * len(key))
