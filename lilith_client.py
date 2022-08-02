@@ -4,7 +4,14 @@ import struct
 import binascii
 from threading import Timer
 
+# Enable websocket logging of exceptions
+import logging
+logger = logging.getLogger('websocket')
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
+
 import util
+import struct_definitions
 
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
 HOST = 'lilith.demonpore.tv:3000/'
@@ -120,7 +127,10 @@ class SampleData:
         self.start = (self.start_high << 32) | self.start_low
         self.end = self.start + self.stride * self.sample_count
         
-        self.samples = message[16:]
+        samples_bytes = message[16:]
+        s = struct_definitions.numbers_1667
+        self.samples = s.unpack(samples_bytes)
+        print('samples:', len(self.samples), self.samples[0 : 10])
         
         print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
               self.websock_type, self.channel, self.stride, self.start, self.end) 
