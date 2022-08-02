@@ -2,6 +2,8 @@ import numpy as np
 import json
 import os
 
+import lilith_client
+
 class Data:
     def __init__(self):
         self.sample_data = []
@@ -38,6 +40,78 @@ class Data:
         
         return count
         
+class LiveData(Data):
+    def __init__(self, num_boxes):
+        super().__init__()
+        self.num_boxes = num_boxes
+        # A dictionary mapping from frame index to a SampleData object 
+        self.data_frames = {}
+        
+    def load_received_samples(self):
+        sd_list = lilith_client.consume_latest_samples(lilith_client.q)
+        
+        for sd in sd_list:
+            sd_frame_index = sd.start // 1667
+            self.data_frames[sd_frame_index] = sd
+            
+            # Update the latest frame index. There may be missing frames in
+            # between if the frames arrive in the wrong order.
+            if sd_frame_index > self.latest_frame:
+                self.latest_frame = sd_frame_index
+
+    def get_one_frame_joystick(self):
+        '''The joystick isn't yet supported in Live Mode.'''
+        return 65535
+
+    def get_boxes(self):
+        '''Return a list of the min values for the last 100 frames. If there
+        are less than 100 frames, or if any frame is missing, insert 0 values.
+        A frame in this method is a SampleData object corresponding to a
+        particular frame of gameplay.'''
+        if self.latest_frame < 100:
+            num_real_boxes = self.latest_frame
+            padding = [-1, 1] + [0] * (98 - num_real_boxes)
+        else:
+            num_real_boxes = 100
+            padding = []
+        
+        real_boxes = [0] * num_real_boxes
+        for box_id in range(0, num_real_boxes):
+            offset = 100 - box_id - 1
+            
+            frame_id = self.latest_frame - offset
+            # Handle missing frames
+            if frame_id in self.data_frames:
+                df = self.data_frames[frame_id].samples
+            else:
+                df = [0]
+                
+            # Set the box to the min value in this frame
+            real_boxes[box_id] = np.min(df)
+            
+        ret = padding + real_boxes
+        print('get_boxes:', ret)
+        return ret
+
+    def get_scaled_boxes(self):
+        '''Get the box values scaled to be from -1 to +1, where -1 represents
+        the lowest value in the boxes and +1 represents the highest.
+        
+        TODO: remove code duplication'''
+        min_v = np.min(self.get_boxes())
+        max_v = np.max(self.get_boxes())
+        range_ = max_v - min_v
+        scale = range_ / 2
+        mid = min_v + scale
+        
+        scale == 0.01
+        
+        ret = [(v - mid) / scale for v in self.get_boxes()]
+        
+        print('get_scaled_boxes:', ret)
+        
+        return ret
+
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
         super().__init__()
@@ -77,7 +151,7 @@ class PrerecordedData(Data):
             self.no_more_data = True
         
         return None
-        
+    
     def get_one_frame_joystick(self):
         # If we are past the end of the data, the joystick isn't being used.
         if self.latest_frame > len(self.sample_data):
@@ -106,21 +180,24 @@ class PrerecordedData(Data):
     def advance_frame(self):
         self.latest_frame += 1
     
+    def get_boxes(self):
+        return self.boxes
+    
     def get_scaled_boxes(self):
         '''Get the box values scaled to be from -1 to +1, where -1 represents
         the lowest value in the boxes and +1 represents the highest.'''
         if self.no_more_data:
-            return self.boxes # All 0s        
+            return self.get_boxes() # All 0s        
         
-        min_v = np.min(self.boxes)
-        max_v = np.max(self.boxes)
+        min_v = np.min(self.get_boxes())
+        max_v = np.max(self.get_boxes())
         range_ = max_v - min_v
         scale = range_ / 2
         mid = min_v + scale
         
         scale == 0.01
         
-        ret = [(v - mid) / scale for v in self.boxes]
+        ret = [(v - mid) / scale for v in self.get_boxes()]
         
         return ret
         

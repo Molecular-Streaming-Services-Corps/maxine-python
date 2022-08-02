@@ -94,9 +94,7 @@ def draw_graph(screen):
         # Calculate the color and location of each rectangle and draw it
         min_value = -1.0
         max_value = +1.0
-    elif LIVE:
-        raise('Live mode not implemented')
-    else:        
+    else: # live or prerecorded mode        
         y_data = d.get_scaled_boxes()
         min_value = -1.0
         max_value = +1.0
@@ -132,14 +130,18 @@ def update():
     if keyboard.q:
         import sys; sys.exit(0)
 
-    # Advance the datafile and make a monster appear on a spike
+    # Advance the datafile and make a monster appear on a spike.
+    # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
         d.get_one_frame_current()
         d.advance_frame()
         
         if d.middle_spike_exists():
             add_cell()
-
+    elif LIVE:
+        d.load_received_samples()
+        if d.middle_spike_exists():
+            add_cell()    
 
     # Move Maxine.
     # s is Maxine's speed per frame.
@@ -294,6 +296,8 @@ elif LIVE:
     # Run the Lilith interaction loop in another thread
     t = threading.Thread(target=lilith_client.main)
     t.start()
+    
+    d = data.LiveData(NUM_BOXES)
 
 
 music.play('subgenie') 
