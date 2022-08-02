@@ -1,5 +1,4 @@
-import asyncio
-import websockets
+import websocket
 import json
 import struct
 import binascii
@@ -32,32 +31,39 @@ sample_index = 0
 SAMPLES_PER_SECOND = 10**5
 samples_per_packet = int(SAMPLES_PER_SECOND / 60) + 1
 
-async def main():
+def on_open(ws):
+    print('Connected succesfully')
+    
+    get_metadata('version', ws)
+    get_metadata('bias_settings_history', ws)
+
+    set_game_subscription(ws)
+    print('Completed set_game_subscription')
+    
+    ping(ws)
+    print('Started ping')
+    
+    request_data(ws, 1)
+    print('Requested data')
+
+
+def on_message(wsapp, message):
+    print('Message received:', message[:100])
+    code = get_typecode(message)
+    print('Message typecode:', code)
+    process_message(code, message)
+
+def on_close(ws, close_status_code, close_msg):
+    print(f"WebSocket closed with code {close_status_code} and message: {close_msg}")
+
+def main():
     URI = PROTOCOL + HOST + PATH
     print('URI: ' + URI)
 
     print('Connecting to websocket')
-    async with websockets.connect(URI, extra_headers = HEADERS) as ws:
-        print('Connected succesfully')
-        #await ws.send("Hello world!")
-        #await ws.recv()
-        
-        await get_metadata('version', ws)
-        await get_metadata('bias_settings_history', ws)
-        
-        await set_game_subscription(ws)
-        print('Completed set_game_subscription')
-        await ping(ws)
-        print('Started ping')
-        
-        await request_data(ws, 1)
-        print('Requested data')
-        
-        async for message in ws:
-            print('Message received')
-            code = get_typecode(message)
-            print('Message typecode:', code)
-            process_message(code, message)
+    wsapp = websocket.WebSocketApp(URI, header=HEADERS, on_message=on_message,
+         on_open=on_open, on_close=on_close)
+    wsapp.run_forever()
 
 def get_typecode(message):
     '''Get the typecode of a binary message from Lilith.
@@ -120,7 +126,7 @@ class SampleData:
               self.websock_type, self.channel, self.stride, self.start, self.end) 
 
 
-async def get_metadata(key, ws):
+def get_metadata(key, ws):
     format_string = '!HH' + ('s' * len(key))
     print('get_metadata:', format_string)
     s = struct.Struct(format_string)
@@ -128,7 +134,7 @@ async def get_metadata(key, ws):
     print('get_metadata:', data)
     packed_data = s.pack(*data)
     print('get_metadata:', packed_data, type(packed_data))
-    await ws.send(packed_data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
     return None
 
 # Ping stuff
@@ -137,22 +143,22 @@ def setup_ping(ws):
     t.start()
 
 def run_ping(ws):
-    asyncio.run(ping(ws))
+    ping(ws)
 
-async def ping(ws):
+def ping(ws):
     s = struct.Struct('!H')
     # message type 100 is PING
     packed_data = s.pack(100)
-    await ws.send(packed_data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
     
     setup_ping(ws)
     return None
     
 # Subscribing to games
-async def set_game_subscription(ws):
-    await subscribe_data(ws, 2, UUID, 0, 2048, 0)
+def set_game_subscription(ws):
+    subscribe_data(ws, 2, UUID, 0, 2048, 0)
 
-async def subscribe_data(ws, id, mac, file_id, stride, filter):
+def subscribe_data(ws, id, mac, file_id, stride, filter):
     # Subscribe code = 102
     # Subscription ID (returned in all data packets)
     # Device mac address
@@ -162,12 +168,12 @@ async def subscribe_data(ws, id, mac, file_id, stride, filter):
     s = struct.Struct('!HL6sLLL')
     data = [102, id, mac, file_id, stride, filter]
     packed_data = s.pack(*data)
-    await ws.send(packed_data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
     
     return None
 
 # Requesting data.
-async def request_data(ws, sample_stride):
+def request_data(ws, sample_stride):
     global sample_index, samples_per_packet
 
     # Start code = 12
@@ -180,7 +186,7 @@ async def request_data(ws, sample_stride):
     s = struct.Struct('!HHHlLLL')
     data = [12, INDEX, channel, samples_per_packet, 0, sample_index, sample_stride]
     packed_data = s.pack(*data)
-    await ws.send(packed_data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
     
     sample_index += samples_per_packet
     setup_request_data(ws, sample_stride)
@@ -191,8 +197,8 @@ def setup_request_data(ws, sample_stride):
     t.start()
 
 def run_request_data(ws, sample_stride):
-    asyncio.run(request_data(ws, sample_stride))
+    request_data(ws, sample_stride)
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
     
