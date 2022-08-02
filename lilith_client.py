@@ -28,6 +28,10 @@ metadata = {}
 pressed = []
 channel = 0
 
+sample_index = 0
+SAMPLES_PER_SECOND = 10**5
+samples_per_packet = int(SAMPLES_PER_SECOND / 60) + 1
+
 async def main():
     URI = PROTOCOL + HOST + PATH
     print('URI: ' + URI)
@@ -38,7 +42,6 @@ async def main():
         #await ws.send("Hello world!")
         #await ws.recv()
         
-        # Doesn't seem to get a response :( Might be obsolete.
         await get_metadata('version', ws)
         await get_metadata('bias_settings_history', ws)
         
@@ -47,12 +50,11 @@ async def main():
         await ping(ws)
         print('Started ping')
         
-        # Might be obsolete.
-        await request_data(ws, 0, 15000, 1)
+        await request_data(ws, 1)
         print('Requested data')
         
         async for message in ws:
-            print('Message received:', message)
+            print('Message received')
             code = get_typecode(message)
             print('Message typecode:', code)
             process_message(code, message)
@@ -165,7 +167,9 @@ async def subscribe_data(ws, id, mac, file_id, stride, filter):
     return None
 
 # Requesting data.
-async def request_data(ws, sample_start_low, sample_length, sample_stride):
+async def request_data(ws, sample_stride):
+    global sample_index, samples_per_packet
+
     # Start code = 12
     # Device id (0 now)
     # Channel
@@ -174,11 +178,20 @@ async def request_data(ws, sample_start_low, sample_length, sample_stride):
     # sample_start_low
     # sample_stride
     s = struct.Struct('!HHHlLLL')
-    data = [12, INDEX, channel, sample_length, 0, sample_start_low, sample_stride]
+    data = [12, INDEX, channel, samples_per_packet, 0, sample_index, sample_stride]
     packed_data = s.pack(*data)
     await ws.send(packed_data)
     
+    sample_index += samples_per_packet
+    setup_request_data(ws, sample_stride)
     return None
+
+def setup_request_data(ws, sample_stride):
+    t = Timer(1.0 / 60, run_request_data, (ws, sample_stride))
+    t.start()
+
+def run_request_data(ws, sample_stride):
+    asyncio.run(request_data(ws, sample_stride))
 
 if __name__ == '__main__':
     asyncio.run(main())
