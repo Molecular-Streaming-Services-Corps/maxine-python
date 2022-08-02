@@ -1,3 +1,4 @@
+#!/bin/env python3
 # Installed packages.
 import pgzrun
 import numpy as np
@@ -282,7 +283,7 @@ def remove_dead_cell(cell):
 import parse_arguments
 args = parse_arguments.parser.parse_args()
 STANDALONE = not args.datadir and not args.live
-LIVE = args.live and not args.datadir
+LIVE = args.live
 DATADIR = args.datadir
 
 if DATADIR:
@@ -293,6 +294,9 @@ elif STANDALONE:
     clock.schedule_unique(add_cell, 4.0)   
 
 elif LIVE:
+    lilith_client.MAC = lilith_client.NAME2MAC[args.live]
+    lilith_client.setup()
+
     # Run the Lilith interaction loop in another thread
     t = threading.Thread(target=lilith_client.main)
     t.start()

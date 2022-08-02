@@ -24,7 +24,11 @@ HOST = 'lilith.demonpore.tv:3000/'
 KENT_MAC = '04e9e50cc5b9'
 JONATHAN_MAC = '04e9e50c6a0b'
 MAC = JONATHAN_MAC
-PATH = 'game/' + MAC + '/' + 'session'
+NAME2MAC = {'Jonathan': JONATHAN_MAC, 'Kent': KENT_MAC}
+
+def setup():
+    global PATH
+    PATH = 'game/' + MAC + '/' + 'session'
 
 # Set up authorization. It doesn't matter what the password is.
 # From wikipedia: if the browser uses Aladdin as the username and open sesame as the password, then the field's value is the Base64 encoding of Aladdin:open sesame, or QWxhZGRpbjpvcGVuIHNlc2FtZQ==.
@@ -251,6 +255,8 @@ def run_request_data(ws, sample_stride):
     request_data(ws, sample_stride)
 
 if __name__ == '__main__':
+    setup()
+
     # Run the interaction loop in another thread
     t = Thread(target=main)
     t.start()
