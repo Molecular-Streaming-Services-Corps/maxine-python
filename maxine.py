@@ -19,7 +19,7 @@ TITLE = 'Maxine\'s Quest'
 WIDTH = 1800
 HEIGHT = 900
 
-MAXINE_START = (200, 200)
+MAXINE_START = (200, 600)
 
 maxine = Actor('maxine')
 maxine.pos = MAXINE_START
@@ -28,6 +28,69 @@ maxine.alive = True
 
 pore = Actor('pore')
 pore.center = (WIDTH/2, HEIGHT/2)
+
+class Controls:
+    def __init__(self):
+        self.bias = 9000
+    
+        # Setup onscreen controls
+        self.arrow_size = 64
+        start_x = 10 + self.arrow_size
+        start_y = 300
+        
+        horizontal_gap = 200
+        vertical_offset = self.arrow_size * 2
+        raise_x = start_x + self.arrow_size + horizontal_gap
+    
+        self.bias_lower = Actor('arrow_red_left')
+        self.bias_lower.pos = (start_x, start_y)
+        self.bias_raise = Actor('arrow_red_right')
+        self.bias_raise.pos = (raise_x, start_y)
+        
+        self.syringe_lower = Actor('arrow_red_left')
+        self.syringe_lower.pos = (start_x, start_y + vertical_offset * 1)
+        self.syringe_raise = Actor('arrow_red_right')
+        self.syringe_raise.pos = (raise_x, start_y + vertical_offset * 1)
+        
+        self.sample_rate_lower = Actor('arrow_red_left')
+        self.sample_rate_lower.pos = (start_x, start_y + vertical_offset * 2)
+        self.sample_rate_raise = Actor('arrow_red_right')
+        self.sample_rate_raise.pos = (raise_x, start_y + vertical_offset * 2)
+
+        self.control_actors = [self.bias_lower, self.bias_raise,
+            self.syringe_lower, self.syringe_raise,
+            self.sample_rate_lower, self.sample_rate_raise]
+
+    def draw(self):
+        for arrow in self.control_actors:
+            arrow.draw()
+
+        # Draw the text.
+        blx, bly = self.bias_lower.left, self.bias_lower.top
+        coords = (blx + self.arrow_size, bly)
+        text = f'BIAS: {self.bias}V'
+        screen.draw.text(text, coords)
+
+        sx, sy = self.syringe_lower.left, self.syringe_lower.top
+        coords = (sx + self.arrow_size, sy)
+        text = 'SYRINGE'
+        screen.draw.text(text, coords)
+
+        srx, sry = self.sample_rate_lower.left, self.sample_rate_lower.top
+        coords = (srx + self.arrow_size, sry)
+        text = 'SAMPLE RATE: 100kHz'
+        screen.draw.text(text, coords)
+
+    def check(self):
+        '''Only call this when space or joystick button is pressed'''
+        for i, actor in enumerate(self.control_actors):
+            if maxine.colliderect(actor):
+                print(f'Maxine pressed button #{i}')
+
+        if maxine.colliderect(self.bias_lower):
+            self.bias -= 1000
+        elif maxine.colliderect(self.bias_raise):
+            self.bias += 1000
 
 cells = set()
 dead_cells = set()
@@ -47,8 +110,10 @@ def draw():
     # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
     #matplotlib_pygame.draw_graph(screen)
     
-    draw_graph(screen)
+    draw_graph()
     
+    controls.draw()
+        
     pore.draw()
 
     # Draw Maxine or explosion2
@@ -71,7 +136,7 @@ def draw_background():
             screen.blit('background_living_tissue', (x, y))
 
 i = 0
-def draw_graph(screen):
+def draw_graph():
     global i, d
     # Draw a rectangle behind the graph
     RED = (200, 0, 0)
@@ -121,8 +186,9 @@ def draw_graph(screen):
         screen.draw.filled_rect(rect, color)
 
 step_count = 0
+space_pressed_before = False
 def update():
-    global score, i, step_count, d
+    global score, i, step_count, d, controls, space_pressed_before
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -160,6 +226,14 @@ def update():
                 maxine.top -= s
             elif keyboard.down:
                 maxine.bottom += s
+                
+            if keyboard.space:
+                if not space_pressed_before:
+                    space_pressed_before = True
+                    controls.check()
+            else:
+                space_pressed_before = False
+
         elif LIVE:
             pass
         else:
@@ -304,7 +378,9 @@ elif LIVE:
     d = data.LiveData(NUM_BOXES)
 
 
-music.play('subgenie') 
+controls = Controls()
+
+#music.play('subgenie') 
 
 pgzrun.go()
 
