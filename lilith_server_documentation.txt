@@ -14,3 +14,7 @@ The START message changes the (sample) rate but nothing else. You change the bia
 Message: WEBSOCK_START_BUTTON (10), uint16 device (0), float rate # HHf
 Message: TYPE_BIAS (2), uint16 device (0), float bias_voltage in Volts #HHf
 How do you move the syringe? I don't think you can.
+
+Stop button. Stop code = 11, Device id = 0
+Pack("HH", [11, 0])
+Using stop and start creates a new file.
