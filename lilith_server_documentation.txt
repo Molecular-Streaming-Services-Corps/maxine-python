@@ -1,6 +1,6 @@
 This is Jade's documentation for the Lilith server side.
 
-Lilith has logs. Could be useful. If you can find them...
+Lilith has logs. On stderr
 
 Reading websocketdata.cpp
     void WebSocketInfo::message
@@ -8,5 +8,9 @@ Processes all sorts of messages on the server. Maybe the start button is necessa
 
 Sends packets to a DemonController object which interfaces with the Teensy somehow. (Over the LAN?)
 
-The code in Lilith that receives a request_data message also sends some data. Same with the code for get_metadata. There's no explanation why we're not receiving messages.
+The code in Lilith that receives a request_data message also sends some data. Same with the code for get_metadata. Make sure to send binary data in big-endian or everything will break!
 
+The START message changes the (sample) rate but nothing else. You change the bias with TYPE_BIAS
+Message: WEBSOCK_START_BUTTON (10), uint16 device (0), float rate # HHf
+Message: TYPE_BIAS (2), uint16 device (0), float bias_voltage in Volts #HHf
+How do you move the syringe? I don't think you can.
