@@ -90,7 +90,7 @@ class LiveData(Data):
             real_boxes[box_id] = np.min(df)
             
         ret = padding + real_boxes
-        print('get_boxes:', ret)
+        #print('get_boxes:', ret)
         return ret
 
     def get_scaled_boxes(self):
@@ -108,7 +108,7 @@ class LiveData(Data):
         
         ret = [(v - mid) / scale for v in self.get_boxes()]
         
-        print('get_scaled_boxes:', ret)
+        #print('get_scaled_boxes:', ret)
         
         return ret
 

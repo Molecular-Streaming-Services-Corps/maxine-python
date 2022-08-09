@@ -44,6 +44,7 @@ metadata = {}
 pressed = []
 channel = 0
 q = queue.Queue()
+ws = None
 
 sample_index = 0
 SAMPLES_PER_SECOND = 10**5
@@ -75,7 +76,7 @@ def on_close(ws, close_status_code, close_msg):
     print(f"WebSocket closed with code {close_status_code} and message: {close_msg}")
 
 def main():
-    global q
+    global q, ws
 
     URI = PROTOCOL + HOST + PATH
     print('URI: ' + URI)
@@ -83,6 +84,7 @@ def main():
     print('Connecting to websocket')
     wsapp = websocket.WebSocketApp(URI, header=HEADERS, on_message=on_message,
          on_open=on_open, on_close=on_close)
+    ws = wsapp
     wsapp.run_forever()
 
 def get_typecode(message):
@@ -253,6 +255,16 @@ def setup_request_data(ws, sample_stride):
 
 def run_request_data(ws, sample_stride):
     request_data(ws, sample_stride)
+
+# Setting bias
+def set_bias(bias_mv : float):
+    global ws
+    # Bias code = 2
+    # Device = 0
+    s = struct.Struct('!HHf')
+    data = [2, 0, bias_mv / 1000]
+    packed_data = s.pack(*data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
 if __name__ == '__main__':
     setup()

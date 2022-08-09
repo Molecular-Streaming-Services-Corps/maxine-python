@@ -31,7 +31,7 @@ pore.center = (WIDTH/2, HEIGHT/2)
 
 class Controls:
     def __init__(self):
-        self.bias = 9000
+        self.bias = 0.0
     
         # Setup onscreen controls
         self.arrow_size = 64
@@ -89,8 +89,12 @@ class Controls:
 
         if maxine.colliderect(self.bias_lower):
             self.bias -= 1000
+            if LIVE:
+                lilith_client.set_bias(self.bias)
         elif maxine.colliderect(self.bias_raise):
             self.bias += 1000
+            if LIVE:
+                lilith_client.set_bias(self.bias)
 
 cells = set()
 dead_cells = set()
@@ -238,9 +242,9 @@ def update():
         if LIVE:
             pass
         if DATADIR:
-            controls = d.get_one_frame_joystick()
-            pressed = util.process_joystick_data(controls)
-            #print(step_count, controls, pressed)
+            joystick_binary = d.get_one_frame_joystick()
+            pressed = util.process_joystick_data(joystick_binary)
+            #print(step_count, joystick_binary, pressed)
             if 'js1_left' in pressed:
                 maxine.left -= s
             elif 'js1_right' in pressed:
@@ -390,3 +394,4 @@ controls = Controls()
 
 pgzrun.go()
 
+import sys; sys.exit(0)
