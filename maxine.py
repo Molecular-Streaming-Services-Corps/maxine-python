@@ -187,8 +187,9 @@ def draw_graph():
 
 step_count = 0
 space_pressed_before = False
+button_pressed_before = False
 def update():
-    global score, i, step_count, d, controls, space_pressed_before
+    global score, i, step_count, d, controls, space_pressed_before, button_pressed_before
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -216,27 +217,27 @@ def update():
     
     if maxine.alive:
         prev_pos = maxine.pos
-    
-        if STANDALONE:
-            if keyboard.left:
-                maxine.left -= s
-            elif keyboard.right:
-                maxine.left += s
-            if keyboard.up:
-                maxine.top -= s
-            elif keyboard.down:
-                maxine.bottom += s
-                
-            if keyboard.space:
-                if not space_pressed_before:
-                    space_pressed_before = True
-                    controls.check()
-            else:
-                space_pressed_before = False
 
-        elif LIVE:
-            pass
+        # Allow the user to use either the keyboard or the joystick    
+        if keyboard.left:
+            maxine.left -= s
+        elif keyboard.right:
+            maxine.left += s
+        if keyboard.up:
+            maxine.top -= s
+        elif keyboard.down:
+            maxine.bottom += s
+            
+        if keyboard.space:
+            if not space_pressed_before:
+                space_pressed_before = True
+                controls.check()
         else:
+            space_pressed_before = False
+
+        if LIVE:
+            pass
+        if DATADIR:
             controls = d.get_one_frame_joystick()
             pressed = util.process_joystick_data(controls)
             #print(step_count, controls, pressed)
@@ -249,7 +250,12 @@ def update():
             elif 'js1_down' in pressed:
                 maxine.bottom += s
             
-            # Ignore the 2 joystick buttons for now.
+            if 'js1_b1' in pressed:
+                if not button_pressed_before:
+                    button_pressed_before = True
+                    controls.check()
+            else:
+                button_pressed_before = False
         
         # Detect if Maxine gets too close to the pore. (She'll explode!)
         dist = maxine.distance_to(pore.center)
