@@ -68,7 +68,7 @@ class Controls:
         # Draw the text.
         blx, bly = self.bias_lower.left, self.bias_lower.top
         coords = (blx + self.arrow_size, bly)
-        text = f'BIAS: {self.bias}V'
+        text = f'BIAS: {self.bias}mV'
         screen.draw.text(text, coords)
 
         sx, sy = self.syringe_lower.left, self.syringe_lower.top
