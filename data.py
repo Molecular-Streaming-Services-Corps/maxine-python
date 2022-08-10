@@ -46,18 +46,22 @@ class LiveData(Data):
         self.num_boxes = num_boxes
         # A dictionary mapping from frame index to a SampleData object 
         self.data_frames = {}
+        self.pressed = []
         
     def load_received_samples(self):
-        sd_list = lilith_client.consume_latest_samples(lilith_client.q)
+        d_list = lilith_client.consume_latest_samples(lilith_client.q)
         
-        for sd in sd_list:
-            sd_frame_index = sd.start // 1667
-            self.data_frames[sd_frame_index] = sd
-            
-            # Update the latest frame index. There may be missing frames in
-            # between if the frames arrive in the wrong order.
-            if sd_frame_index > self.latest_frame:
-                self.latest_frame = sd_frame_index
+        for data in d_list:
+            if isinstance(data, lilith_client.SampleData):
+                sd_frame_index = data.start // 1667
+                self.data_frames[sd_frame_index] = data
+                
+                # Update the latest frame index. There may be missing frames in
+                # between if the frames arrive in the wrong order.
+                if sd_frame_index > self.latest_frame:
+                    self.latest_frame = sd_frame_index
+            elif isinstance(data, lilith_client.JoystickData):
+                self.pressed = data.pressed
 
     def get_one_frame_joystick(self):
         '''The joystick isn't yet supported in Live Mode.'''

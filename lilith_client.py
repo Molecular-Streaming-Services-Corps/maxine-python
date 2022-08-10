@@ -129,6 +129,8 @@ def process_message(code, message):
         print('process_message: raw joystick data:', joystick_data)
         pressed = util.process_joystick_data(joystick_data)
         print('process_message: joystick used:', pressed)
+        data = JoystickData(pressed)
+        q.put(data)
 
 class SampleData:
     '''self.start is equivalent to a uint64. It's broken into start_high for the high bits
@@ -152,6 +154,10 @@ class SampleData:
         print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
               self.websock_type, self.channel, self.stride, self.start, self.end) 
 
+class JoystickData:
+    def __init__(self, pressed):
+        self.pressed = pressed
+
 def consume_samples():
     '''Optional loop in a separate thread. It simulates the game loop. It
     waits a 60th of a second and then pops any items on the queue (global
@@ -161,10 +167,15 @@ def consume_samples():
     global q
 
     while True:
-        sd_list = consume_latest_samples(q)
+        d_list = consume_latest_samples(q)
         
-        for i, sample_data in enumerate(sd_list):
-            print('(' + str(i) + ') consume_samples gets SampleData with start:', sample_data.start)
+        for i, data in enumerate(d_list):
+            if isinstance(data, SampleData):
+                print('(' + str(i) + ') consume_samples gets SampleData with start:',
+                        data.start)
+            elif isinstance(data, JoystickData):
+                print('(' + str(i) + ') consume_samples gets JoystickData with pressed:',
+                        data.pressed)
         
         time.sleep(1.0 / 60.0)
 

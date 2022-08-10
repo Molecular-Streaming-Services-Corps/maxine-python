@@ -240,26 +240,30 @@ def update():
             space_pressed_before = False
 
         if LIVE:
-            pass
-        if DATADIR:
+            pressed = d.pressed
+        elif DATADIR:
             joystick_binary = d.get_one_frame_joystick()
             pressed = util.process_joystick_data(joystick_binary)
             #print(step_count, joystick_binary, pressed)
-            if 'js1_left' in pressed:
-                maxine.left -= s
-            elif 'js1_right' in pressed:
-                maxine.left += s
-            if 'js1_up' in pressed:
-                maxine.top -= s
-            elif 'js1_down' in pressed:
-                maxine.bottom += s
+        else:
+            # In standalone mode, we say no joystick buttons are pressed.
+            pressed = []
             
-            if 'js1_b1' in pressed:
-                if not button_pressed_before:
-                    button_pressed_before = True
-                    controls.check()
-            else:
-                button_pressed_before = False
+        if 'js1_left' in pressed:
+            maxine.left -= s
+        elif 'js1_right' in pressed:
+            maxine.left += s
+        if 'js1_up' in pressed:
+            maxine.top -= s
+        elif 'js1_down' in pressed:
+            maxine.bottom += s
+        
+        if 'js1_b1' in pressed:
+            if not button_pressed_before:
+                button_pressed_before = True
+                controls.check()
+        else:
+            button_pressed_before = False
         
         # Detect if Maxine gets too close to the pore. (She'll explode!)
         dist = maxine.distance_to(pore.center)
