@@ -11,6 +11,7 @@ import threading
 import data
 import util
 import lilith_client
+import animated_image
 
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
@@ -28,6 +29,8 @@ maxine.alive = True
 
 pore = Actor('pore')
 pore.center = (WIDTH/2, HEIGHT/2)
+
+animations = set()
 
 class Controls:
     def __init__(self):
@@ -125,7 +128,10 @@ def draw():
     
     # Draw either a cell or explosion1
     for cell in cells:
-        screen.blit(cell.sprite_name, (cell.x, cell.y))
+        if hasattr(cell, 'animation'):
+            screen.blit(cell.animation.get_current_image_name(), (cell.x, cell.y))
+        else:
+            screen.blit(cell.sprite_name, (cell.x, cell.y))
 
     for cell in dead_cells:
         screen.blit(cell.sprite_name, (cell.x, cell.y))
@@ -314,6 +320,10 @@ def update():
         if cell.bottom < 0:
             cell.deltay *= -1
 
+    # Update animations
+    for animation in animations:
+        animation.update()
+
 # Maxine functions
 
 def kill_maxine():
@@ -331,11 +341,28 @@ def reset_maxine():
 
 # Cell functions
 
-def add_cell():
+def make_midjourney_monster():
     cell_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
         'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
     cell = Actor(cell_type)
     cell.sprite_name = cell_type
+    return cell
+
+def make_sars_monster():
+    global animations
+
+    cell_types = [('corn', 3), ('doom', 3), ('gurk', 2), ('olive', 4)]
+    name, num_frames = random.choice(cell_types)
+    animation = animated_image.AnimatedImage(name, num_frames)
+    animations.add(animation)
+    
+    cell = Actor(name + '1')
+    cell.animation = animation
+    return cell
+
+def add_cell():
+    cell = make_sars_monster()
+
     cell.pos = (pore.x, pore.y)
 	# custom parameters
     cell.deltax = random.randrange(-2, 3)
