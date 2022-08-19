@@ -134,7 +134,10 @@ def draw():
             screen.blit(cell.sprite_name, (cell.x, cell.y))
 
     for cell in dead_cells:
-        screen.blit(cell.sprite_name, (cell.x, cell.y))
+        if hasattr(cell, 'animation'):
+            screen.blit(cell.animation.get_current_image_name(), (cell.x, cell.y))
+        else:
+            screen.blit(cell.sprite_name, (cell.x, cell.y))
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
 
@@ -378,11 +381,20 @@ def add_cell():
         clock.schedule_unique(add_cell, delay)
 
 def kill_cell(cell):
+    global animations
+    
     #print('kill_cell('+cell(str)+')')
+    if hasattr(cell, 'animation'):
+        animations.remove(cell.animation)
+        
     dead_cells.add(cell)
-    cell.sprite_name = 'explosion1'
+    # Old approach for MidJourney graphics
+    #cell.sprite_name = 'explosion1'
+    boom_animation = animated_image.AnimatedImage('boom', 30)
+    cell.animation = boom_animation
+    animations.add(boom_animation)
     # Set a disappear timer in frames. Using the clock didn't work for some reason.
-    cell.disappear_timer = 15
+    cell.disappear_timer = 31
  
     # Don't know why this good code doesn't work. remove_dead_cell never gets called.
     
