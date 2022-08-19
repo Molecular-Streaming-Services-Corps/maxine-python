@@ -101,13 +101,16 @@ def process_message(code, message):
     # typecode 0: update
     if code == 0:
         print('[0] Current data update received')
-        data = SampleData(message)
-        print('process_message: sample count:', data.sample_count)
-        # Maybe the empty current data message gives you a false channel
-        #print('process_message: found out channel:', data.channel)
-        #channel = data.channel
-        
-        q.put(data)
+        if len(message) < 3000:
+            print('Empty current data message.')
+        else:
+            data = SampleData(message)
+            print('process_message: sample count:', data.sample_count)
+            # Maybe the empty current data message gives you a false channel
+            #print('process_message: found out channel:', data.channel)
+            #channel = data.channel
+            
+            q.put(data)
          
     # typecode 1: WEBSOCK_JSON_DATA
     elif code == 1:

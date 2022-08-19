@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import os
+import math
 
 import lilith_client
 
@@ -110,9 +111,12 @@ class LiveData(Data):
         
         scale == 0.01
         
+        print('boxes:', self.get_boxes())
         ret = [(v - mid) / scale for v in self.get_boxes()]
+        print('get_scaled_boxes before nan check:', ret)
+        ret = [v if not math.isnan(v) else 0 for v in ret]
+        print('get_scaled_boxes after nan check:', ret)
         
-        #print('get_scaled_boxes:', ret)
         
         return ret
 
