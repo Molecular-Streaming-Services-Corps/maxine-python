@@ -355,7 +355,7 @@ def make_midjourney_monster():
 def make_sars_monster():
     global animations
 
-    cell_types = [('corn', 3), ('doom', 3), ('gurk', 2), ('olive', 4)]
+    cell_types = [('corn', 3), ('gurk', 2), ('olive', 4)]
     name, num_frames = random.choice(cell_types)
     animation = animated_image.AnimatedImage(name, num_frames)
     animations.add(animation)
