@@ -1,6 +1,7 @@
 #!/bin/env python3
 # Installed packages.
 import pgzrun
+import pygame.transform
 import numpy as np
 
 # Builtin packages.
@@ -129,18 +130,20 @@ def draw():
     
     # Draw either a cell or explosion1
     for cell in cells:
-        if hasattr(cell, 'animation'):
-            screen.blit(cell.animation.get_current_image_name(), (cell.x, cell.y))
-        else:
-            screen.blit(cell.sprite_name, (cell.x, cell.y))
+        draw_cell(cell)
 
     for cell in dead_cells:
-        if hasattr(cell, 'animation'):
-            screen.blit(cell.animation.get_current_image_name(), (cell.x, cell.y))
-        else:
-            screen.blit(cell.sprite_name, (cell.x, cell.y))
+        draw_cell(cell)
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
+
+def draw_cell(cell):
+    if hasattr(cell, 'animation'):
+        surface = getattr(images, cell.animation.get_current_image_name())
+        surface = pygame.transform.scale(surface, (200, 200))
+        screen.blit(surface, (cell.x, cell.y))
+    else:
+        screen.blit(cell.sprite_name, (cell.x, cell.y))    
 
 def draw_background():
     tile_size = 144
