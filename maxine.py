@@ -55,14 +55,15 @@ class Controls:
         self.syringe_raise = Actor('arrow_red_right')
         self.syringe_raise.pos = (raise_x, start_y + vertical_offset * 1)
         
-        self.sample_rate_lower = Actor('arrow_red_left')
-        self.sample_rate_lower.pos = (start_x, start_y + vertical_offset * 2)
-        self.sample_rate_raise = Actor('arrow_red_right')
-        self.sample_rate_raise.pos = (raise_x, start_y + vertical_offset * 2)
+        # We're not going to change the sample rate for now.
+        #self.sample_rate_lower = Actor('arrow_red_left')
+        #self.sample_rate_lower.pos = (start_x, start_y + vertical_offset * 2)
+        #self.sample_rate_raise = Actor('arrow_red_right')
+        #self.sample_rate_raise.pos = (raise_x, start_y + vertical_offset * 2)
 
         self.control_actors = [self.bias_lower, self.bias_raise,
-            self.syringe_lower, self.syringe_raise,
-            self.sample_rate_lower, self.sample_rate_raise]
+            self.syringe_lower, self.syringe_raise]
+        #    self.sample_rate_lower, self.sample_rate_raise]
 
     def draw(self):
         for arrow in self.control_actors:
@@ -79,10 +80,10 @@ class Controls:
         text = 'SYRINGE'
         screen.draw.text(text, coords)
 
-        srx, sry = self.sample_rate_lower.left, self.sample_rate_lower.top
-        coords = (srx + self.arrow_size, sry)
-        text = 'SAMPLE RATE: 100kHz'
-        screen.draw.text(text, coords)
+        #srx, sry = self.sample_rate_lower.left, self.sample_rate_lower.top
+        #coords = (srx + self.arrow_size, sry)
+        #text = 'SAMPLE RATE: 100kHz'
+        #screen.draw.text(text, coords)
 
     def check(self):
         '''Only call this when space or joystick button is pressed'''
