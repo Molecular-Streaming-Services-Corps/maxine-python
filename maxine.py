@@ -430,6 +430,8 @@ elif LIVE:
 
     # Run the Lilith interaction loop in another thread
     t = threading.Thread(target=lilith_client.main)
+    # Don't wait for this thread when the game exits
+    t.setDaemon(True)
     t.start()
     
     d = data.LiveData(NUM_BOXES)
