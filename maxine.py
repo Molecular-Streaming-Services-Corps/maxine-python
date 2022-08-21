@@ -33,6 +33,8 @@ pore.center = (WIDTH/2, HEIGHT/2)
 
 animations = set()
 
+graph_type = 'heatmap'
+
 class Controls:
     def __init__(self):
         self.bias = 0.0
@@ -198,7 +200,13 @@ def draw_graph():
             # Shades of blue
             color = (0, 0, 255 * scale_factor)
         
-        rect = Rect((10 + 300.0 / NUM_BOXES * x , 100), (300 / NUM_BOXES, 80))
+        if graph_type == 'heatmap':
+            rect = Rect((10 + 300.0 / NUM_BOXES * x , 100), (300 / NUM_BOXES, 80))
+        else:
+            # Draw a 3x1 Rect because there's no function to draw a pixel
+            # y coord is between 100 and 180
+            y_coord = int(140 + 40 * -y)
+            rect = Rect((10 + 300.0 / NUM_BOXES * x, y_coord), (3, 1))
         
         screen.draw.filled_rect(rect, color)
 
@@ -214,7 +222,7 @@ def update():
 
     if keyboard.q:
         import sys; sys.exit(0)
-
+    
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
@@ -330,6 +338,16 @@ def update():
     # Update animations
     for animation in animations:
         animation.update()
+
+def on_key_down(key):
+    global graph_type
+
+    # Change graph type
+    if key == keys.G:
+        if graph_type == 'heatmap':
+            graph_type = 'scatterplot'
+        else:
+            graph_type = 'heatmap'
 
 # Maxine functions
 
