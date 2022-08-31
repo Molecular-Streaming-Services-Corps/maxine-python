@@ -18,13 +18,13 @@ def process_joystick_string(binary_string):
                 
     return pressed
 
-# Polar coordinate functions
+# Polar coordinate functions (in degrees)
 def cart2pol(x, y):
     r = np.sqrt(x**2 + y**2)
-    theta = np.arctan2(y, x)
+    theta = np.degrees(np.arctan2(y, x))
     return(r, theta)
 
 def pol2cart(r, theta):
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
+    x = r * np.cos(np.radians(theta))
+    y = r * np.sin(np.radians(theta))
     return(x, y)
