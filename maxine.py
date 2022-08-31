@@ -24,11 +24,11 @@ HEIGHT = 900
 CENTER = (WIDTH / 2, HEIGHT / 2)
 RING_RADIUS = 350
 
-MAXINE_START = CENTER #(200, 600)
+MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
 
 maxine = Actor('maxine')
+maxine.images = ['maxine']
 maxine.pos = MAXINE_START
-maxine.sprite_name = 'maxine'
 maxine.alive = True
 maxine.scale = 0.25
 
@@ -114,6 +114,7 @@ cells = set()
 dead_cells = set()
 
 spiraling_monsters = set()
+dead_sms = set()
 
 score = 0
 
@@ -138,11 +139,8 @@ def draw():
         
     pore.draw()
 
-    # Draw Maxine or explosion2
-    if maxine.sprite_name == 'maxine':
-        maxine.draw()
-    else:
-        screen.blit(maxine.sprite_name, (maxine.x, maxine.y))
+    # Draw Maxine or the boom
+    maxine.draw()
     
     # Draw either a cell or explosion1
     for cell in cells:
@@ -152,6 +150,8 @@ def draw():
         draw_cell(cell)
 
     for monster in spiraling_monsters:
+        monster.draw()
+    for monster in dead_sms:
         monster.draw()
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
@@ -251,6 +251,9 @@ def draw_spiral(rotation, color):
         (x, y) = (coords[0] + CENTER[0], coords[1] + CENTER[1])
         screen.draw.filled_circle((x, y), 1, color)
 
+def boom_images():
+    return ['boom' + str(i) for i in range(1, 30 + 1)]
+
 step_count = 0
 space_pressed_before = False
 button_pressed_before = False
@@ -276,6 +279,8 @@ def update():
         d.load_received_samples()
         if d.middle_spike_exists():
             add_cell()    
+
+    maxine.animate()
 
     # Move Maxine.
     # s is Maxine's speed per frame.
@@ -327,11 +332,13 @@ def update():
         else:
             button_pressed_before = False
         
-        # This is no longer required now that enemies don't come out of the pore
+        # Now we have collide_pixel
         # Detect if Maxine gets too close to the pore. (She'll explode!)
         #dist = maxine.distance_to(pore)
         #if dist < 100:
         #    kill_maxine()
+        if maxine.collide_pixel(pore):
+            kill_maxine()
         
         # This is not used now there is a signal ring.
         # Stop Maxine at the edges of the screen.
@@ -383,11 +390,12 @@ def update():
         if cell.bottom < 0:
             cell.deltay *= -1
 
-    # Update animations
+    # Update animations (obsoleted by PGZHelper)
     for animation in animations:
         animation.update()
 
-    sm_to_fall_in_pore = []
+    # Process spiraling monsters
+    sm_to_blow_up = set()
     for monster in spiraling_monsters:
         monster.animate()
         
@@ -397,12 +405,35 @@ def update():
         monster.pos = ss.pos
         monster.angle = ss.angle
         
-        # Delete the monster when it gets to the center for now
+        # Blow up the monster when it gets to the center for now
         if util.distance_points(monster.center, CENTER) < 20:
-            sm_to_fall_in_pore.append(monster)
+            sm_to_blow_up.add(monster)
 
-    for dead_monster in sm_to_fall_in_pore:
-        spiraling_monsters.remove(dead_monster)
+        # Blow up monsters that collide with Maxine
+        if maxine.collide_pixel(monster):
+            sm_to_blow_up.add(monster)
+
+    for monster in sm_to_blow_up:
+        spiraling_monsters.remove(monster)
+        dead_sms.add(monster)
+        monster.images = boom_images()
+        monster.fps = 30
+        monster.scale = 0.25
+        
+        # Set a disappear timer in frames.
+        monster.disappear_timer = 31
+
+    to_delete = set()
+    for monster in dead_sms:
+        monster.animate()
+        monster.disappear_timer -= 1
+
+        if monster.disappear_timer <= 0:
+            to_delete.add(monster)
+            
+    for monster in to_delete:
+        dead_sms.remove(monster)
+
 
 def on_key_down(key):
     global graph_type
@@ -418,7 +449,8 @@ def on_key_down(key):
 
 def kill_maxine():
     sounds.eep.play()
-    maxine.sprite_name = 'explosion2'
+    maxine.images = boom_images()
+    maxine.fps = 30
     maxine.alive = False
     
     delay = 1.0
@@ -426,7 +458,7 @@ def kill_maxine():
 
 def reset_maxine():
     maxine.pos = MAXINE_START
-    maxine.sprite_name = 'maxine'
+    maxine.images = ['maxine']
     maxine.alive = True
 
 # Cell/Monster functions
