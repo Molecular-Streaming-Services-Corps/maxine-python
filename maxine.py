@@ -30,6 +30,7 @@ maxine = Actor('maxine')
 maxine.pos = MAXINE_START
 maxine.sprite_name = 'maxine'
 maxine.alive = True
+maxine.scale = 0.25
 
 pore = Actor('pore')
 pore.center = (WIDTH/2, HEIGHT/2)
@@ -38,6 +39,8 @@ animations = set()
 
 graph_type = 'heatmap'
 
+MAKE_MUSHROOMS = True
+DRAW_SPIRALS = False
 
 class Controls:
     def __init__(self):
@@ -110,6 +113,8 @@ class Controls:
 cells = set()
 dead_cells = set()
 
+spiraling_monsters = set()
+
 score = 0
 
 # Represents data from a stored file.
@@ -134,7 +139,10 @@ def draw():
     pore.draw()
 
     # Draw Maxine or explosion2
-    screen.blit(maxine.sprite_name, (maxine.x, maxine.y))
+    if maxine.sprite_name == 'maxine':
+        maxine.draw()
+    else:
+        screen.blit(maxine.sprite_name, (maxine.x, maxine.y))
     
     # Draw either a cell or explosion1
     for cell in cells:
@@ -143,19 +151,23 @@ def draw():
     for cell in dead_cells:
         draw_cell(cell)
 
+    for monster in spiraling_monsters:
+        monster.draw()
+
     screen.draw.text('SCORE ' + str(score), (10, 10))
     
     # Draw the mock signal ring.
     RED = (200, 0, 0)
     screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
     
-    # Draw a spiral to indicate where the monsters will move
-    WHITE = (255, 255, 255)
-    BLUE = (0, 0, 255)
-    GREEN = (0, 200, 0)
-    rotation += 1
-    draw_spiral(rotation + 0, WHITE)
-    draw_spiral(rotation + 180, GREEN)
+    if DRAW_SPIRALS:
+        # Draw spirals to indicate where the monsters will move
+        WHITE = (255, 255, 255)
+        BLUE = (0, 0, 255)
+        GREEN = (0, 200, 0)
+        rotation += 1
+        draw_spiral(rotation + 0, WHITE)
+        draw_spiral(rotation + 180, GREEN)
 
 def draw_cell(cell):
     if hasattr(cell, 'animation'):
@@ -375,6 +387,23 @@ def update():
     for animation in animations:
         animation.update()
 
+    sm_to_fall_in_pore = []
+    for monster in spiraling_monsters:
+        monster.animate()
+        
+        # Move along the spiral
+        ss = monster.spiral_state
+        ss.update()
+        monster.pos = ss.pos
+        monster.angle = ss.angle
+        
+        # Delete the monster when it gets to the center for now
+        if util.distance_points(monster.center, CENTER) < 20:
+            sm_to_fall_in_pore.append(monster)
+
+    for dead_monster in sm_to_fall_in_pore:
+        spiraling_monsters.remove(dead_monster)
+
 def on_key_down(key):
     global graph_type
 
@@ -400,7 +429,17 @@ def reset_maxine():
     maxine.sprite_name = 'maxine'
     maxine.alive = True
 
-# Cell functions
+# Cell/Monster functions
+def make_mushroom():
+    mush = Actor('mushdance1')
+    mush.images = ['mushdance1', 'mushdance2', 'mushdance3']
+    mush.fps = 3
+    mush.scale = 0.5
+    
+    # Set up the spiraling behavior with a component
+    mush.spiral_state = util.SpiralState(0.5, 0, 690, 1, CENTER)
+    
+    return mush
 
 def make_midjourney_monster():
     cell_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
@@ -422,17 +461,21 @@ def make_sars_monster():
     return cell
 
 def add_cell():
-    cell = make_sars_monster()
+    if MAKE_MUSHROOMS:
+        mush = make_mushroom()
+        spiraling_monsters.add(mush)
+    else:
+        cell = make_sars_monster()
 
-    cell.pos = (pore.x, pore.y)
-	# custom parameters
-    cell.deltax = random.randrange(-2, 3)
-    cell.deltay = random.randrange(-2, 3)
-    # Don't let it start with 0 speed
-    if cell.deltax == cell.deltay == 0:
-        cell.deltax = 1
-	
-    cells.add(cell)
+        cell.pos = (pore.x, pore.y)
+	    # custom parameters
+        cell.deltax = random.randrange(-2, 3)
+        cell.deltay = random.randrange(-2, 3)
+        # Don't let it start with 0 speed
+        if cell.deltax == cell.deltay == 0:
+            cell.deltax = 1
+	    
+        cells.add(cell)
 
     if STANDALONE:
         delay = random.randrange(5, 8)

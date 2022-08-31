@@ -42,4 +42,21 @@ def spiral(gap, rotation, theta):
     r = gap * theta
     cart = pol2cart(r, theta + rotation)
     return cart
-    
+
+class SpiralState:
+    '''For making monsters move in a spiral'''
+    def __init__(self, gap, rotation, theta, step_degrees, center_pos):
+        self.gap = gap
+        self.rotation = rotation
+        self.theta = theta
+        self.step_degrees = step_degrees
+        self.center_pos = center_pos
+        
+        self.update()
+        
+    def update(self):
+        self.pos = spiral(self.gap, self.rotation, self.theta)
+        self.pos = (self.pos[0] + self.center_pos[0], self.pos[1] + self.center_pos[1])
+        self.angle = 360 - (self.theta % 360)
+        self.theta -= self.step_degrees
+        
