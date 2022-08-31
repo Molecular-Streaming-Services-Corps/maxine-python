@@ -146,6 +146,9 @@ def draw():
     # Draw the mock signal ring.
     RED = (200, 0, 0)
     screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
+    
+    # Draw a spiral to indicate where the monsters will move
+    draw_spiral()
 
 def draw_cell(cell):
     if hasattr(cell, 'animation'):
@@ -217,6 +220,18 @@ def draw_graph():
             rect = Rect((10 + 300.0 / NUM_BOXES * x, y_coord), (3, 1))
         
         screen.draw.filled_rect(rect, color)
+
+def draw_spiral():
+    GAP = 0.5
+    WHITE = (255, 255, 255)
+    MAX_THETA = 690
+    STEP_DEGREES = 10
+    
+    for theta in range(0, MAX_THETA, STEP_DEGREES):
+        coords = util.spiral(GAP, theta)
+        # Translate it to the center of the screen
+        (x, y) = (coords[0] + CENTER[0], coords[1] + CENTER[1])
+        screen.draw.filled_circle((x, y), 1, WHITE)
 
 step_count = 0
 space_pressed_before = False
