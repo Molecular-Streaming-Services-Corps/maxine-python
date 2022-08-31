@@ -434,7 +434,6 @@ def update():
     for monster in to_delete:
         dead_sms.remove(monster)
 
-
 def on_key_down(key):
     global graph_type
 
@@ -469,7 +468,8 @@ def make_mushroom():
     mush.scale = 0.5
     
     # Set up the spiraling behavior with a component
-    mush.spiral_state = util.SpiralState(0.5, 0, 690, 1, CENTER)
+    rotation = random.randrange(0, 360)
+    mush.spiral_state = util.SpiralState(0.5, rotation, 690, 1, CENTER)
     
     return mush
 
