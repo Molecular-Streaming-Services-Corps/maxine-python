@@ -288,7 +288,7 @@ def update():
             button_pressed_before = False
         
         # Detect if Maxine gets too close to the pore. (She'll explode!)
-        dist = maxine.distance_to(pore.center)
+        dist = maxine.distance_to(pore)
         if dist < 100:
             kill_maxine()
         
