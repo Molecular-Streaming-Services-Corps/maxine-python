@@ -117,7 +117,9 @@ d = None
 
 NUM_BOXES = 100
 
+rotation = 0
 def draw():
+    global rotation
     # Murky green background color
     #screen.fill((128, 128, 0))
     draw_background()
@@ -148,7 +150,12 @@ def draw():
     screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
     
     # Draw a spiral to indicate where the monsters will move
-    draw_spiral()
+    WHITE = (255, 255, 255)
+    BLUE = (0, 0, 255)
+    GREEN = (0, 200, 0)
+    rotation += 1
+    draw_spiral(rotation + 0, WHITE)
+    draw_spiral(rotation + 180, GREEN)
 
 def draw_cell(cell):
     if hasattr(cell, 'animation'):
@@ -221,17 +228,16 @@ def draw_graph():
         
         screen.draw.filled_rect(rect, color)
 
-def draw_spiral():
+def draw_spiral(rotation, color):
     GAP = 0.5
-    WHITE = (255, 255, 255)
     MAX_THETA = 690
     STEP_DEGREES = 10
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
-        coords = util.spiral(GAP, theta)
+        coords = util.spiral(GAP, rotation, theta)
         # Translate it to the center of the screen
         (x, y) = (coords[0] + CENTER[0], coords[1] + CENTER[1])
-        screen.draw.filled_circle((x, y), 1, WHITE)
+        screen.draw.filled_circle((x, y), 1, color)
 
 step_count = 0
 space_pressed_before = False

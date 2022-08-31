@@ -38,8 +38,8 @@ def distance_points(pa, pb):
     return math.sqrt(dx ** 2 + dy ** 2)
 
 # Calculate a spiral
-def spiral(gap, theta):
+def spiral(gap, rotation, theta):
     r = gap * theta
-    cart = pol2cart(r, theta)
+    cart = pol2cart(r, theta + rotation)
     return cart
     
