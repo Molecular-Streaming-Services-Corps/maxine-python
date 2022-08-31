@@ -21,8 +21,10 @@ import animated_image
 TITLE = 'Maxine\'s Quest'
 WIDTH = 1800
 HEIGHT = 900
+CENTER = (WIDTH / 2, HEIGHT / 2)
+RING_RADIUS = 350
 
-MAXINE_START = (200, 600)
+MAXINE_START = CENTER #(200, 600)
 
 maxine = Actor('maxine')
 maxine.pos = MAXINE_START
@@ -35,6 +37,7 @@ pore.center = (WIDTH/2, HEIGHT/2)
 animations = set()
 
 graph_type = 'heatmap'
+
 
 class Controls:
     def __init__(self):
@@ -139,6 +142,10 @@ def draw():
         draw_cell(cell)
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
+    
+    # Draw the mock signal ring.
+    RED = (200, 0, 0)
+    screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
 
 def draw_cell(cell):
     if hasattr(cell, 'animation'):
@@ -287,14 +294,21 @@ def update():
         else:
             button_pressed_before = False
         
+        # This is no longer required now that enemies don't come out of the pore
         # Detect if Maxine gets too close to the pore. (She'll explode!)
-        dist = maxine.distance_to(pore)
-        if dist < 100:
-            kill_maxine()
+        #dist = maxine.distance_to(pore)
+        #if dist < 100:
+        #    kill_maxine()
         
+        # This is not used now there is a signal ring.
         # Stop Maxine at the edges of the screen.
-        if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
+        #if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
+        #    maxine.pos = prev_pos
+        screen_center = (WIDTH / 2, HEIGHT / 2)
+        dist = util.distance_points(maxine.center, screen_center)
+        if dist > RING_RADIUS:
             maxine.pos = prev_pos
+        
     
     # Can't remove items from a set during iteration.
     to_remove = []

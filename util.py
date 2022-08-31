@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def process_joystick_data(joystick_data):
     binary_string = bin(joystick_data)[2:]
@@ -28,3 +29,11 @@ def pol2cart(r, theta):
     x = r * np.cos(np.radians(theta))
     y = r * np.sin(np.radians(theta))
     return(x, y)
+    
+# Distance between two points (as tuples)
+def distance_points(pa, pb):
+    dx = abs(pa[0] - pb[0])
+    dy = abs(pa[1] - pb[1])
+
+    return math.sqrt(dx ** 2 + dy ** 2)
+    
