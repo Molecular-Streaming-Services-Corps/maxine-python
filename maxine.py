@@ -1,6 +1,7 @@
 #!/bin/env python3
 # Installed packages.
 import pgzrun
+from pgzhelper import *
 import pygame.transform
 import numpy as np
 
