@@ -116,6 +116,8 @@ dead_cells = set()
 spiraling_monsters = set()
 dead_sms = set()
 
+projectiles = set()
+
 score = 0
 
 # Represents data from a stored file.
@@ -153,6 +155,9 @@ def draw():
         monster.draw()
     for monster in dead_sms:
         monster.draw()
+        
+    for p in projectiles:
+        p.draw()
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
     
@@ -344,8 +349,7 @@ def update():
         # Stop Maxine at the edges of the screen.
         #if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
         #    maxine.pos = prev_pos
-        screen_center = (WIDTH / 2, HEIGHT / 2)
-        dist = util.distance_points(maxine.center, screen_center)
+        dist = util.distance_points(maxine.center, CENTER)
         if dist > RING_RADIUS:
             maxine.pos = prev_pos
         
@@ -412,6 +416,12 @@ def update():
         # Blow up monsters that collide with Maxine
         if maxine.collide_pixel(monster):
             sm_to_blow_up.add(monster)
+            
+        # Spawn a spore if we are far enough from Maxine and time is up
+        monster.spore_timeout -= 1
+        if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
+            monster.spore_timeout = get_spore_timeout()
+            make_spore(monster)
 
     for monster in sm_to_blow_up:
         spiraling_monsters.remove(monster)
@@ -433,6 +443,22 @@ def update():
             
     for monster in to_delete:
         dead_sms.remove(monster)
+
+    # Handle projectiles (spores in the case of mushrooms)
+    # Projectiles point toward Maxine when they're spawned. (Spored?)
+    SPORE_SPEED = 3
+    projectiles_to_delete = set()
+    for p in projectiles:
+        p.move_forward(SPORE_SPEED)
+        if maxine.collide_pixel(p):
+            kill_maxine()
+            projectiles_to_delete.add(p)
+        elif util.distance_points(p.center, CENTER) > RING_RADIUS:
+            # Delete projectiles that hit the ring
+            projectiles_to_delete.add(p)
+    
+    for p in projectiles_to_delete:
+        projectiles.remove(p)
 
 def on_key_down(key):
     global graph_type
@@ -461,6 +487,18 @@ def reset_maxine():
     maxine.alive = True
 
 # Cell/Monster functions
+def make_spore(shroom):
+    '''Makes a spore starting at the center of the shroom and heading toward
+    Maxine.'''
+    spore = Actor('spore')
+    spore.pos = shroom.pos
+    spore.point_towards(maxine)
+    projectiles.add(spore)
+    return spore
+
+def get_spore_timeout():
+    return random.randrange(60 * 2.5, 60 * 5)
+
 def make_mushroom():
     mush = Actor('mushdance1')
     mush.images = ['mushdance1', 'mushdance2', 'mushdance3']
@@ -470,6 +508,9 @@ def make_mushroom():
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(0.5, rotation, 690, 1, CENTER)
+    
+    # Set the mushroom up to spawn a spore
+    mush.spore_timeout = get_spore_timeout()
     
     return mush
 
