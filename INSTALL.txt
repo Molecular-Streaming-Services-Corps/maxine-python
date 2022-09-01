@@ -5,7 +5,7 @@ Install Python 3.10.
 
 Run
 
-pip3 install pgzero websocket-client
+pip3 install pgzero websocket-client opencv-python
 
 This will install numpy and pygame as well.
 

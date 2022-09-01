@@ -2,8 +2,9 @@
 # Installed packages.
 import pgzrun
 from pgzhelper import *
-import pygame.transform
+import pygame
 import numpy as np
+import cv2
 
 # Builtin packages.
 import random
@@ -136,11 +137,15 @@ d = None
 NUM_BOXES = 100
 
 rotation = 0
+
 def draw():
     global rotation
     # Murky green background color
     #screen.fill((128, 128, 0))
-    draw_background()
+    
+    # For now we're drawing a video background
+    #draw_background()
+    draw_video()
     
     # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
     #matplotlib_pygame.draw_graph(screen)
@@ -150,7 +155,8 @@ def draw():
     # In the old 1-player mode Maxine needed to touch controls on screen.
     #controls.draw()
         
-    pore.draw()
+    # Replaced by Kent's video of a pore
+    #pore.draw()
 
     # Draw Maxine or the boom
     maxine.draw()
@@ -209,6 +215,24 @@ def draw_background():
     for x in range(0, WIDTH, tile_size):
         for y in range(0, HEIGHT, tile_size):
             screen.blit('background_living_tissue', (x, y))
+
+video = None
+restart_video = True
+def draw_video():
+    global video, restart_video
+
+    if restart_video:
+        video = cv2.VideoCapture("backgroundpore.mp4")
+        restart_video = False
+
+    success, video_image = video.read()
+    if success:
+        video_surf = pygame.image.frombuffer(
+            video_image.tobytes(), video_image.shape[1::-1], "BGR")
+        video_surf = pygame.transform.scale(video_surf, (WIDTH, HEIGHT))
+        screen.blit(video_surf, (0, 0))
+    else:
+        restart_video = True    
 
 i = 0
 def draw_graph():
