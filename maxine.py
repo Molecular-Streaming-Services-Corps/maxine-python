@@ -18,19 +18,25 @@ import animated_image
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
 
-TITLE = 'Maxine\'s Quest'
+TITLE = 'Maxine\'s µMonsters'
 WIDTH = 1800
 HEIGHT = 900
 CENTER = (WIDTH / 2, HEIGHT / 2)
 RING_RADIUS = 350
 
 MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
+'''If this is set to False, Maxine explodes instead of changing size when she
+is hurt, and just gets points when she kills a monster.'''
+MAXINE_CHANGES_SIZE = True
+MAXINE_INITIAL_SCALE = 0.25
+MAXINE_CHANGE_FACTOR = 1.2
+maxine_current_scale = 1
 
 maxine = Actor('maxine')
 maxine.images = ['maxine']
 maxine.pos = MAXINE_START
 maxine.alive = True
-maxine.scale = 0.25
+maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
 
 pore = Actor('pore')
 pore.center = (WIDTH/2, HEIGHT/2)
@@ -137,7 +143,8 @@ def draw():
     
     draw_graph()
     
-    controls.draw()
+    # In the old 1-player mode Maxine needed to touch controls on screen.
+    #controls.draw()
         
     pore.draw()
 
@@ -264,6 +271,7 @@ space_pressed_before = False
 button_pressed_before = False
 def update():
     global score, i, step_count, d, controls, space_pressed_before, button_pressed_before
+    global maxine_current_scale
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -417,6 +425,10 @@ def update():
         if maxine.collide_pixel(monster):
             sm_to_blow_up.add(monster)
             
+            if MAXINE_CHANGES_SIZE:
+                maxine_current_scale *= MAXINE_CHANGE_FACTOR
+                maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+            
         # Spawn a spore if we are far enough from Maxine and time is up
         monster.spore_timeout -= 1
         if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
@@ -432,7 +444,7 @@ def update():
         
         # Set a disappear timer in frames.
         monster.disappear_timer = 31
-
+        
     to_delete = set()
     for monster in dead_sms:
         monster.animate()
@@ -451,8 +463,13 @@ def update():
     for p in projectiles:
         p.move_forward(SPORE_SPEED)
         if maxine.collide_pixel(p):
-            kill_maxine()
             projectiles_to_delete.add(p)
+            
+            if MAXINE_CHANGES_SIZE:
+                maxine_current_scale /= MAXINE_CHANGE_FACTOR
+                maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+            else:
+                kill_maxine()
         elif util.distance_points(p.center, CENTER) > RING_RADIUS:
             # Delete projectiles that hit the ring
             projectiles_to_delete.add(p)
