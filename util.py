@@ -57,6 +57,6 @@ class SpiralState:
     def update(self):
         self.pos = spiral(self.gap, self.rotation, self.theta)
         self.pos = (self.pos[0] + self.center_pos[0], self.pos[1] + self.center_pos[1])
-        self.angle = 360 - (self.theta % 360)
+        self.angle = 360 - ((self.theta + self.rotation) % 360)
         self.theta -= self.step_degrees
         

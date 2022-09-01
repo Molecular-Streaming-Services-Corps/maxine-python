@@ -403,7 +403,7 @@ def update():
         ss = monster.spiral_state
         ss.update()
         monster.pos = ss.pos
-        monster.angle = ss.angle
+        monster.angle = (ss.angle + 90) % 360
         
         # Blow up the monster when it gets to the center for now
         if util.distance_points(monster.center, CENTER) < 20:
