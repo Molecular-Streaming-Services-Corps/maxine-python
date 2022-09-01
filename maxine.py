@@ -30,6 +30,10 @@ is hurt, and just gets points when she kills a monster.'''
 MAXINE_CHANGES_SIZE = True
 MAXINE_INITIAL_SCALE = 0.25
 MAXINE_CHANGE_FACTOR = 1.2
+'''These will make Maxine win when she is 4x the size (after about 8 hits) or
+lose when she is a quarter of the size.'''
+MAXINE_WIN_SIZE = 4
+MAXINE_LOSE_SIZE = 0.25
 maxine_current_scale = 1
 
 maxine = Actor('maxine')
@@ -180,6 +184,16 @@ def draw():
         rotation += 1
         draw_spiral(rotation + 0, WHITE)
         draw_spiral(rotation + 180, GREEN)
+
+    # Draw the victory or gameover graphics.
+    if maxine_current_scale <= MAXINE_LOSE_SIZE:
+        gameover = Actor('gameover')
+        gameover.pos = CENTER
+        gameover.draw()
+    elif maxine_current_scale >= MAXINE_WIN_SIZE:
+        victory = Actor('victory')
+        victory.pos = CENTER
+        victory.draw()
 
 def draw_cell(cell):
     if hasattr(cell, 'animation'):
