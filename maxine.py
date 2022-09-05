@@ -248,6 +248,7 @@ def draw_graph():
     BLACK = (0, 0, 0)
     GREEN = (0, 200, 0)
     WHITE = (255, 255, 255)
+    BLUE = (0, 0, 255)
     if graph_type != 'ring':
         BOX = Rect((9, 99), (302, 82))
         screen.draw.filled_rect(BOX, GREEN)
@@ -288,7 +289,7 @@ def draw_graph():
             scale_factor = y / min_value
             # Shades of red
             #color = (255 * scale_factor, 0, 0)
-            color = np.multiply(scale_factor, GRAPE)
+            color = np.multiply(scale_factor, BLUE)
         else:
             scale_factor = y / max_value
             # Shades of blue
