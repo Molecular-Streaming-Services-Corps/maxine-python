@@ -436,10 +436,14 @@ def update():
         # Stop Maxine at the edges of the screen.
         #if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
         #    maxine.pos = prev_pos
-        dist = util.distance_points(maxine.center, CENTER)
-        if dist > RING_RADIUS:
-            maxine.pos = prev_pos
         
+        # Obsolete code for a circular signal ring
+        #dist = util.distance_points(maxine.center, CENTER)
+        #if dist > RING_RADIUS:
+        #    maxine.pos = prev_pos
+        
+        if point_outside_signal_ring(maxine.center):
+            maxine.pos = prev_pos
     
     # Can't remove items from a set during iteration.
     to_remove = []
@@ -549,12 +553,22 @@ def update():
                 maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
             else:
                 kill_maxine()
-        elif util.distance_points(p.center, CENTER) > RING_RADIUS:
+        # For a circular ring.
+        #elif util.distance_points(p.center, CENTER) > RING_RADIUS:
+        elif point_outside_signal_ring(p.center):
             # Delete projectiles that hit the ring
             projectiles_to_delete.add(p)
     
     for p in projectiles_to_delete:
         projectiles.remove(p)
+
+def point_outside_signal_ring(point):
+    '''Calculate if a position is outside the ellipse. From Math StackExchange.'''
+    rx = RING_WIDTH / 2
+    ry = RING_HEIGHT / 2
+    scaled_coords = (point[0] - CENTER[0],
+                     (point[1] - CENTER[1]) * rx/ry)
+    return np.linalg.norm(scaled_coords, 2) > rx
 
 def on_key_down(key):
     global graph_type
