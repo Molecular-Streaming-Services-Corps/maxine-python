@@ -24,6 +24,8 @@ WIDTH = 1800
 HEIGHT = 900
 CENTER = (WIDTH / 2, HEIGHT / 2)
 RING_RADIUS = 350
+RING_HEIGHT = 700
+RING_WIDTH = 1000
 
 MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
 '''If this is set to False, Maxine explodes instead of changing size when she
@@ -48,7 +50,8 @@ pore.center = (WIDTH/2, HEIGHT/2)
 
 animations = set()
 
-graph_type = 'heatmap'
+#graph_type = 'heatmap'
+graph_type = 'ring'
 
 MAKE_MUSHROOMS = True
 DRAW_SPIRALS = False
@@ -178,9 +181,12 @@ def draw():
 
     screen.draw.text('SCORE ' + str(score), (10, 10))
     
-    # Draw the mock signal ring.
+    # Draw the signal ring.
     RED = (200, 0, 0)
-    screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
+    #screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
+    ring_rect = Rect((CENTER[0] - RING_WIDTH / 2, CENTER[1] - RING_HEIGHT / 2), 
+                     (RING_WIDTH, RING_HEIGHT))
+    pygame.draw.ellipse(screen.surface, RED, ring_rect, width = 1)
     
     if DRAW_SPIRALS:
         # Draw spirals to indicate where the monsters will move
@@ -242,8 +248,9 @@ def draw_graph():
     BLACK = (0, 0, 0)
     GREEN = (0, 200, 0)
     WHITE = (255, 255, 255)
-    BOX = Rect((9, 99), (302, 82))
-    screen.draw.filled_rect(BOX, GREEN)
+    if graph_type != 'ring':
+        BOX = Rect((9, 99), (302, 82))
+        screen.draw.filled_rect(BOX, GREEN)
     
     NEON_PINK = (251,72,196) # Positive
     GRAPE = (128,49,167) # Negative
@@ -274,6 +281,9 @@ def draw_graph():
         if x == MIDPOINT:
             # A single white line
             color = WHITE
+        elif x == 0:
+            # A black line at the origin
+            color = RED
         elif y < 0:
             scale_factor = y / min_value
             # Shades of red
@@ -287,13 +297,40 @@ def draw_graph():
             
         if graph_type == 'heatmap':
             rect = Rect((10 + 300.0 / NUM_BOXES * x , 100), (300 / NUM_BOXES, 80))
-        else:
+            screen.draw.filled_rect(rect, color)
+        elif graph_type == 'scatterplot':
             # Draw a 3x1 Rect because there's no function to draw a pixel
             # y coord is between 100 and 180
             y_coord = int(140 + 40 * -y)
             rect = Rect((10 + 300.0 / NUM_BOXES * x, y_coord), (3, 1))
-        
-        screen.draw.filled_rect(rect, color)
+            screen.draw.filled_rect(rect, color)        
+        else:
+            pass
+            # Draw lines around an ellipse using polar coordinates
+            LINE_LENGTH = 50
+            
+            # Calculate the coordinates for the inner end of the line
+            r = RING_RADIUS - LINE_LENGTH / 2
+            theta = x / NUM_BOXES * 360
+            (inner_x, inner_y) = util.pol2cart(r, theta)
+            inner_coords = adjust_coords(inner_x, inner_y)
+            
+            # Calculate the coordinates for the outer end of the line
+            r = RING_RADIUS + LINE_LENGTH / 2
+            (outer_x, outer_y) = util.pol2cart(r, theta)
+            outer_coords = adjust_coords(outer_x, outer_y)
+            
+            # Finally draw the line
+            pygame.draw.line(screen.surface, color, inner_coords, outer_coords, width = 10)
+
+def adjust_coords(x, y):
+    # Stretch in the x dimension to match the greater width of the ellipse,
+    # and then add the center to the Cartesian coordinates
+    WIDTH_TO_HEIGHT_RATIO = RING_WIDTH / RING_HEIGHT
+
+    (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
+    (x, y) = (x + CENTER[0], y + CENTER[1])
+    return (x, y)
 
 def draw_spiral(rotation, color):
     GAP = 0.5
@@ -301,9 +338,8 @@ def draw_spiral(rotation, color):
     STEP_DEGREES = 10
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
-        coords = util.spiral(GAP, rotation, theta)
-        # Translate it to the center of the screen
-        (x, y) = (coords[0] + CENTER[0], coords[1] + CENTER[1])
+        (x, y) = util.spiral(GAP, rotation, theta)
+        (x, y) = adjust_coords(x, y)
         screen.draw.filled_circle((x, y), 1, color)
 
 def boom_images():
@@ -567,7 +603,8 @@ def make_mushroom():
     
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
-    mush.spiral_state = util.SpiralState(0.5, rotation, 690, 1, CENTER)
+    mush.spiral_state = util.SpiralState(
+        0.5, rotation, 690, 1, CENTER, RING_WIDTH / RING_HEIGHT)
     
     # Set the mushroom up to spawn a spore
     mush.spore_timeout = get_spore_timeout()

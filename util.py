@@ -45,17 +45,19 @@ def spiral(gap, rotation, theta):
 
 class SpiralState:
     '''For making monsters move in a spiral'''
-    def __init__(self, gap, rotation, theta, step_degrees, center_pos):
+    def __init__(self, gap, rotation, theta, step_degrees, center_pos, aspect_ratio):
         self.gap = gap
         self.rotation = rotation
         self.theta = theta
         self.step_degrees = step_degrees
         self.center_pos = center_pos
+        self.aspect_ratio = aspect_ratio
         
         self.update()
         
     def update(self):
         self.pos = spiral(self.gap, self.rotation, self.theta)
+        self.pos = (self.pos[0] * self.aspect_ratio, self.pos[1])
         self.pos = (self.pos[0] + self.center_pos[0], self.pos[1] + self.center_pos[1])
         self.angle = 360 - ((self.theta + self.rotation) % 360)
         self.theta -= self.step_degrees
