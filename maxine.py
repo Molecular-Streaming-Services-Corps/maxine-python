@@ -143,9 +143,9 @@ def draw():
     # Murky green background color
     #screen.fill((128, 128, 0))
     
-    # For now we're drawing a video background
-    #draw_background()
-    draw_video()
+    # For now we're drawing a video background (this can be included later)
+    draw_background()
+    #draw_video()
     
     # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
     #matplotlib_pygame.draw_graph(screen)
@@ -245,6 +245,9 @@ def draw_graph():
     BOX = Rect((9, 99), (302, 82))
     screen.draw.filled_rect(BOX, GREEN)
     
+    NEON_PINK = (251,72,196) # Positive
+    GRAPE = (128,49,167) # Negative
+    
     # Sample data for the graph
     if STANDALONE:
         x_data = list(range(0, NUM_BOXES))
@@ -274,12 +277,14 @@ def draw_graph():
         elif y < 0:
             scale_factor = y / min_value
             # Shades of red
-            color = (255 * scale_factor, 0, 0)
+            #color = (255 * scale_factor, 0, 0)
+            color = np.multiply(scale_factor, GRAPE)
         else:
             scale_factor = y / max_value
             # Shades of blue
-            color = (0, 0, 255 * scale_factor)
-        
+            #color = (0, 0, 255 * scale_factor)
+            color = np.multiply(scale_factor, NEON_PINK)
+            
         if graph_type == 'heatmap':
             rect = Rect((10 + 300.0 / NUM_BOXES * x , 100), (300 / NUM_BOXES, 80))
         else:
