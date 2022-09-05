@@ -179,7 +179,8 @@ def draw():
     for p in projectiles:
         p.draw()
 
-    screen.draw.text('SCORE ' + str(score), (10, 10))
+    if not MAXINE_CHANGES_SIZE:
+        screen.draw.text('SCORE ' + str(score), (10, 10))
     
     # Draw the signal ring.
     RED = (200, 0, 0)
@@ -262,6 +263,7 @@ def draw_graph():
         x_data = [(x + i) % NUM_BOXES for x in x_data]
         inputs = [2*np.pi*x/NUM_BOXES for x in x_data]
         y_data = np.sin(inputs)  # update the data.
+        abs_y_data = y_data
         #print('i', i)
         #print('x_data:', x_data)
         #print('inputs:', inputs)
@@ -272,19 +274,22 @@ def draw_graph():
         max_value = +1.0
     else: # live or prerecorded mode        
         y_data = d.get_scaled_boxes()
+        abs_y_data = d.get_absolute_scaled_boxes()
         min_value = -1.0
         max_value = +1.0
     
     MIDPOINT = NUM_BOXES // 2
     
     # Plot the data
-    for x, y in enumerate(y_data):
+    for x, (y, abs_y) in enumerate(zip(y_data, abs_y_data)):
         if x == MIDPOINT:
             # A single white line
             color = WHITE
+            abs_y = 0
         elif x == 0:
             # A black line at the origin
             color = RED
+            abs_y = 0
         elif y < 0:
             scale_factor = y / min_value
             # Shades of red
@@ -310,14 +315,17 @@ def draw_graph():
             # Draw lines around an ellipse using polar coordinates
             LINE_LENGTH = 50
             
+            # Calculate the offset, used to display absolute values.
+            offset = abs_y * LINE_LENGTH / 2
+            
             # Calculate the coordinates for the inner end of the line
-            r = RING_RADIUS - LINE_LENGTH / 2
+            r = RING_RADIUS - LINE_LENGTH / 2 + offset
             theta = x / NUM_BOXES * 360
             (inner_x, inner_y) = util.pol2cart(r, theta)
             inner_coords = adjust_coords(inner_x, inner_y)
             
             # Calculate the coordinates for the outer end of the line
-            r = RING_RADIUS + LINE_LENGTH / 2
+            r = RING_RADIUS + LINE_LENGTH / 2 + offset
             (outer_x, outer_y) = util.pol2cart(r, theta)
             outer_coords = adjust_coords(outer_x, outer_y)
             

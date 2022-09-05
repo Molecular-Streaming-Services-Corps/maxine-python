@@ -11,7 +11,15 @@ class Data:
         self.joystick_data = []
         self.sample_rate = 10**5
         self.latest_frame = 0
+        #self.amplifier_min = -10000
+        self.amplifier_max = 10000
 
+    def get_absolute_scaled_boxes(self):
+        boxes = self.get_boxes()
+        
+        asb = np.divide(boxes, self.amplifier_max)
+        return asb
+    
     def middle_spike_exists(self):
         sb = self.get_scaled_boxes()
     
