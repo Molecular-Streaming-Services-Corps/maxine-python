@@ -57,6 +57,7 @@ MAKE_MUSHROOMS = True
 DRAW_SPIRALS = False
 
 class Controls:
+    '''The obsolete controls'''
     def __init__(self):
         self.bias = 0.0
     
@@ -124,6 +125,22 @@ class Controls:
             if LIVE:
                 lilith_client.set_bias(self.bias)
 
+class NewControls:
+    def __init__(self):
+        # LCD font
+        pygame.font.init()
+        self.font = pygame.font.Font('ds-digi.ttf', 50)
+
+    def draw_text(self, text, coords):
+        RED = (255, 0, 0)
+        surface = self.font.render(text, False, RED)
+        screen.blit(surface, coords)
+
+    def draw(self):
+        self.draw_text('1200 MV', (10, 10))
+
+new_controls = NewControls()
+
 cells = set()
 dead_cells = set()
 
@@ -154,6 +171,8 @@ def draw():
     #matplotlib_pygame.draw_graph(screen)
     
     draw_graph()
+    
+    new_controls.draw()
     
     # In the old 1-player mode Maxine needed to touch controls on screen.
     #controls.draw()
