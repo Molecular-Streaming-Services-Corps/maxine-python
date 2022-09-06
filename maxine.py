@@ -419,22 +419,27 @@ def update():
             else:
                 # In standalone mode, we say no joystick buttons are pressed.
                 pressed = []
-                
-            if 'js1_left' in pressed:
-                maxine.left -= s
-            elif 'js1_right' in pressed:
-                maxine.left += s
-            if 'js1_up' in pressed:
-                maxine.top -= s
-            elif 'js1_down' in pressed:
-                maxine.bottom += s
             
-            if 'js1_b1' in pressed:
-                if not button_pressed_before:
-                    button_pressed_before = True
-                    controls.check()
-            else:
-                button_pressed_before = False
+            # Soon the joystick will operate the onscreen controls
+            # when PLAYER == 'console'.            
+                        
+            JOYSTICK_MOVES_MAXINE = False
+            if JOYSTICK_MOVES_MAXINE:
+                if 'js1_left' in pressed:
+                    maxine.left -= s
+                elif 'js1_right' in pressed:
+                    maxine.left += s
+                if 'js1_up' in pressed:
+                    maxine.top -= s
+                elif 'js1_down' in pressed:
+                    maxine.bottom += s
+                
+                if 'js1_b1' in pressed:
+                    if not button_pressed_before:
+                        button_pressed_before = True
+                        controls.check()
+                else:
+                    button_pressed_before = False
             
             # Now we have collide_pixel
             # Detect if Maxine gets too close to the pore. (She'll explode!)
