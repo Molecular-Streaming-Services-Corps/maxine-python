@@ -153,12 +153,18 @@ class NewControls:
         self.voltage_index = 0
         self.zap_index = 1
         
+        self.old_voltage = 0
+        self.voltage = 0
+        
     def update(self):
         if self.zap_timeout > 0:
             self.zap_timeout -= 1
             self.zap_lever.images = ['switch_big_frame_2']
         else:
             self.zap_lever.images = ['switch_big_frame_1']
+            
+            self.set_voltage(self.old_voltage)
+            self.voltage_knob.angle = 360 - self.old_voltage
         
         self.zap_lever.animate()
 
@@ -177,11 +183,10 @@ class NewControls:
         self.controls[self.control_index].scale = 1.2
      
         self.voltage_knob.draw()
-        voltage = 360 - self.voltage_knob.angle
         
         self.bg.draw()
         
-        self.draw_text(str(voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
+        self.draw_text(str(self.voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
 
         self.zap_lever.draw()
 
@@ -198,15 +203,27 @@ class NewControls:
             # 100 milliseconds in frames
             self.zap_timeout = 6
             
-            # Todo: send a message to change the voltage
+            # Send a message to change the voltage
+            self.set_voltage(3500)
         
     def push_left(self):
         if self.control_index == self.voltage_index:
             self.voltage_knob.angle = int((self.voltage_knob.angle + 36) % 360)
+            voltage = 360 - self.voltage_knob.angle
+            self.set_voltage(voltage)
+            self.old_voltage = voltage
         
     def push_right(self):
         if self.control_index == self.voltage_index:
             self.voltage_knob.angle = int((self.voltage_knob.angle - 36) % 360)
+            voltage = 360 - self.voltage_knob.angle
+            self.set_voltage(voltage)
+            self.old_voltage = voltage
+
+    def set_voltage(self, voltage):
+        if LIVE:
+            lilith_client.set_bias(voltage)
+        self.voltage = voltage
 
 new_controls = NewControls()
 
