@@ -164,8 +164,9 @@ def draw():
     #screen.fill((128, 128, 0))
     
     # For now we're drawing a video background (this can be included later)
-    draw_background()
+    draw_living_background()
     #draw_video()
+    #draw_metal_background()
     
     # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
     #matplotlib_pygame.draw_graph(screen)
@@ -237,12 +238,17 @@ def draw_cell(cell):
     else:
         screen.blit(cell.sprite_name, (cell.x, cell.y))    
 
-def draw_background():
+def draw_living_background():
     tile_size = 144
 
     for x in range(0, WIDTH, tile_size):
         for y in range(0, HEIGHT, tile_size):
             screen.blit('background_living_tissue', (x, y))
+
+def draw_metal_background():
+    surface = getattr(images, 'bg_cut')
+    surface = pygame.transform.scale(surface, (WIDTH, HEIGHT))
+    screen.blit(surface, (0, 0))
 
 video = None
 restart_video = True
