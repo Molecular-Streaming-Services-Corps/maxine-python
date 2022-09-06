@@ -280,6 +280,17 @@ def set_bias(bias_mv : float):
     packed_data = s.pack(*data)
     ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
+# Moving the syringe
+def move_pump(steps: int, delay: int):
+    global ws
+    # Pump code = 29 : uint16
+    # steps : int32
+    # delay : uint32
+    s = struct.Struct('!HiI')
+    data = [29, steps, delay]
+    packed_data = s.pack(*data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+
 if __name__ == '__main__':
     setup()
 
