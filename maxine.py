@@ -153,7 +153,12 @@ class NewControls:
         surface = self.font.render(text, False, RED)
         screen.blit(surface, coords)
 
-    def draw(self):        
+    def draw(self):
+        # Set the control that's presently selected to be a bit bigger.
+        for control in self.controls:
+            control.scale = 1
+        self.controls[self.control_index].scale = 1.2
+     
         self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         self.voltage_knob.draw()
         voltage = 360 - self.voltage_knob.angle
