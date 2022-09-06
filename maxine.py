@@ -129,7 +129,10 @@ class NewControls:
     def __init__(self):
         # LCD font
         pygame.font.init()
-        self.font = pygame.font.Font('ds-digi.ttf', 50)
+        self.font = pygame.font.Font('ds-digi.ttf', 40)
+        self.voltage_knob = Actor('voltage_knob')
+        self.voltage_knob.left = 10
+        self.voltage_knob.top = 10
 
     def draw_text(self, text, coords):
         RED = (255, 0, 0)
@@ -137,7 +140,15 @@ class NewControls:
         screen.blit(surface, coords)
 
     def draw(self):
-        self.draw_text('1200 MV', (10, 10))
+        bg = Actor('led_display')
+        bg.left = 10
+        # voltage_knob.png is 83x83 and the voltage knob is drawn at 10,10
+        bg.top = 10 + 83 + 10
+        bg.draw()
+        self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
+        self.voltage_knob.draw()
+        voltage = 360 - self.voltage_knob.angle
+        self.draw_text(str(voltage) + ' MV', (bg.left + 15, bg.top + 2))
 
 new_controls = NewControls()
 
