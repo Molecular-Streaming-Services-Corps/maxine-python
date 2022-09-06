@@ -135,6 +135,19 @@ class NewControls:
         self.voltage_knob.left = 10
         self.voltage_knob.top = 10
 
+        self.bg = Actor('led_display')
+        self.bg.left = 10
+        # voltage_knob.png is 83x83 and the voltage knob is drawn at 10,10
+        self.bg.top = 10 + 83 + 10
+
+        self.zap_lever = Actor('switch_big_frame_1')
+        self.zap_lever.images = ['switch_big_frame_1']
+        self.zap_lever.left = 10
+        self.zap_lever.top = self.bg.bottom + 10
+        
+        self.controls = [self.voltage_knob, self.zap_lever]
+        self.control_index = 0
+        
     def draw_text(self, text, coords):
         RED = (255, 0, 0)
         surface = self.font.render(text, False, RED)
@@ -145,13 +158,20 @@ class NewControls:
         self.voltage_knob.draw()
         voltage = 360 - self.voltage_knob.angle
         
-        bg = Actor('led_display')
-        bg.left = 10
-        # voltage_knob.png is 83x83 and the voltage knob is drawn at 10,10
-        bg.top = 10 + 83 + 10
-        bg.draw()
+        self.bg.draw()
         
-        self.draw_text(str(voltage) + ' MV', (bg.left + 15, bg.top + 2))
+        self.draw_text(str(voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
+        
+        self.zap_lever.animate()
+        self.zap_lever.draw()
+
+    def select_down(self):
+        '''Select the control below the present one. Wraps around.'''
+        self.control_index = (self.control_index + 1) % len(self.controls)
+
+    def select_up(self):
+        '''Select the control above the present one. Wraps around.'''
+        self.control_index = (self.control_index - 1) % len(self.controls)
 
 new_controls = NewControls()
 
@@ -187,7 +207,8 @@ def draw():
     
     draw_graph()
     
-    new_controls.draw()
+    if PLAYER == 'console':
+        new_controls.draw()
     
     # In the old 1-player mode Maxine needed to touch controls on screen.
     #controls.draw()
@@ -423,200 +444,249 @@ def update():
             add_cell()    
 
     if PLAYER == 'maxine':
-        maxine.animate()
+        update_for_maxine_player()
+    else:
+        update_for_console_player()
 
-        # Move Maxine.
-        # s is Maxine's speed per frame.
-        s = 6
-        
-        if maxine.alive:
-            prev_pos = maxine.pos
+pressed_before = set()
+def update_for_console_player():
+    '''Allows the console player to use either the joystick or the keyboard
+    (for testing) to manipulate the onscreen controls.'''
+    global pressed_before, new_controls
 
-            # Allow the user to use either the keyboard or the joystick    
-            if keyboard.left:
+    # Determine the list of pressed joystick switches
+    if LIVE:
+        pressed = d.pressed
+    elif DATADIR:
+        joystick_binary = d.get_one_frame_joystick()
+        pressed = util.process_joystick_data(joystick_binary)
+        #print(step_count, joystick_binary, pressed)
+    else:
+        # In standalone mode, we say no joystick buttons are pressed.
+        pressed = []
+
+    # Equivalent joystick and keyboard controls.
+    on = {}
+    on['left'] = 'js1_left' in pressed or keyboard.left
+    on['right'] = 'js1_right' in pressed or keyboard.right
+    on['up'] = 'js1_up' in pressed or keyboard.up
+    on['down'] = 'js1_down' in pressed or keyboard.down
+    on['button'] = 'js1_b1' in pressed or keyboard.space
+
+    # See if each switch went down in this frame.
+    # This allows you to make controls that only respond one time for each time the switch
+    # is pressed.
+    pressed_just_now = set()
+    for switch_name in on.keys():
+        check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now)
+
+    # Finally respond to the switches that have been turned on this frame.
+    if 'up' in pressed_just_now:
+        new_controls.select_up()
+    elif 'down' in pressed_just_now:
+        new_controls.select_down()
+
+def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
+    if on[switch_name]:
+        if not switch_name in pressed_before:
+            pressed_before.add(switch_name)
+            pressed_just_now.add(switch_name)
+    else:
+        if switch_name in pressed_before:
+            pressed_before.remove(switch_name)
+    
+def update_for_maxine_player():
+    maxine.animate()
+
+    # Move Maxine.
+    # s is Maxine's speed per frame.
+    s = 6
+    
+    if maxine.alive:
+        prev_pos = maxine.pos
+
+        # Allow the user to use either the keyboard or the joystick    
+        if keyboard.left:
+            maxine.left -= s
+        elif keyboard.right:
+            maxine.left += s
+        if keyboard.up:
+            maxine.top -= s
+        elif keyboard.down:
+            maxine.bottom += s
+            
+        if keyboard.space:
+            if not space_pressed_before:
+                space_pressed_before = True
+                controls.check()
+        else:
+            space_pressed_before = False
+
+        if LIVE:
+            pressed = d.pressed
+        elif DATADIR:
+            joystick_binary = d.get_one_frame_joystick()
+            pressed = util.process_joystick_data(joystick_binary)
+            #print(step_count, joystick_binary, pressed)
+        else:
+            # In standalone mode, we say no joystick buttons are pressed.
+            pressed = []
+                            
+        JOYSTICK_MOVES_MAXINE = False
+        if JOYSTICK_MOVES_MAXINE:
+            if 'js1_left' in pressed:
                 maxine.left -= s
-            elif keyboard.right:
+            elif 'js1_right' in pressed:
                 maxine.left += s
-            if keyboard.up:
+            if 'js1_up' in pressed:
                 maxine.top -= s
-            elif keyboard.down:
+            elif 'js1_down' in pressed:
                 maxine.bottom += s
-                
-            if keyboard.space:
-                if not space_pressed_before:
-                    space_pressed_before = True
+            
+            if 'js1_b1' in pressed:
+                if not button_pressed_before:
+                    button_pressed_before = True
                     controls.check()
             else:
-                space_pressed_before = False
+                button_pressed_before = False
+        
+        # Now we have collide_pixel
+        # Detect if Maxine gets too close to the pore. (She'll explode!)
+        #dist = maxine.distance_to(pore)
+        #if dist < 100:
+        #    kill_maxine()
+        if maxine.collide_pixel(pore):
+            kill_maxine()
+        
+        # This is not used now there is a signal ring.
+        # Stop Maxine at the edges of the screen.
+        #if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
+        #    maxine.pos = prev_pos
+        
+        # Obsolete code for a circular signal ring
+        #dist = util.distance_points(maxine.center, CENTER)
+        #if dist > RING_RADIUS:
+        #    maxine.pos = prev_pos
+        
+        if point_outside_signal_ring(maxine.center):
+            maxine.pos = prev_pos
+    
+    # Can't remove items from a set during iteration.
+    to_remove = []
+    # Let Maxine eat cells.
+    for cell in cells:
+        if maxine.colliderect(cell):
+            sounds.eep.play()
+            score += 100
+            to_remove.append(cell)
+    
+    for cell in to_remove:
+        cells.remove(cell)
+        kill_cell(cell)
+    
+    # Make dead cells disappear after a certain amount of time.
+    to_remove = []
+    for cell in dead_cells:
+        cell.disappear_timer -= 1
+        
+        if cell.disappear_timer <= 0:
+            to_remove.append(cell)
+            
+    for cell in to_remove:
+        remove_dead_cell(cell)
+    
+    #if maxine.left > WIDTH:
+    #    maxine.right = 0
 
-            if LIVE:
-                pressed = d.pressed
-            elif DATADIR:
-                joystick_binary = d.get_one_frame_joystick()
-                pressed = util.process_joystick_data(joystick_binary)
-                #print(step_count, joystick_binary, pressed)
+    # Move cells.
+    for cell in cells:
+        cell.left += cell.deltax
+        cell.top += cell.deltay
+        if cell.left > WIDTH:
+            cell.deltax *= -1
+        if cell.top > HEIGHT:
+            cell.deltay *= -1
+        if cell.right < 0:
+            cell.deltax *= -1
+        if cell.bottom < 0:
+            cell.deltay *= -1
+
+    # Update animations (obsoleted by PGZHelper)
+    for animation in animations:
+        animation.update()
+
+    # Process spiraling monsters
+    sm_to_blow_up = set()
+    for monster in spiraling_monsters:
+        monster.animate()
+        
+        # Move along the spiral
+        ss = monster.spiral_state
+        ss.update()
+        monster.pos = ss.pos
+        monster.angle = (ss.angle + 90) % 360
+        
+        # Blow up the monster when it gets to the center for now
+        if util.distance_points(monster.center, CENTER) < 20:
+            sm_to_blow_up.add(monster)
+
+        # Blow up monsters that collide with Maxine
+        if maxine.collide_pixel(monster):
+            sm_to_blow_up.add(monster)
+            
+            if MAXINE_CHANGES_SIZE:
+                maxine_current_scale *= MAXINE_CHANGE_FACTOR
+                maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+            
+        # Spawn a spore if we are far enough from Maxine and time is up
+        monster.spore_timeout -= 1
+        if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
+            monster.spore_timeout = get_spore_timeout()
+            make_spore(monster)
+
+    for monster in sm_to_blow_up:
+        spiraling_monsters.remove(monster)
+        dead_sms.add(monster)
+        monster.images = boom_images()
+        monster.fps = 30
+        monster.scale = 0.25
+        
+        # Set a disappear timer in frames.
+        monster.disappear_timer = 31
+        
+    to_delete = set()
+    for monster in dead_sms:
+        monster.animate()
+        monster.disappear_timer -= 1
+
+        if monster.disappear_timer <= 0:
+            to_delete.add(monster)
+            
+    for monster in to_delete:
+        dead_sms.remove(monster)
+
+    # Handle projectiles (spores in the case of mushrooms)
+    # Projectiles point toward Maxine when they're spawned. (Spored?)
+    SPORE_SPEED = 3
+    projectiles_to_delete = set()
+    for p in projectiles:
+        p.move_forward(SPORE_SPEED)
+        if maxine.collide_pixel(p):
+            projectiles_to_delete.add(p)
+            
+            if MAXINE_CHANGES_SIZE:
+                maxine_current_scale /= MAXINE_CHANGE_FACTOR
+                maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
             else:
-                # In standalone mode, we say no joystick buttons are pressed.
-                pressed = []
-            
-            # Soon the joystick will operate the onscreen controls
-            # when PLAYER == 'console'.            
-                        
-            JOYSTICK_MOVES_MAXINE = False
-            if JOYSTICK_MOVES_MAXINE:
-                if 'js1_left' in pressed:
-                    maxine.left -= s
-                elif 'js1_right' in pressed:
-                    maxine.left += s
-                if 'js1_up' in pressed:
-                    maxine.top -= s
-                elif 'js1_down' in pressed:
-                    maxine.bottom += s
-                
-                if 'js1_b1' in pressed:
-                    if not button_pressed_before:
-                        button_pressed_before = True
-                        controls.check()
-                else:
-                    button_pressed_before = False
-            
-            # Now we have collide_pixel
-            # Detect if Maxine gets too close to the pore. (She'll explode!)
-            #dist = maxine.distance_to(pore)
-            #if dist < 100:
-            #    kill_maxine()
-            if maxine.collide_pixel(pore):
                 kill_maxine()
-            
-            # This is not used now there is a signal ring.
-            # Stop Maxine at the edges of the screen.
-            #if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
-            #    maxine.pos = prev_pos
-            
-            # Obsolete code for a circular signal ring
-            #dist = util.distance_points(maxine.center, CENTER)
-            #if dist > RING_RADIUS:
-            #    maxine.pos = prev_pos
-            
-            if point_outside_signal_ring(maxine.center):
-                maxine.pos = prev_pos
-        
-        # Can't remove items from a set during iteration.
-        to_remove = []
-        # Let Maxine eat cells.
-        for cell in cells:
-            if maxine.colliderect(cell):
-                sounds.eep.play()
-                score += 100
-                to_remove.append(cell)
-        
-        for cell in to_remove:
-            cells.remove(cell)
-            kill_cell(cell)
-        
-        # Make dead cells disappear after a certain amount of time.
-        to_remove = []
-        for cell in dead_cells:
-            cell.disappear_timer -= 1
-            
-            if cell.disappear_timer <= 0:
-                to_remove.append(cell)
-                
-        for cell in to_remove:
-            remove_dead_cell(cell)
-        
-        #if maxine.left > WIDTH:
-        #    maxine.right = 0
-
-        # Move cells.
-        for cell in cells:
-            cell.left += cell.deltax
-            cell.top += cell.deltay
-            if cell.left > WIDTH:
-                cell.deltax *= -1
-            if cell.top > HEIGHT:
-                cell.deltay *= -1
-            if cell.right < 0:
-                cell.deltax *= -1
-            if cell.bottom < 0:
-                cell.deltay *= -1
-
-        # Update animations (obsoleted by PGZHelper)
-        for animation in animations:
-            animation.update()
-
-        # Process spiraling monsters
-        sm_to_blow_up = set()
-        for monster in spiraling_monsters:
-            monster.animate()
-            
-            # Move along the spiral
-            ss = monster.spiral_state
-            ss.update()
-            monster.pos = ss.pos
-            monster.angle = (ss.angle + 90) % 360
-            
-            # Blow up the monster when it gets to the center for now
-            if util.distance_points(monster.center, CENTER) < 20:
-                sm_to_blow_up.add(monster)
-
-            # Blow up monsters that collide with Maxine
-            if maxine.collide_pixel(monster):
-                sm_to_blow_up.add(monster)
-                
-                if MAXINE_CHANGES_SIZE:
-                    maxine_current_scale *= MAXINE_CHANGE_FACTOR
-                    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
-                
-            # Spawn a spore if we are far enough from Maxine and time is up
-            monster.spore_timeout -= 1
-            if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
-                monster.spore_timeout = get_spore_timeout()
-                make_spore(monster)
-
-        for monster in sm_to_blow_up:
-            spiraling_monsters.remove(monster)
-            dead_sms.add(monster)
-            monster.images = boom_images()
-            monster.fps = 30
-            monster.scale = 0.25
-            
-            # Set a disappear timer in frames.
-            monster.disappear_timer = 31
-            
-        to_delete = set()
-        for monster in dead_sms:
-            monster.animate()
-            monster.disappear_timer -= 1
-
-            if monster.disappear_timer <= 0:
-                to_delete.add(monster)
-                
-        for monster in to_delete:
-            dead_sms.remove(monster)
-
-        # Handle projectiles (spores in the case of mushrooms)
-        # Projectiles point toward Maxine when they're spawned. (Spored?)
-        SPORE_SPEED = 3
-        projectiles_to_delete = set()
-        for p in projectiles:
-            p.move_forward(SPORE_SPEED)
-            if maxine.collide_pixel(p):
-                projectiles_to_delete.add(p)
-                
-                if MAXINE_CHANGES_SIZE:
-                    maxine_current_scale /= MAXINE_CHANGE_FACTOR
-                    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
-                else:
-                    kill_maxine()
-            # For a circular ring.
-            #elif util.distance_points(p.center, CENTER) > RING_RADIUS:
-            elif point_outside_signal_ring(p.center):
-                # Delete projectiles that hit the ring
-                projectiles_to_delete.add(p)
-        
-        for p in projectiles_to_delete:
-            projectiles.remove(p)
+        # For a circular ring.
+        #elif util.distance_points(p.center, CENTER) > RING_RADIUS:
+        elif point_outside_signal_ring(p.center):
+            # Delete projectiles that hit the ring
+            projectiles_to_delete.add(p)
+    
+    for p in projectiles_to_delete:
+        projectiles.remove(p)
 
 def point_outside_signal_ring(point):
     '''Calculate if a position is outside the ellipse. From Math StackExchange.'''
