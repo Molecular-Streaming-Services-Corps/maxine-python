@@ -145,8 +145,25 @@ class NewControls:
         self.zap_lever.left = 10
         self.zap_lever.top = self.bg.bottom + 10
         
+        self.zap_timeout = 0
+        
         self.controls = [self.voltage_knob, self.zap_lever]
+        # The index of the presently selected control
         self.control_index = 0
+        self.voltage_index = 0
+        self.zap_index = 1
+        
+    def update(self):
+        if self.zap_timeout > 0:
+            self.zap_timeout -= 1
+            self.zap_lever.images = ['switch_big_frame_2']
+        else:
+            self.zap_lever.images = ['switch_big_frame_1']
+        
+        self.zap_lever.animate()
+
+        # Hack: continuously rotate the voltage knob to test the display
+        #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         
     def draw_text(self, text, coords):
         RED = (255, 0, 0)
@@ -159,15 +176,13 @@ class NewControls:
             control.scale = 1
         self.controls[self.control_index].scale = 1.2
      
-        self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         self.voltage_knob.draw()
         voltage = 360 - self.voltage_knob.angle
         
         self.bg.draw()
         
         self.draw_text(str(voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
-        
-        self.zap_lever.animate()
+
         self.zap_lever.draw()
 
     def select_down(self):
@@ -177,6 +192,21 @@ class NewControls:
     def select_up(self):
         '''Select the control above the present one. Wraps around.'''
         self.control_index = (self.control_index - 1) % len(self.controls)
+
+    def push(self):
+        if self.control_index == self.zap_index:
+            # 100 milliseconds in frames
+            self.zap_timeout = 6
+            
+            # Todo: send a message to change the voltage
+        
+    def push_left(self):
+        if self.control_index == self.voltage_index:
+            self.voltage_knob.angle = int((self.voltage_knob.angle + 36) % 360)
+        
+    def push_right(self):
+        if self.control_index == self.voltage_index:
+            self.voltage_knob.angle = int((self.voltage_knob.angle - 36) % 360)
 
 new_controls = NewControls()
 
@@ -459,6 +489,8 @@ def update_for_console_player():
     (for testing) to manipulate the onscreen controls.'''
     global pressed_before, new_controls
 
+    new_controls.update()
+
     # Determine the list of pressed joystick switches
     if LIVE:
         pressed = d.pressed
@@ -485,11 +517,23 @@ def update_for_console_player():
     for switch_name in on.keys():
         check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now)
 
-    # Finally respond to the switches that have been turned on this frame.
+    # Finally respond to the switches/keys that have been turned on this frame.
     if 'up' in pressed_just_now:
         new_controls.select_up()
     elif 'down' in pressed_just_now:
         new_controls.select_down()
+    
+    # Some controls only respond the moment the button is pressed.
+    if 'button' in pressed_just_now:
+        new_controls.push()
+
+    # In contrast, allow the player to press and hold the button while pressing
+    # left and right.
+    if on['button']:        
+        if 'left' in pressed_just_now:
+            new_controls.push_left()
+        elif 'right' in pressed_just_now:
+            new_controls.push_right()
 
 def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
     if on[switch_name]:
