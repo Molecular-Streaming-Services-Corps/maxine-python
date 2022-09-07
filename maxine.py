@@ -267,6 +267,67 @@ NUM_BOXES = 100
 
 rotation = 0
 
+def save_arena_to_dict():
+    save = {}
+    wrapper = {'type': 'maxine', 'state': save}
+
+    save['maxine_alive'] = maxine.alive
+    
+    save['maxine'] = save_actor_to_dict(maxine)
+    save['spiraling_monsters'] = [save_actor_to_dict(m) for m in spiraling_monsters]
+    save['dead_sms'] = [save_actor_to_dict(m) for m in dead_sms]
+    save['projectiles'] = [save_actor_to_dict(m) for m in projectiles]
+    
+    return wrapper
+
+def save_actor_to_dict(actor):
+    data = {'pos': list(actor.pos),
+            'angle': actor.angle,
+            'scale': actor.scale,
+            'images': actor.images}
+    
+    if hasattr(actor, 'disappear_timer'):
+        data['disappear_timer'] = actor.disappear_timer
+    
+    return data
+
+def load_arena_from_dict(wrapper):
+    global maxine, spiraling_monsters, dead_sms, projectiles
+
+    assert(wrapper['type'] == 'maxine')
+    save = wrapper['state']
+    
+    maxine = load_actor_from_dict(save['maxine'])
+    maxine.alive = save['maxine_alive']
+    
+    spiraling_monsters = set()
+    for data in save['spiraling_monsters']:
+        actor = load_actor_from_dict(data)
+        spiraling_monsters.add(actor)
+
+    dead_sms = set()
+    for data in save['dead_sms']:
+        actor = load_actor_from_dict(data)
+        dead_sms.add(actor)
+
+    projectiles = set()
+    for data in save['projectiles']:
+        actor = load_actor_from_dict(data)
+        projectiles.add(actor)
+    
+def load_actor_from_dict(data):
+    images = data['images']
+    actor = Actor(images[0])
+    actor.images = images
+    actor.pos = tuple(data['pos'])
+    actor.scale = data['scale']
+    actor.images = data['images']
+
+    if 'disappear_timer' in data:
+        actor.disappear_timer = data['disappear_timer']
+
+    return actor
+
 def draw():
     global rotation
     # Murky green background color
@@ -585,6 +646,7 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
             pressed_before.remove(switch_name)
     
 def update_for_maxine_player():
+    global maxine_current_scale
     maxine.animate()
 
     # Move Maxine.
@@ -800,10 +862,16 @@ def on_key_down(key):
         if PLAYER == 'console':
             data = new_controls.save_to_dict()
             serializer.save_dict_to_file(data, 'console.json')
+        else:
+            data = save_arena_to_dict()
+            serializer.save_dict_to_file(data, 'maxine.json')
     elif key == key.L:
         if PLAYER == 'console':
             data = serializer.load_dict_from_file('console.json')
             new_controls.load_from_dict(data)
+        else:
+            data = serializer.load_dict_from_file('maxine.json')
+            load_arena_from_dict(data)
 
 # Maxine functions
 
@@ -826,6 +894,7 @@ def make_spore(shroom):
     '''Makes a spore starting at the center of the shroom and heading toward
     Maxine.'''
     spore = Actor('spore')
+    spore.images = ['spore']
     spore.pos = shroom.pos
     spore.point_towards(maxine)
     projectiles.add(spore)
