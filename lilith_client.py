@@ -161,6 +161,13 @@ class JoystickData:
     def __init__(self, pressed):
         self.pressed = pressed
 
+class StatusData:
+    def __init__(self, wrapper):
+        self.wrapper = wrapper
+    
+    def get_type(self):
+        return wrapper['type']
+
 def consume_samples():
     '''Optional loop in a separate thread. It simulates the game loop. It
     waits a 60th of a second and then pops any items on the queue (global
@@ -179,12 +186,16 @@ def consume_samples():
             elif isinstance(data, JoystickData):
                 print('(' + str(i) + ') consume_samples gets JoystickData with pressed:',
                         data.pressed)
+            elif isinstance(data, StatusData):
+                print('(' + str(i) + ') consume_samples gets StatusData from player:',
+                      data.get_type()
         
         time.sleep(1.0 / 60.0)
 
 def consume_latest_samples(q):
-    '''A non-blocking function that returns a list of any SampleData objects
-    that are on the queue (and removes them from the queue).'''
+    '''A non-blocking function that returns a list of any SampleData/
+    JoystickData/StatusData objects that are on the queue (and removes them 
+    from the queue).'''
     sd_list = []
 
     while True:
@@ -289,6 +300,20 @@ def move_pump(steps: int, delay: int):
     s = struct.Struct('!HiI')
     data = [29, steps, delay]
     packed_data = s.pack(*data)
+    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+
+# Sending the status of one player's game in Maxine vs the uMonsters
+def send_status(json_string):
+    global ws
+    # Status code = 20 : uint16
+    # Just stick the JSON data on
+    s = struct.Struct('!H')
+    data = [20]
+    packed_data = s.pack(*data)
+    
+    json_bytes = bytes(json_string)
+    print('json_bytes:', json_bytes)
+    packed_data = packed_data + json_bytes
     ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
 if __name__ == '__main__':

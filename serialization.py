@@ -11,3 +11,9 @@ class Serializer:
         
         return data
 
+    def save_dict_to_string(self, d):
+        return json.dumps(d)
+    
+    def load_dict_from_string(self, s):
+        return json.loads(s)
+

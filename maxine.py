@@ -1000,6 +1000,7 @@ args = parse_arguments.parser.parse_args()
 STANDALONE = not args.datadir and not args.live
 LIVE = args.live
 DATADIR = args.datadir
+MULTIPLAYER = bool(args.console)
 
 if not args.player:
     PLAYER = 'maxine'
