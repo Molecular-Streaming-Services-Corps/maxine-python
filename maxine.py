@@ -322,6 +322,7 @@ def load_actor_from_dict(data):
     actor.pos = tuple(data['pos'])
     actor.scale = data['scale']
     actor.images = data['images']
+    actor.angle = data['angle']
 
     if 'disappear_timer' in data:
         actor.disappear_timer = data['disappear_timer']
@@ -343,36 +344,38 @@ def draw():
     
     draw_graph()
     
-    if PLAYER == 'console':
-        new_controls.draw()
+    # Now we draw the controls for both players.
+    #if PLAYER == 'console':
+    new_controls.draw()
     
     # In the old 1-player mode Maxine needed to touch controls on screen.
     #controls.draw()
     
-    if PLAYER == 'maxine':
-        # Replaced by Kent's video of a pore
-        #pore.draw()
+    # Now we draw the arena for both players
+    #if PLAYER == 'maxine':
+    # Replaced by Kent's video of a pore
+    #pore.draw()
 
-        # Draw Maxine or the boom
-        maxine.draw()
+    # Draw Maxine or the boom
+    maxine.draw()
+    
+    # Draw either a cell or explosion1
+    for cell in cells:
+        draw_cell(cell)
+
+    for cell in dead_cells:
+        draw_cell(cell)
+
+    for monster in spiraling_monsters:
+        monster.draw()
+    for monster in dead_sms:
+        monster.draw()
         
-        # Draw either a cell or explosion1
-        for cell in cells:
-            draw_cell(cell)
+    for p in projectiles:
+        p.draw()
 
-        for cell in dead_cells:
-            draw_cell(cell)
-
-        for monster in spiraling_monsters:
-            monster.draw()
-        for monster in dead_sms:
-            monster.draw()
-            
-        for p in projectiles:
-            p.draw()
-
-        if not MAXINE_CHANGES_SIZE:
-            screen.draw.text('SCORE ' + str(score), (10, 10))
+    if not MAXINE_CHANGES_SIZE:
+        screen.draw.text('SCORE ' + str(score), (10, 10))
     
     # Draw the signal ring.
     RED = (200, 0, 0)
@@ -859,6 +862,7 @@ def on_key_down(key):
     
     # Save and load the state of the game to a file.
     if key == keys.S:
+        # Only save the information that this player is in charge of updating
         if PLAYER == 'console':
             data = new_controls.save_to_dict()
             serializer.save_dict_to_file(data, 'console.json')
@@ -866,10 +870,15 @@ def on_key_down(key):
             data = save_arena_to_dict()
             serializer.save_dict_to_file(data, 'maxine.json')
     elif key == key.L:
-        if PLAYER == 'console':
+        # Load the Maxine information only for the console player, because
+        # the save information isn't complete enough to continue the game,
+        # just enough to display one frame. But the console information is
+        # enough to continue operating the console.
+        if PLAYER == 'maxine':
             data = serializer.load_dict_from_file('console.json')
             new_controls.load_from_dict(data)
-        else:
+
+        if PLAYER == 'console':
             data = serializer.load_dict_from_file('maxine.json')
             load_arena_from_dict(data)
 
