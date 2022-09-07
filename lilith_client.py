@@ -45,12 +45,14 @@ pressed = []
 channel = 0
 q = queue.Queue()
 ws = None
+ws_connected = False
 
 sample_index = 0
 SAMPLES_PER_SECOND = 10**5
 samples_per_packet = int(SAMPLES_PER_SECOND / 60) + 1
 
 def on_open(ws):
+    global ws_connected
     print('Connected succesfully')
     
     get_metadata('version', ws)
@@ -64,6 +66,8 @@ def on_open(ws):
     
     request_data(ws, 1)
     print('Requested data')
+    
+    ws_connected = True
 
 
 def on_message(wsapp, message):
@@ -72,9 +76,14 @@ def on_message(wsapp, message):
     print('Message typecode:', code)
     process_message(code, message)
 
+#def on_close(ws, close_status_code, close_msg):
 def on_close(ws, close_status_code, close_msg):
-    print(f"WebSocket closed with code {close_status_code} and message: {close_msg}")
+    global ws_connected
+    #print(f"WebSocket closed with code {close_status_code} and message: {close_msg}")
+    print('WebSocket closed!')
 
+    ws_connected = False
+    
 def main():
     global q, ws
 
@@ -162,11 +171,8 @@ class JoystickData:
         self.pressed = pressed
 
 class StatusData:
-    def __init__(self, wrapper):
-        self.wrapper = wrapper
-    
-    def get_type(self):
-        return wrapper['type']
+    def __init__(self, json_string):
+        self.json_string = json_string
 
 def consume_samples():
     '''Optional loop in a separate thread. It simulates the game loop. It
@@ -187,8 +193,8 @@ def consume_samples():
                 print('(' + str(i) + ') consume_samples gets JoystickData with pressed:',
                         data.pressed)
             elif isinstance(data, StatusData):
-                print('(' + str(i) + ') consume_samples gets StatusData from player:',
-                      data.get_type()
+                print('(' + str(i) + ') consume_samples gets StatusData from player, starting with:',
+                      data.json_string[0 : 50])
         
         time.sleep(1.0 / 60.0)
 
@@ -302,19 +308,24 @@ def move_pump(steps: int, delay: int):
     packed_data = s.pack(*data)
     ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
-# Sending the status of one player's game in Maxine vs the uMonsters
+# Sending the status of one player's game in Maxine vs the uMonsters. Only starts after the socket is open.
 def send_status(json_string):
-    global ws
-    # Status code = 20 : uint16
-    # Just stick the JSON data on
-    s = struct.Struct('!H')
-    data = [20]
-    packed_data = s.pack(*data)
-    
-    json_bytes = bytes(json_string)
-    print('json_bytes:', json_bytes)
-    packed_data = packed_data + json_bytes
-    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+    global ws, ws_connected
+    if ws and ws_connected:
+        # Status code = 20 : uint16
+        # Just stick the JSON data on
+        s = struct.Struct('!H')
+        data = [20]
+        packed_data = s.pack(*data)
+
+        json_bytes = bytes(json_string, 'ascii')
+        #print('send_status: json_bytes:', json_bytes)
+        packed_data = packed_data + json_bytes
+        
+        try:
+            ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+        except Exception as e:
+            print('Exception sending status: type:', type(e))
 
 if __name__ == '__main__':
     setup()

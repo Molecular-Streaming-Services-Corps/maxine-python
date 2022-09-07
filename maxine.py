@@ -561,6 +561,7 @@ button_pressed_before = False
 def update():
     global score, i, step_count, d, controls, space_pressed_before, button_pressed_before
     global maxine_current_scale
+    global new_controls
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -584,8 +585,19 @@ def update():
 
     if PLAYER == 'maxine':
         update_for_maxine_player()
+    
+        # Send updates to the other player    
+        if MULTIPLAYER:
+            wrapper = save_arena_to_dict()
+            json_string = serializer.save_dict_to_string(wrapper)
+            lilith_client.send_status(json_string)
     else:
         update_for_console_player()
+
+        if MULTIPLAYER:
+            wrapper = new_controls.save_to_dict()
+            json_string = serializer.save_dict_to_string(wrapper)
+            lilith_client.send_status(json_string)
 
 pressed_before = set()
 def update_for_console_player():
@@ -1000,7 +1012,7 @@ args = parse_arguments.parser.parse_args()
 STANDALONE = not args.datadir and not args.live
 LIVE = args.live
 DATADIR = args.datadir
-MULTIPLAYER = bool(args.console)
+MULTIPLAYER = not args.player is None
 
 if not args.player:
     PLAYER = 'maxine'
@@ -1027,6 +1039,17 @@ elif LIVE:
     
     d = data.LiveData(NUM_BOXES)
 
+if MULTIPLAYER and not LIVE:
+    name = 'Kent'
+    lilith_client.MAC = lilith_client.NAME2MAC[name]
+    lilith_client.setup()
+
+    print('Initializing lilith_client')
+    # Run the Lilith interaction loop in another thread
+    t = threading.Thread(target=lilith_client.main)
+    # Don't wait for this thread when the game exits
+    t.setDaemon(True)
+    t.start()
 
 controls = Controls()
 
