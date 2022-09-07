@@ -15,6 +15,7 @@ import data
 import util
 import lilith_client
 import animated_image
+import serialization
 
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
@@ -224,6 +225,28 @@ class NewControls:
         if LIVE:
             lilith_client.set_bias(voltage)
         self.voltage = voltage
+
+    def save_to_dict(self):
+        save = {}
+        wrapper = {'type': 'controls', 'state': save}
+        
+        save['control_index'] = self.control_index
+        save['voltage_knob_angle'] = self.voltage_knob.angle
+        save['voltage'] = self.voltage
+        save['old_voltage'] = self.old_voltage
+        save['zap_timeout'] = self.zap_timeout
+        
+        return wrapper
+        
+    def load_from_dict(self, wrapper):
+        assert(wrapper['type'] == 'controls')
+        save = wrapper['state']
+        
+        self.control_index = save['control_index']
+        self.voltage_knob.angle = save['voltage_knob_angle']
+        self.voltage = save['voltage']
+        self.old_voltage = save['old_voltage']
+        self.zap_timeout = save['zap_timeout']
 
 new_controls = NewControls()
 
@@ -763,7 +786,7 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def on_key_down(key):
-    global graph_type
+    global graph_type, new_controls, serializer
 
     # Change graph type
     if key == keys.G:
@@ -771,6 +794,16 @@ def on_key_down(key):
             graph_type = 'scatterplot'
         else:
             graph_type = 'heatmap'
+    
+    # Save and load the state of the game to a file.
+    if key == keys.S:
+        if PLAYER == 'console':
+            data = new_controls.save_to_dict()
+            serializer.save_dict_to_file(data, 'console.json')
+    elif key == key.L:
+        if PLAYER == 'console':
+            data = serializer.load_dict_from_file('console.json')
+            new_controls.load_from_dict(data)
 
 # Maxine functions
 
@@ -917,6 +950,8 @@ elif LIVE:
 
 
 controls = Controls()
+
+serializer = serialization.Serializer()
 
 #music.play('subgenie') 
 
