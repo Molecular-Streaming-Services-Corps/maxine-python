@@ -11,9 +11,20 @@ import queue
 
 # Enable websocket logging of exceptions
 import logging
-logger = logging.getLogger('websocket')
+wslogger = logging.getLogger('websocket')
+wslogger.setLevel(logging.INFO)
+wslogger.addHandler(logging.StreamHandler())
+
+# Set up logger for this module
+logger = logging.getLogger('lilith_client')
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+import sys
+handler = logging.StreamHandler(sys.stdout)
+handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
+logger.addHandler(handler)
+
+# Must set the root logger to debug or info to allow messages to show
+logging.getLogger().setLevel(logging.DEBUG)
 
 # Local packages.
 import util
@@ -54,28 +65,30 @@ SAMPLES_PER_SECOND = 10**5
 samples_per_packet = int(SAMPLES_PER_SECOND / 60) + 1
 
 def on_open(ws):
-    global ws_connected
-    print('Connected succesfully')
+    global ws_connected, logger
+    logger.info('Connected succesfully')
     
     get_metadata('version', ws)
     get_metadata('bias_settings_history', ws)
 
     set_game_subscription(ws)
-    print('Completed set_game_subscription')
+    logger.debug('Completed set_game_subscription')
     
     ping(ws)
-    print('Started ping')
+    logger.debug('Started ping')
     
     request_data(ws, 1)
-    print('Requested data')
+    logger.debug('Requested data')
     
     ws_connected = True
 
 
 def on_message(wsapp, message):
-    print('Message received:', message[:10])
+    global logger
+    
+    logger.debug('Message received:' + str(message[:10]))
     code = get_typecode(message)
-    print('Message typecode:', code)
+    logger.debug('Message typecode:' + str(code))
     process_message(code, message)
 
 #def on_close(ws, close_status_code, close_msg):
@@ -87,12 +100,12 @@ def on_close(ws, close_status_code, close_msg):
     ws_connected = False
     
 def main():
-    global q, ws
+    global q, ws, logger
 
     URI = PROTOCOL + HOST + PATH
-    print('URI: ' + URI)
+    logger.info('URI: ' + URI)
 
-    print('Connecting to websocket')
+    logger.info('Connecting to websocket')
     wsapp = websocket.WebSocketApp(URI, header=HEADERS, on_message=on_message,
          on_open=on_open, on_close=on_close)
     ws = wsapp
@@ -107,16 +120,16 @@ def get_typecode(message):
     return data[0]
     
 def process_message(code, message):
-    global pressed, channel, q, state_q
+    global pressed, channel, q, state_q, logger
 
     # typecode 0: update
     if code == 0:
-        print('[0] Current data update received')
+        logger.debug('[0] Current data update received')
         if len(message) < 3000:
-            print('Empty current data message.')
+            logger.debug('Empty current data message.')
         else:
             data = SampleData(message)
-            print('process_message: sample count:', data.sample_count)
+            logger.debug('process_message: sample count: %{sc}s', sc = data.sample_count)
             # Maybe the empty current data message gives you a false channel
             #print('process_message: found out channel:', data.channel)
             #channel = data.channel
@@ -125,24 +138,24 @@ def process_message(code, message):
          
     # typecode 1: WEBSOCK_JSON_DATA
     elif code == 1:
-        print('[1] JSON data received.')
+        logger.debug('[1] JSON data received.')
         json_string = message[2:].decode('unicode_escape')
-        print('process_message:', json_string)
+        logger.debug('process_message:' + json_string)
         data = json.loads(json_string)
         metadata.update(data)
-        print('process message: all metadata:', metadata)
+        logger.debug('process message: all metadata: %{md}s', md = metadata)
     # typecode 104: WEBSOCK_DEVICE_CLOSED
     elif code == 104:
-        print('[104] Device is closed.')
+        logger.info('[104] Device is closed.')
     # typecode 107: WEBSOCK_NEW_JOYSTICK
     elif code == 107:
         # The joystick data is a uint16 in big-endian with bits to represent what's pressed.
         s = struct.Struct('!H')
         unpacked_tuple = s.unpack(message[2:4])
         joystick_data = unpacked_tuple[0]
-        print('process_message: raw joystick data:', joystick_data)
+        logger.debug('process_message: raw joystick data: %{jd}s', jd = joystick_data)
         pressed = util.process_joystick_data(joystick_data)
-        print('process_message: joystick used:', pressed)
+        logger.debug('process_message: joystick used: %[p}s', p = pressed)
         data = JoystickData(pressed)
         q.put(data)
     # typecode 20: WEBSOCK_STATE
@@ -168,10 +181,10 @@ class SampleData:
         samples_bytes = message[16:]
         s = struct_definitions.numbers_1667
         self.samples = s.unpack(samples_bytes)
-        print('samples:', len(self.samples), self.samples[0 : 10])
+        logger.debug('samples: %{l}s %{ss}s', l = len(self.samples), ss = self.samples[0 : 10])
         
-        print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
-              self.websock_type, self.channel, self.stride, self.start, self.end) 
+        #print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
+        #      self.websock_type, self.channel, self.stride, self.start, self.end) 
 
 class JoystickData:
     def __init__(self, pressed):
@@ -194,18 +207,18 @@ def consume_samples():
         
         for i, data in enumerate(d_list):
             if isinstance(data, SampleData):
-                print('(' + str(i) + ') consume_samples gets SampleData with start:',
-                        data.start)
+                logger.info('(%{i}s) consume_samples gets SampleData with start: %{ds}s',
+                        i=i, ds=data.start)
             elif isinstance(data, JoystickData):
-                print('(' + str(i) + ') consume_samples gets JoystickData with pressed:',
-                        data.pressed)
+                logger.info('(%{i}s) consume_samples gets JoystickData with pressed: %{dp}s',
+                        i=i, dp=data.pressed)
         
         state_d_list = consume_latest_samples(state_q)
         
         for i, data in enumerate(state_d_list):
             if isinstance(data, StatusData):
-                print('(' + str(i) + ') consume_samples gets StatusData from player, starting with:',
-                      data.json_string[0 : 50])        
+                logger.info('(%{i}s) consume_samples gets StatusData from player, starting with: %{js}s',
+                      i=i, js=data.json_string[0 : 50])
         
         time.sleep(1.0 / 60.0)
 
@@ -337,7 +350,7 @@ def send_status(json_string):
         try:
             ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
         except Exception as e:
-            print('Exception sending status: type:', type(e))
+            logger.error('Exception sending status: type: %{e}s', e=type(e))
 
 if __name__ == '__main__':
     setup()
