@@ -86,9 +86,9 @@ def on_open(ws):
 def on_message(wsapp, message):
     global logger
     
-    logger.debug('Message received:' + str(message[:10]))
+    logger.debug('Message received: %s', message[:10])
     code = get_typecode(message)
-    logger.debug('Message typecode:' + str(code))
+    logger.debug('Message typecode: %s', code)
     process_message(code, message)
 
 #def on_close(ws, close_status_code, close_msg):
@@ -129,7 +129,7 @@ def process_message(code, message):
             logger.debug('Empty current data message.')
         else:
             data = SampleData(message)
-            logger.debug('process_message: sample count: %{sc}s', sc = data.sample_count)
+            logger.debug('process_message: sample count: %s', data.sample_count)
             # Maybe the empty current data message gives you a false channel
             #print('process_message: found out channel:', data.channel)
             #channel = data.channel
@@ -140,10 +140,10 @@ def process_message(code, message):
     elif code == 1:
         logger.debug('[1] JSON data received.')
         json_string = message[2:].decode('unicode_escape')
-        logger.debug('process_message:' + json_string)
+        logger.debug('process_message: %s', json_string)
         data = json.loads(json_string)
         metadata.update(data)
-        logger.debug('process message: all metadata: %{md}s', md = metadata)
+        logger.debug('process message: all metadata: %s', metadata)
     # typecode 104: WEBSOCK_DEVICE_CLOSED
     elif code == 104:
         logger.info('[104] Device is closed.')
@@ -153,9 +153,9 @@ def process_message(code, message):
         s = struct.Struct('!H')
         unpacked_tuple = s.unpack(message[2:4])
         joystick_data = unpacked_tuple[0]
-        logger.debug('process_message: raw joystick data: %{jd}s', jd = joystick_data)
+        logger.debug('process_message: raw joystick data: %s', joystick_data)
         pressed = util.process_joystick_data(joystick_data)
-        logger.debug('process_message: joystick used: %[p}s', p = pressed)
+        logger.debug('process_message: joystick used: %s', pressed)
         data = JoystickData(pressed)
         q.put(data)
     # typecode 20: WEBSOCK_STATE
@@ -181,7 +181,7 @@ class SampleData:
         samples_bytes = message[16:]
         s = struct_definitions.numbers_1667
         self.samples = s.unpack(samples_bytes)
-        logger.debug('samples: %{l}s %{ss}s', l = len(self.samples), ss = self.samples[0 : 10])
+        logger.debug('samples: %s %s', len(self.samples), self.samples[0 : 10])
         
         #print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
         #      self.websock_type, self.channel, self.stride, self.start, self.end) 
@@ -207,18 +207,18 @@ def consume_samples():
         
         for i, data in enumerate(d_list):
             if isinstance(data, SampleData):
-                logger.info('(%{i}s) consume_samples gets SampleData with start: %{ds}s',
-                        i=i, ds=data.start)
+                logger.info('(%s) consume_samples gets SampleData with start: %s',
+                        i, data.start)
             elif isinstance(data, JoystickData):
-                logger.info('(%{i}s) consume_samples gets JoystickData with pressed: %{dp}s',
-                        i=i, dp=data.pressed)
+                logger.info('(%s) consume_samples gets JoystickData with pressed: %s',
+                        i, data.pressed)
         
         state_d_list = consume_latest_samples(state_q)
         
         for i, data in enumerate(state_d_list):
             if isinstance(data, StatusData):
-                logger.info('(%{i}s) consume_samples gets StatusData from player, starting with: %{js}s',
-                      i=i, js=data.json_string[0 : 50])
+                logger.info('(%s) consume_samples gets StatusData from player, starting with: %s',
+                      i, data.json_string[0 : 50])
         
         time.sleep(1.0 / 60.0)
 
@@ -350,7 +350,7 @@ def send_status(json_string):
         try:
             ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
         except Exception as e:
-            logger.error('Exception sending status: type: %{e}s', e=type(e))
+            logger.error('Exception sending status: type: %s', type(e))
 
 if __name__ == '__main__':
     setup()
