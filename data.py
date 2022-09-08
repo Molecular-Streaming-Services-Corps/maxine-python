@@ -98,7 +98,7 @@ class LiveData(Data):
             num_real_boxes = 100
             padding = []
         
-        real_boxes = [0] * num_real_boxes
+        real_boxes = np.zeros(num_real_boxes)
         for box_id in range(0, num_real_boxes):
             offset = 100 - box_id - 1
             
