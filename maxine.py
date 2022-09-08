@@ -907,6 +907,10 @@ def on_key_down(key):
             data = serializer.load_dict_from_file('maxine.json')
             load_arena_from_dict(data)
 
+# Development tool: when the mouse is clicked, print the mouse coordinates in the window
+def on_mouse_down(pos):
+    print('Mouse clicked at:', pos)
+
 # Maxine functions
 
 def kill_maxine():
