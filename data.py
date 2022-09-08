@@ -2,8 +2,18 @@ import numpy as np
 import json
 import os
 import math
+import logging
 
 import lilith_client
+
+# Set up logger for this module
+logger = logging.getLogger('data')
+logger.setLevel(logging.DEBUG)
+import sys
+handler = logging.StreamHandler(sys.stdout)
+handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
+logger.addHandler(handler)
+
 
 class Data:
     def __init__(self):
@@ -111,6 +121,8 @@ class LiveData(Data):
         the lowest value in the boxes and +1 represents the highest.
         
         TODO: remove code duplication'''
+        global logger
+        
         min_v = np.min(self.get_boxes())
         max_v = np.max(self.get_boxes())
         range_ = max_v - min_v
@@ -119,11 +131,11 @@ class LiveData(Data):
         
         scale == 0.01
         
-        print('boxes:', self.get_boxes())
+        logger.debug('boxes: %s', self.get_boxes())
         ret = [(v - mid) / scale for v in self.get_boxes()]
-        print('get_scaled_boxes before nan check:', ret)
+        logger.debug('get_scaled_boxes before nan check: %s', ret)
         ret = [v if not math.isnan(v) else 0 for v in ret]
-        print('get_scaled_boxes after nan check:', ret)
+        logger.debug('get_scaled_boxes after nan check: %s', ret)
         
         
         return ret
@@ -216,5 +228,4 @@ class PrerecordedData(Data):
         ret = [(v - mid) / scale for v in self.get_boxes()]
         
         return ret
-        
 
