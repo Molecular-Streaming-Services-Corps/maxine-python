@@ -6,6 +6,7 @@ import pygame
 import numpy as np
 # For the removed video background
 #import cv2
+import logging
 
 # Builtin packages.
 import random
@@ -17,6 +18,14 @@ import util
 import lilith_client
 import animated_image
 import serialization
+
+# Set up logger for this module
+logger = logging.getLogger('maxine')
+logger.setLevel(logging.DEBUG)
+import sys
+handler = logging.StreamHandler(sys.stdout)
+handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
+logger.addHandler(handler)
 
 # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
 #import matplotlib_pygame
@@ -566,6 +575,7 @@ def update():
     global score, i, step_count, d, controls, space_pressed_before, button_pressed_before
     global maxine_current_scale
     global new_controls
+    global logger
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -611,10 +621,10 @@ def update():
         ty = wrapper['type']
         if ty == 'controls' and PLAYER == 'maxine':
             new_controls.load_from_dict(wrapper)
-            print('loaded controls state from the internet')
+            logger.info('loaded controls state from the internet')
         elif ty == 'maxine' and PLAYER == 'console':
             load_arena_from_dict(wrapper)
-            print('loaded arena state from the internet')
+            logger.info('loaded arena state from the internet')
 
 pressed_before = set()
 def update_for_console_player():
