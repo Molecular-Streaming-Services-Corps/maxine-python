@@ -599,6 +599,18 @@ def update():
             json_string = serializer.save_dict_to_string(wrapper)
             lilith_client.send_status(json_string)
 
+    # Process updates only from the other player.
+    state_d_list = lilith_client.consume_latest_samples(lilith_client.state_q)
+    for state_data in state_d_list:
+        wrapper = serializer.load_dict_from_string(state_data.json_string)
+        ty = wrapper['type']
+        if ty == 'controls' and PLAYER == 'maxine':
+            new_controls.load_from_dict(wrapper)
+            print('loaded controls state from the internet')
+        elif ty == 'maxine' and PLAYER == 'console':
+            load_arena_from_dict(wrapper)
+            print('loaded arena state from the internet')
+
 pressed_before = set()
 def update_for_console_player():
     '''Allows the console player to use either the joystick or the keyboard
@@ -1018,6 +1030,8 @@ if not args.player:
     PLAYER = 'maxine'
 else:
     PLAYER = args.player # 'console'
+
+TITLE = TITLE + f' ({PLAYER})'
 
 if DATADIR:
     d = data.PrerecordedData(NUM_BOXES)

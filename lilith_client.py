@@ -21,7 +21,8 @@ import struct_definitions
 
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
 HOST = 'lilith.demonpore.tv:3000/'
-KENT_MAC = '04e9e50cc5b9'
+KENT_OLD_MAC = '04e9e50cc5b9'
+KENT_MAC = '04e9e50c6a0b'
 JONATHAN_MAC = '04e9e50c6a0b'
 MAC = JONATHAN_MAC
 NAME2MAC = {'Jonathan': JONATHAN_MAC, 'Kent': KENT_MAC}
@@ -44,6 +45,7 @@ metadata = {}
 pressed = []
 channel = 0
 q = queue.Queue()
+state_q = queue.Queue()
 ws = None
 ws_connected = False
 
@@ -105,7 +107,7 @@ def get_typecode(message):
     return data[0]
     
 def process_message(code, message):
-    global pressed, channel, q
+    global pressed, channel, q, state_q
 
     # typecode 0: update
     if code == 0:
@@ -143,6 +145,11 @@ def process_message(code, message):
         print('process_message: joystick used:', pressed)
         data = JoystickData(pressed)
         q.put(data)
+    # typecode 20: WEBSOCK_STATE
+    elif code == 20:
+        json_string = message[2:].decode('ascii') 
+        status_data = StatusData(json_string)
+        state_q.put(status_data)
 
 class SampleData:
     '''self.start is equivalent to a uint64. It's broken into start_high for the high bits
@@ -180,7 +187,7 @@ def consume_samples():
     varialbe q). This function is only used in demo mode (running lilith_client
     as a program. When lilith_client is used as a library you can use your own
     game loop.'''
-    global q
+    global q, state_q
 
     while True:
         d_list = consume_latest_samples(q)
@@ -192,9 +199,13 @@ def consume_samples():
             elif isinstance(data, JoystickData):
                 print('(' + str(i) + ') consume_samples gets JoystickData with pressed:',
                         data.pressed)
-            elif isinstance(data, StatusData):
+        
+        state_d_list = consume_latest_samples(state_q)
+        
+        for i, data in enumerate(state_d_list):
+            if isinstance(data, StatusData):
                 print('(' + str(i) + ') consume_samples gets StatusData from player, starting with:',
-                      data.json_string[0 : 50])
+                      data.json_string[0 : 50])        
         
         time.sleep(1.0 / 60.0)
 
