@@ -300,13 +300,14 @@ def run_request_data(ws, sample_stride):
 
 # Setting bias
 def set_bias(bias_mv : float):
-    global ws
-    # Bias code = 2
-    # Device = 0
-    s = struct.Struct('!HHf')
-    data = [2, 0, bias_mv / 1000]
-    packed_data = s.pack(*data)
-    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+    global ws, ws_connected
+    if ws and ws_connected:
+        # Bias code = 2
+        # Device = 0
+        s = struct.Struct('!HHf')
+        data = [2, 0, bias_mv / 1000]
+        packed_data = s.pack(*data)
+        ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
 # Moving the syringe
 def move_pump(steps: int, delay: int):
