@@ -1,10 +1,11 @@
-#!/bin/env python3
+#!/usr/bin/env python
 # Installed packages.
 import pgzrun
 from pgzhelper import *
 import pygame
 import numpy as np
-import cv2
+# For the removed video background
+#import cv2
 
 # Builtin packages.
 import random
@@ -1031,6 +1032,18 @@ if not args.player:
 else:
     PLAYER = args.player # 'console'
 
+BOARD = args.live # Could be None
+
+# Detect Kent's computer and apply default parameters (can be overridden)
+import platform
+import sys
+if platform.system() == 'Darwin' and len(sys.argv) == 1:
+    BOARD = 'Kent'
+    LIVE = True
+    PLAYER = 'console'
+    STANDALONE = False
+    DATADIR = None
+
 TITLE = TITLE + f' ({PLAYER})'
 
 if DATADIR:
@@ -1042,7 +1055,7 @@ elif STANDALONE:
         clock.schedule_unique(add_cell, 4.0)   
 
 elif LIVE:
-    lilith_client.MAC = lilith_client.NAME2MAC[args.live]
+    lilith_client.MAC = lilith_client.NAME2MAC[BOARD]
     lilith_client.setup()
 
     # Run the Lilith interaction loop in another thread
