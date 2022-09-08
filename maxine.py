@@ -58,6 +58,8 @@ graph_type = 'ring'
 MAKE_MUSHROOMS = True
 DRAW_SPIRALS = False
 
+game_state = 'playing' # becomes 'won' or 'lost'
+
 class Controls:
     '''The obsolete controls'''
     def __init__(self):
@@ -165,7 +167,8 @@ class NewControls:
         else:
             self.zap_lever.images = ['switch_big_frame_1']
             
-            self.set_voltage(self.old_voltage)
+            if self.voltage != self.old_voltage:
+                self.set_voltage(self.old_voltage)
             self.voltage_knob.angle = 360 - self.old_voltage
         
         self.zap_lever.animate()
@@ -395,12 +398,12 @@ def draw():
         draw_spiral(rotation + 180, GREEN)
 
     if PLAYER == 'maxine':
-        # Draw the victory or gameover graphics.
-        if maxine_current_scale <= MAXINE_LOSE_SIZE:
+        # Draw the victory or gameover graphics (or nothing if the game is still going).
+        if game_state == 'lost':
             gameover = Actor('gameover')
             gameover.pos = CENTER
             gameover.draw()
-        elif maxine_current_scale >= MAXINE_WIN_SIZE:
+        elif game_state == 'won':
             victory = Actor('victory')
             victory.pos = CENTER
             victory.draw()
@@ -585,13 +588,14 @@ def update():
             add_cell()    
 
     if PLAYER == 'maxine':
-        update_for_maxine_player()
-    
-        # Send updates to the other player    
-        if MULTIPLAYER:
-            wrapper = save_arena_to_dict()
-            json_string = serializer.save_dict_to_string(wrapper)
-            lilith_client.send_status(json_string)
+        if game_state == 'playing':
+            update_for_maxine_player()
+        
+            # Send updates to the other player    
+            if MULTIPLAYER:
+                wrapper = save_arena_to_dict()
+                json_string = serializer.save_dict_to_string(wrapper)
+                lilith_client.send_status(json_string)
     else:
         update_for_console_player()
 
@@ -674,7 +678,7 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
             pressed_before.remove(switch_name)
     
 def update_for_maxine_player():
-    global maxine_current_scale
+    global maxine_current_scale, game_state
     maxine.animate()
 
     # Move Maxine.
@@ -867,6 +871,12 @@ def update_for_maxine_player():
     for p in projectiles_to_delete:
         projectiles.remove(p)
 
+    # Check if Maxine has won or lost (or is still going)
+    if maxine_current_scale <= MAXINE_LOSE_SIZE:
+        game_state = 'lost'
+    elif maxine_current_scale >= MAXINE_WIN_SIZE:
+        game_state = 'won'
+
 def point_outside_signal_ring(point):
     '''Calculate if a position is outside the ellipse. From Math StackExchange.'''
     rx = RING_WIDTH / 2
@@ -977,6 +987,11 @@ def make_sars_monster():
     return cell
 
 def add_cell():
+    # This is called by the clock, not the update function (in standalone mode)
+    global game_state
+    if game_state != 'playing':
+        return
+        
     if MAKE_MUSHROOMS:
         mush = make_mushroom()
         spiraling_monsters.add(mush)
