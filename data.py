@@ -83,7 +83,7 @@ class LiveData(Data):
                 self.pressed = data.pressed
 
     def get_one_frame_joystick(self):
-        '''The joystick isn't yet supported in Live Mode.'''
+        '''This isn't called by Live Mode.'''
         return 65535
 
     def get_boxes(self):
