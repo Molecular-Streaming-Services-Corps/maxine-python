@@ -8,6 +8,7 @@ import binascii
 from threading import Timer, Thread
 import time
 import queue
+import numpy as np
 
 # Enable websocket logging of exceptions
 import logging
@@ -178,9 +179,15 @@ class SampleData:
         self.start = (self.start_high << 32) | self.start_low
         self.end = self.start + self.stride * self.sample_count
         
-        samples_bytes = message[16:]
-        s = struct_definitions.numbers_1667
-        self.samples = s.unpack(samples_bytes)
+        # Old possibly slow code to extract 1667 int16's with struct instead of numpy 
+        # It also created a tuple which may be slower than a numpy array for later code
+        #samples_bytes = message[16:]
+        #s = struct_definitions.numbers_1667
+        #self.samples = s.unpack(samples_bytes)
+        dt = np.dtype(np.int16)
+        dt = dt.newbyteorder('>')
+        self.samples = p.frombuffer(message, dtype=dt, offset=16)
+        
         logger.debug('samples: %s %s', len(self.samples), self.samples[0 : 10])
         
         #print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
