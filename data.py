@@ -112,7 +112,10 @@ class LiveData(Data):
             # Set the box to the min value in this frame
             real_boxes[box_id] = np.min(df)
             
-        ret = padding + real_boxes
+        if len(padding) > 0:
+            ret = np.concatenate([padding, real_boxes])
+        else:
+            ret = real_boxes
         #print('get_boxes:', ret)
         return ret
 
@@ -132,7 +135,10 @@ class LiveData(Data):
         scale == 0.01
         
         logger.debug('boxes: %s', self.get_boxes())
-        ret = [(v - mid) / scale for v in self.get_boxes()]
+        # Pre-numpy code
+        #ret = [(v - mid) / scale for v in self.get_boxes()]
+        # Numpy code
+        ret = (self.get_boxes() - mid) / scale
         logger.debug('get_scaled_boxes before nan check: %s', ret)
         ret = [v if not math.isnan(v) else 0 for v in ret]
         logger.debug('get_scaled_boxes after nan check: %s', ret)

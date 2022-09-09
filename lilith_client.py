@@ -87,10 +87,15 @@ def on_open(ws):
 def on_message(wsapp, message):
     global logger
     
-    logger.debug('Message received: %s', message[:10])
-    code = get_typecode(message)
-    logger.debug('Message typecode: %s', code)
-    process_message(code, message)
+    # Necessary to get the traceback and not just the error type and info
+    try:
+        logger.debug('Message received: %s', message[:10])
+        code = get_typecode(message)
+        logger.debug('Message typecode: %s', code)
+        process_message(code, message)
+    except Exception:
+        import traceback
+        logger.error(traceback.format_exc())
 
 #def on_close(ws, close_status_code, close_msg):
 def on_close(ws, close_status_code, close_msg):
@@ -186,7 +191,7 @@ class SampleData:
         #self.samples = s.unpack(samples_bytes)
         dt = np.dtype(np.int16)
         dt = dt.newbyteorder('>')
-        self.samples = p.frombuffer(message, dtype=dt, offset=16)
+        self.samples = np.frombuffer(message, dtype=dt, offset=16)
         
         logger.debug('samples: %s %s', len(self.samples), self.samples[0 : 10])
         
