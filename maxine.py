@@ -160,11 +160,16 @@ class NewControls:
         
         self.zap_timeout = 0
         
-        self.controls = [self.voltage_knob, self.zap_lever]
+        self.syringe = Actor('syringe')
+        self.syringe.left = 1470
+        self.syringe.top = 545
+        
+        self.controls = [self.voltage_knob, self.zap_lever, self.syringe]
         # The index of the presently selected control
         self.control_index = 0
         self.voltage_index = 0
         self.zap_index = 1
+        self.syringe_index = 2
         
         self.old_voltage = 0
         self.voltage = 0
@@ -203,6 +208,8 @@ class NewControls:
         self.draw_text(str(self.voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
 
         self.zap_lever.draw()
+        
+        self.syringe.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
