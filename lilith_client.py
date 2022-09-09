@@ -336,14 +336,15 @@ def set_bias(bias_mv : float):
 
 # Moving the syringe
 def move_pump(steps: int, delay: int):
-    global ws
-    # Pump code = 29 : uint16
-    # steps : int32
-    # delay : uint32
-    s = struct.Struct('!HiI')
-    data = [29, steps, delay]
-    packed_data = s.pack(*data)
-    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+    global ws, ws_connected
+    if ws and ws_connected:
+        # Pump code = 29 : uint16
+        # steps : int32
+        # delay : uint32
+        s = struct.Struct('!HiI')
+        data = [29, steps, delay]
+        packed_data = s.pack(*data)
+        ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
 # Sending the status of one player's game in Maxine vs the uMonsters. Only starts after the socket is open.
 def send_status(json_string):

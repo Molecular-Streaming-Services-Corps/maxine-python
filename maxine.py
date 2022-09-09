@@ -233,6 +233,9 @@ class NewControls:
             voltage = 360 - self.voltage_knob.angle
             self.set_voltage(voltage)
             self.old_voltage = voltage
+        elif self.control_index == self.syringe_index:
+            if LIVE:
+                lilith_client.move_pump(10, 0)
         
     def push_right(self):
         if self.control_index == self.voltage_index:
@@ -240,6 +243,9 @@ class NewControls:
             voltage = 360 - self.voltage_knob.angle
             self.set_voltage(voltage)
             self.old_voltage = voltage
+        elif self.control_index == self.syringe_index:
+            if LIVE:
+                lilith_client.move_pump(10, 0)
 
     def set_voltage(self, voltage):
         if LIVE:
