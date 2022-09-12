@@ -336,8 +336,9 @@ def set_bias(bias_mv : float):
 
 # Moving the syringe
 def move_pump(steps: int, delay: int):
-    global ws, ws_connected
+    global ws, ws_connected, logger
     if ws and ws_connected:
+        logger.info('move_pump %s %s', steps, delay)
         # Pump code = 29 : uint16
         # steps : int32
         # delay : uint32
@@ -345,6 +346,8 @@ def move_pump(steps: int, delay: int):
         data = [29, steps, delay]
         packed_data = s.pack(*data)
         ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+    else:
+        logger.warning('move_pump called when websocket is disconnected')
 
 # Sending the status of one player's game in Maxine vs the uMonsters. Only starts after the socket is open.
 def send_status(json_string):

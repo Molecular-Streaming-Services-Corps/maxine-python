@@ -245,7 +245,7 @@ class NewControls:
             self.old_voltage = voltage
         elif self.control_index == self.syringe_index:
             if LIVE:
-                lilith_client.move_pump(10, 0)
+                lilith_client.move_pump(-10, 0)
 
     def set_voltage(self, voltage):
         if LIVE:
