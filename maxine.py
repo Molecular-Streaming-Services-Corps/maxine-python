@@ -173,6 +173,7 @@ class NewControls:
         
         self.old_voltage = 0
         self.voltage = 0
+        self.old_angle = 0
         
     def update(self):
         if self.zap_timeout > 0:
@@ -183,7 +184,7 @@ class NewControls:
             
             if self.voltage != self.old_voltage:
                 self.set_voltage(self.old_voltage)
-            self.voltage_knob.angle = 360 - self.old_voltage
+            self.voltage_knob.angle = self.old_angle
         
         self.zap_lever.animate()
 
@@ -229,23 +230,42 @@ class NewControls:
         
     def push_left(self):
         if self.control_index == self.voltage_index:
-            self.voltage_knob.angle = int((self.voltage_knob.angle + 36) % 360)
-            voltage = 360 - self.voltage_knob.angle
+            if self.voltage_knob.angle != 170: # +17 * 10
+                self.voltage_knob.angle = (self.voltage_knob.angle + 17) % 360
+
+            voltage = self.find_voltage_from_angle(self.voltage_knob.angle)
             self.set_voltage(voltage)
             self.old_voltage = voltage
+            self.old_angle = self.voltage_knob.angle
         elif self.control_index == self.syringe_index:
             if LIVE:
                 lilith_client.move_pump(10, 0)
         
     def push_right(self):
         if self.control_index == self.voltage_index:
-            self.voltage_knob.angle = int((self.voltage_knob.angle - 36) % 360)
-            voltage = 360 - self.voltage_knob.angle
+            if self.voltage_knob.angle != 190: # -17 * 10
+                self.voltage_knob.angle = (self.voltage_knob.angle - 17) % 360
+            
+            voltage = self.find_voltage_from_angle(self.voltage_knob.angle)
             self.set_voltage(voltage)
             self.old_voltage = voltage
+            self.old_angle = self.voltage_knob.angle
         elif self.control_index == self.syringe_index:
             if LIVE:
                 lilith_client.move_pump(-10, 0)
+
+    def find_voltage_from_angle(self, angle):
+        if angle in [360, 0]:
+            voltage = 0
+        elif angle > 0 and angle <= 170:
+            # Negative voltage
+            voltage = int(-1 * angle / 17 * 100)
+        else:
+            # Positive voltage
+            angle_compliment = (360 - angle) % 360
+            voltage = int(angle_compliment / 17 * 100)
+
+        return voltage
 
     def set_voltage(self, voltage):
         if LIVE:
