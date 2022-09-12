@@ -876,6 +876,7 @@ def update_for_maxine_player():
     SPORE_SPEED = 3
     projectiles_to_delete = set()
     for p in projectiles:
+        p.animate()
         p.move_forward(SPORE_SPEED)
         if maxine.collide_pixel(p):
             projectiles_to_delete.add(p)
@@ -965,7 +966,8 @@ def make_spore(shroom):
     '''Makes a spore starting at the center of the shroom and heading toward
     Maxine.'''
     spore = Actor('spore')
-    spore.images = ['spore']
+    spore.images = ['spore1', 'spore2', 'spore3']
+    spore.scale = 0.25
     spore.pos = shroom.pos
     spore.point_towards(maxine)
     projectiles.add(spore)
