@@ -33,8 +33,8 @@ import struct_definitions
 
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
 HOST = 'lilith.demonpore.tv:3000/'
-KENT_OLD_MAC = '04e9e50cc5b9'
-KENT_MAC = '04e9e50c6a0b'
+KENT_MAC = '04e9e50cc5b9'
+KENT_OLD_MAC = '04e9e50c6a0b'
 JONATHAN_MAC = '04e9e50c6a0b'
 MAC = JONATHAN_MAC
 NAME2MAC = {'Jonathan': JONATHAN_MAC, 'Kent': KENT_MAC}
