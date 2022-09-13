@@ -626,9 +626,10 @@ def update():
         if PLAYER == 'maxine' and d.middle_spike_exists():
             add_cell()
     elif LIVE:
-        d.load_received_samples()
-        if PLAYER == 'maxine' and d.middle_spike_exists():
-            add_cell()    
+        spikes = d.load_received_samples_and_count_spikes()
+        if PLAYER == 'maxine':
+            for i in range(0, spikes):
+                add_cell()    
 
     if PLAYER == 'maxine':
         if game_state == 'playing':

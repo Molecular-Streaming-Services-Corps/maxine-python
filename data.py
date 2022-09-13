@@ -67,7 +67,9 @@ class LiveData(Data):
         self.data_frames = {}
         self.pressed = []
         
-    def load_received_samples(self):
+    def load_received_samples_and_count_spikes(self):
+        spikes = 0
+    
         d_list = lilith_client.consume_latest_samples(lilith_client.q)
         
         for data in d_list:
@@ -79,8 +81,15 @@ class LiveData(Data):
                 # between if the frames arrive in the wrong order.
                 if sd_frame_index > self.latest_frame:
                     self.latest_frame = sd_frame_index
+                    
+                # If we process multiple frames of current data during a frame of animation,
+                # we want to notice all the spikes
+                if self.middle_spike_exists():
+                    spikes += 1
             elif isinstance(data, lilith_client.JoystickData):
                 self.pressed = data.pressed
+
+        return spikes
 
     def get_one_frame_joystick(self):
         '''This isn't called by Live Mode.'''
