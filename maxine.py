@@ -140,6 +140,11 @@ class Controls:
 
 class NewControls:
     def __init__(self):
+        # Pink panel in the bottom right
+        self.panel = Actor('panel')
+        self.panel.right = WIDTH
+        self.panel.bottom = HEIGHT
+    
         # LCD font
         pygame.font.init()
         self.font = pygame.font.Font('ds-digi.ttf', 40)
@@ -214,6 +219,8 @@ class NewControls:
         screen.blit(surface, coords)
 
     def draw(self):
+        self.panel.draw()
+    
         # Set the control that's presently selected to be a bit bigger.
         for control in self.controls:
             control.scale = 1
