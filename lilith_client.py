@@ -338,7 +338,7 @@ def set_bias(bias_mv : float):
 def move_pump(steps: int, delay: int):
     global ws, ws_connected, logger
     if ws and ws_connected:
-        logger.info('move_pump %s %s', steps, delay)
+        #logger.info('move_pump %s %s', steps, delay)
         # Pump code = 29 : uint16
         # steps : int32
         # delay : uint32

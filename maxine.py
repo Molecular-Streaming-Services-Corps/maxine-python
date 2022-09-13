@@ -164,6 +164,10 @@ class NewControls:
         self.syringe.left = 1470
         self.syringe.top = 545
         
+        # This is an index into a list of speed settings. Can be negative.
+        self.pump_speed_index = 0
+        self.pump_speed_delays = [20, 10, 5, 2, 1]
+        
         self.controls = [self.voltage_knob, self.zap_lever, self.syringe]
         # The index of the presently selected control
         self.control_index = 0
@@ -190,6 +194,19 @@ class NewControls:
 
         # Hack: continuously rotate the voltage knob to test the display
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
+        
+        # Move the pump if required
+        if LIVE:
+            #logger.debug('pump_speed_index: %s', self.pump_speed_index)
+            if self.pump_speed_index == 0:
+                # Override the current number of steps and stop the pump
+                lilith_client.move_pump(0, 0)
+            elif self.pump_speed_index > 0:
+                idx = self.pump_speed_index - 1
+                lilith_client.move_pump(500, self.pump_speed_delays[idx])
+            else:
+                idx = abs(self.pump_speed_index) - 1
+                lilith_client.move_pump(-500, self.pump_speed_delays[idx])
         
     def draw_text(self, text, coords):
         RED = (255, 0, 0)
@@ -238,8 +255,8 @@ class NewControls:
             self.old_voltage = voltage
             self.old_angle = self.voltage_knob.angle
         elif self.control_index == self.syringe_index:
-            if LIVE:
-                lilith_client.move_pump(1000, 2)
+            self.pump_speed_index = min(len(self.pump_speed_delays), 
+                                        self.pump_speed_index + 1)
         
     def push_right(self):
         if self.control_index == self.voltage_index:
@@ -251,8 +268,8 @@ class NewControls:
             self.old_voltage = voltage
             self.old_angle = self.voltage_knob.angle
         elif self.control_index == self.syringe_index:
-            if LIVE:
-                lilith_client.move_pump(-1000, 2)
+            self.pump_speed_index = max(-len(self.pump_speed_delays), 
+                                        self.pump_speed_index - 1)
 
     def find_voltage_from_angle(self, angle):
         if angle in [360, 0]:
