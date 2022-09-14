@@ -468,12 +468,21 @@ class PotionHolder:
         self.selected = (self.selected - 1) % 4
 
     def on_button_pushed(self):
+        global serializer
+    
         self.num_drops[self.selected] += 1
+        
+        update = [time.time(), self.selected]
+        self.drop_history.append(update)
 
         if LIVE:
             data = self.num_drops
-            json_string = serialization.save_dict_to_string(data)
+            json_string = serializer.save_dict_to_string(data)
             lilith_client.set_metadata('drop_counts', json_string)
+            
+            data = self.drop_history
+            json_string =  serializer.save_dict_to_string(data)
+            lilith_client.set_metadata('drop_history', json_string)
     
     def get_drops(self):
         return self.num_drops[self.selected]

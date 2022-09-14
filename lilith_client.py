@@ -370,7 +370,10 @@ def send_status(json_string):
 
 def set_metadata(key, json_string):
     global ws, ws_connected
-    if ws and we_connected:
+    
+    logger.info('set_metadata: %s = %s', key, json_string)
+    
+    if ws and ws_connected:
         # Set metadata code = 21 : uint16
         s = struct.Struct('!H')
         data = [21]
