@@ -280,6 +280,8 @@ class NewControls:
             
             # Send a message to change the voltage
             self.set_voltage(3500)
+        elif self.control_index == self.hydrowag_index:
+            self.hydrowag_on = not self.hydrowag_on
         
     def push_left(self):
         if self.control_index == self.voltage_index:
@@ -334,6 +336,7 @@ class NewControls:
         save['voltage'] = self.voltage
         save['old_voltage'] = self.old_voltage
         save['zap_timeout'] = self.zap_timeout
+        save['hydrowag_on'] = self.hydrowag_on
         
         return wrapper
         
@@ -346,6 +349,7 @@ class NewControls:
         self.voltage = save['voltage']
         self.old_voltage = save['old_voltage']
         self.zap_timeout = save['zap_timeout']
+        self.hydrowag_on = save['hydrowag_on']
 
 new_controls = NewControls()
 
@@ -801,12 +805,13 @@ def update_for_maxine_player():
         elif keyboard.down:
             maxine.bottom += s
             
-        if keyboard.space:
-            if not space_pressed_before:
-                space_pressed_before = True
-                controls.check()
-        else:
-            space_pressed_before = False
+        # The old controls.
+        #if keyboard.space:
+        #    if not space_pressed_before:
+        #        space_pressed_before = True
+        #        controls.check()
+        #else:
+        #    space_pressed_before = False
 
         if LIVE:
             pressed = d.pressed
