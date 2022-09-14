@@ -368,6 +368,21 @@ def send_status(json_string):
         except Exception as e:
             logger.error('Exception sending status: type: %s', type(e))
 
+def set_metadata(key, json_string):
+    global ws, ws_connected
+    if ws and we_connected:
+        # Set metadata code = 21 : uint16
+        s = struct.Struct('!H')
+        data = [21]
+        packed_data = s.pack(*data)
+        
+        # Add a null terminator to separate the two strings.
+        key = key + '\0'
+        
+        packed_data = packed_data + bytes(key, 'ascii') + bytes(json_string, 'ascii')
+        
+        ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+
 if __name__ == '__main__':
     setup()
 

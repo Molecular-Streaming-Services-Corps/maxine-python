@@ -7,6 +7,7 @@ import numpy as np
 # For the removed video background
 #import cv2
 import logging
+import time
 
 # Builtin packages.
 import random
@@ -72,75 +73,6 @@ game_state = 'playing' # becomes 'won' or 'lost'
 # Temporary development tool
 dev_control = None
 
-class Controls:
-    '''The obsolete controls'''
-    def __init__(self):
-        self.bias = 0.0
-    
-        # Setup onscreen controls
-        self.arrow_size = 64
-        start_x = 10 + self.arrow_size
-        start_y = 300
-        
-        horizontal_gap = 200
-        vertical_offset = self.arrow_size * 2
-        raise_x = start_x + self.arrow_size + horizontal_gap
-    
-        self.bias_lower = Actor('arrow_red_left')
-        self.bias_lower.pos = (start_x, start_y)
-        self.bias_raise = Actor('arrow_red_right')
-        self.bias_raise.pos = (raise_x, start_y)
-        
-        self.syringe_lower = Actor('arrow_red_left')
-        self.syringe_lower.pos = (start_x, start_y + vertical_offset * 1)
-        self.syringe_raise = Actor('arrow_red_right')
-        self.syringe_raise.pos = (raise_x, start_y + vertical_offset * 1)
-        
-        # We're not going to change the sample rate for now.
-        #self.sample_rate_lower = Actor('arrow_red_left')
-        #self.sample_rate_lower.pos = (start_x, start_y + vertical_offset * 2)
-        #self.sample_rate_raise = Actor('arrow_red_right')
-        #self.sample_rate_raise.pos = (raise_x, start_y + vertical_offset * 2)
-
-        self.control_actors = [self.bias_lower, self.bias_raise,
-            self.syringe_lower, self.syringe_raise]
-        #    self.sample_rate_lower, self.sample_rate_raise]
-
-    def draw(self):
-        for arrow in self.control_actors:
-            arrow.draw()
-
-        # Draw the text.
-        blx, bly = self.bias_lower.left, self.bias_lower.top
-        coords = (blx + self.arrow_size, bly)
-        text = f'BIAS: {self.bias}mV'
-        screen.draw.text(text, coords)
-
-        sx, sy = self.syringe_lower.left, self.syringe_lower.top
-        coords = (sx + self.arrow_size, sy)
-        text = 'SYRINGE'
-        screen.draw.text(text, coords)
-
-        #srx, sry = self.sample_rate_lower.left, self.sample_rate_lower.top
-        #coords = (srx + self.arrow_size, sry)
-        #text = 'SAMPLE RATE: 100kHz'
-        #screen.draw.text(text, coords)
-
-    def check(self):
-        '''Only call this when space or joystick button is pressed'''
-        for i, actor in enumerate(self.control_actors):
-            if maxine.colliderect(actor):
-                print(f'Maxine pressed button #{i}')
-
-        if maxine.colliderect(self.bias_lower):
-            self.bias -= 1000
-            if LIVE:
-                lilith_client.set_bias(self.bias)
-        elif maxine.colliderect(self.bias_raise):
-            self.bias += 1000
-            if LIVE:
-                lilith_client.set_bias(self.bias)
-
 class NewControls:
     def __init__(self):
         # Pink panel in the bottom right
@@ -197,7 +129,6 @@ class NewControls:
         self.drop_button = Actor('button_off')
         self.drop_button.images = ['button_off']
         self.drop_button.pos = (1483, 707)
-        self.num_drops = 0
         self.button_timeout = 0
         
         self.controls = [self.voltage_knob, self.zap_lever, self.syringe,
@@ -341,6 +272,11 @@ class NewControls:
         self.potion_holder.draw()
         
         self.drop_button.draw()
+        
+        # Draw the number of drops added
+        ph = self.potion_holder
+        drops = ph.get_drops()
+        self.draw_text(str(drops), (1470, 770))
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
@@ -373,8 +309,8 @@ class NewControls:
                 self.voltage_knob.angle = self.old_angle
         elif self.control_index == self.drop_index:
             # Only respond when the button is up
-            if self.button_timeout > 0:
-                pass
+            if self.button_timeout == 0:
+                self.potion_holder.on_button_pushed()
                 # TODO send metadata to server
         
             self.button_timeout = 6
@@ -451,7 +387,11 @@ class NewControls:
         save['zap_timeout'] = self.zap_timeout
         save['hydrowag_on'] = self.hydrowag_on
         save['sawtooth_on'] = self.sawtooth_on
-        save['potion_selected'] = self.potion_holder.selected
+        
+        ph = self.potion_holder
+        save['potion_selected'] = ph.selected
+        save['drops_readout'] = ph.get_drops()
+        
         save['button_timeout'] = self.button_timeout
         
         return wrapper
@@ -473,6 +413,7 @@ class NewControls:
         self.hydrowag_on = save['hydrowag_on']
         self.sawtooth_on = save['sawtooth_on']
         self.potion_holder.selected = save['potion_selected']
+        self.potion_holder.num_drops[self.potion_holder.selected] = save['drops_readout']
         
         bt = save['button_timeout']
         if bt == 6:
@@ -488,6 +429,11 @@ class PotionHolder:
         self.actors = [Actor(f'potion_{n}') for n in range(1, 4 + 1)] 
         self.scale = 1
     
+        self.num_drops = [0, 0, 0, 0]
+        # This list contains (list not tuple) pairs of
+        # [timestamp, potion index] for when a potion was dropped
+        self.drop_history = []
+
     def update(self):
         self.set_indexes()
         
@@ -520,6 +466,17 @@ class PotionHolder:
 
     def push_right(self):
         self.selected = (self.selected - 1) % 4
+
+    def on_button_pushed(self):
+        self.num_drops[self.selected] += 1
+
+        if LIVE:
+            data = self.num_drops
+            json_string = serialization.save_dict_to_string(data)
+            lilith_client.set_metadata('drop_counts', json_string)
+    
+    def get_drops(self):
+        return self.num_drops[self.selected]
 
 new_controls = NewControls()
 
@@ -835,7 +792,7 @@ step_count = 0
 space_pressed_before = False
 button_pressed_before = False
 def update():
-    global score, i, step_count, d, controls, space_pressed_before, button_pressed_before
+    global score, i, step_count, d, space_pressed_before, button_pressed_before
     global maxine_current_scale
     global new_controls
     global logger
@@ -1384,8 +1341,6 @@ if MULTIPLAYER and not LIVE:
     # Don't wait for this thread when the game exits
     t.setDaemon(True)
     t.start()
-
-controls = Controls()
 
 serializer = serialization.Serializer()
 
