@@ -193,9 +193,16 @@ class NewControls:
         self.sawtooth_frame = 0
 
         self.potion_holder = PotionHolder()
+
+        self.drop_button = Actor('button_off')
+        self.drop_button.images = ['button_off']
+        self.drop_button.pos = (1483, 707)
+        self.num_drops = 0
+        self.button_timeout = 0
         
         self.controls = [self.voltage_knob, self.zap_lever, self.syringe,
-                         self.hydrowag_switch, self.sawtooth_switch, self.potion_holder]
+                         self.hydrowag_switch, self.sawtooth_switch,
+                         self.potion_holder, self.drop_button]
         # The index of the presently selected control
         self.control_index = 0
         self.voltage_index = 0
@@ -204,6 +211,7 @@ class NewControls:
         self.hydrowag_index = 3
         self.sawtooth_index = 4
         self.potion_index = 5
+        self.drop_index = 6
         
         self.old_voltage = 0
         self.voltage = 0
@@ -292,6 +300,15 @@ class NewControls:
         
         self.potion_holder.update()
 
+        # Stuff for the drop-adding button        
+        if self.button_timeout == 0:
+            self.drop_button.images = ['button_off']
+        else:
+            self.drop_button.images = ['button_on']
+            self.button_timeout -= 1
+
+        self.drop_button.animate()
+
     def draw_text(self, text, coords):
         RED = (255, 0, 0)
         surface = self.font.render(text, False, RED)
@@ -304,6 +321,7 @@ class NewControls:
         for control in self.controls:
             control.scale = 1
         self.controls[self.control_index].scale = 1.2
+        self.drop_button.scale *= 0.5
      
         self.voltage_knob.draw()
         
@@ -321,6 +339,8 @@ class NewControls:
         self.sawtooth_switch.draw()
 
         self.potion_holder.draw()
+        
+        self.drop_button.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
@@ -351,6 +371,13 @@ class NewControls:
             else:
                 self.set_voltage(self.old_voltage)
                 self.voltage_knob.angle = self.old_angle
+        elif self.control_index == self.drop_index:
+            # Only respond when the button is up
+            if self.button_timeout > 0:
+                pass
+                # TODO send metadata to server
+        
+            self.button_timeout = 6
         
     def push_left(self):
         if self.control_index == self.voltage_index:
@@ -425,6 +452,7 @@ class NewControls:
         save['hydrowag_on'] = self.hydrowag_on
         save['sawtooth_on'] = self.sawtooth_on
         save['potion_selected'] = self.potion_holder.selected
+        save['button_timeout'] = self.button_timeout
         
         return wrapper
         
@@ -436,10 +464,19 @@ class NewControls:
         self.voltage_knob.angle = save['voltage_knob_angle']
         self.voltage = save['voltage']
         self.old_voltage = save['old_voltage']
-        self.zap_timeout = save['zap_timeout']
+        
+        # Let the update function move the control except when the lever is first pressed
+        zt = save['zap_timeout']
+        if zt == 6:
+            self.zap_timeout = zt
+        
         self.hydrowag_on = save['hydrowag_on']
         self.sawtooth_on = save['sawtooth_on']
         self.potion_holder.selected = save['potion_selected']
+        
+        bt = save['button_timeout']
+        if bt == 6:
+            self.button_timeout = bt
 
 class PotionHolder:
     def __init__(self):
@@ -1166,8 +1203,9 @@ def on_mouse_down(pos):
 # Temporary development tool: move a control around on the screen
 def on_mouse_move(pos):
     global dev_control
-    #dev_control = Actor('potion_1')
-    #dev_control.pos = pos
+    dev_control = Actor('button_off')
+    dev_control.pos = pos
+    dev_control.scale = 0.5
     pass
 
 # Maxine functions
