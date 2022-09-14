@@ -191,9 +191,11 @@ class NewControls:
         self.sawtooth_switch.pos = (1731, 719)
         self.sawtooth_on = False
         self.sawtooth_frame = 0
+
+        self.potion_holder = PotionHolder()
         
         self.controls = [self.voltage_knob, self.zap_lever, self.syringe,
-                         self.hydrowag_switch, self.sawtooth_switch]
+                         self.hydrowag_switch, self.sawtooth_switch, self.potion_holder]
         # The index of the presently selected control
         self.control_index = 0
         self.voltage_index = 0
@@ -201,11 +203,12 @@ class NewControls:
         self.syringe_index = 2
         self.hydrowag_index = 3
         self.sawtooth_index = 4
+        self.potion_index = 5
         
         self.old_voltage = 0
         self.voltage = 0
         self.old_angle = 0
-        
+          
     def update(self):
         # Zapper stuff
         if PLAYER == 'console':
@@ -287,6 +290,8 @@ class NewControls:
                 idx = abs(self.pump_speed_index) - 1
                 lilith_client.move_pump(-500, self.pump_speed_delays[idx])
         
+        self.potion_holder.update()
+
     def draw_text(self, text, coords):
         RED = (255, 0, 0)
         surface = self.font.render(text, False, RED)
@@ -314,6 +319,8 @@ class NewControls:
         self.hydrowag_switch.draw()
         
         self.sawtooth_switch.draw()
+
+        self.potion_holder.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
@@ -357,6 +364,8 @@ class NewControls:
         elif self.control_index == self.syringe_index:
             self.pump_speed_index = min(len(self.pump_speed_delays), 
                                         self.pump_speed_index + 1)
+        elif self.control_index == self.potion_index:
+            self.potion_holder.push_left()
         
     def push_right(self):
         if self.control_index == self.voltage_index:
@@ -370,6 +379,8 @@ class NewControls:
         elif self.control_index == self.syringe_index:
             self.pump_speed_index = max(-len(self.pump_speed_delays), 
                                         self.pump_speed_index - 1)
+        elif self.control_index == self.potion_index:
+            self.potion_holder.push_right()
 
     def find_voltage_from_angle(self, angle):
         if angle in [360, 0]:
@@ -413,6 +424,7 @@ class NewControls:
         save['zap_timeout'] = self.zap_timeout
         save['hydrowag_on'] = self.hydrowag_on
         save['sawtooth_on'] = self.sawtooth_on
+        save['potion_selected'] = self.potion_holder.selected
         
         return wrapper
         
@@ -427,6 +439,50 @@ class NewControls:
         self.zap_timeout = save['zap_timeout']
         self.hydrowag_on = save['hydrowag_on']
         self.sawtooth_on = save['sawtooth_on']
+        self.potion_holder.selected = save['potion_selected']
+
+class PotionHolder:
+    def __init__(self):
+        self.holder = Actor('potion_holder')
+        self.holder.pos = (1600, 730)
+    
+        self.selected = 0
+        self.potions = [None] * 4
+        self.actors = [Actor(f'potion_{n}') for n in range(1, 4 + 1)] 
+        self.scale = 1
+    
+    def update(self):
+        self.set_indexes()
+        
+    def set_indexes(self):
+        self.potions[(0 - self.selected) % 4] = self.actors[0]
+        self.potions[(1 - self.selected) % 4] = self.actors[1]
+        self.potions[(2 - self.selected) % 4] = self.actors[2]
+        self.potions[(3 - self.selected) % 4] = self.actors[3]
+        
+        self.holder.scale = self.scale
+        # Draw the top potion bigger
+        for i in range(0, 4):
+            self.potions[i].scale = 0.5 * self.scale
+        self.potions[0].scale = 0.7 * self.scale
+        
+        # Move them all to the correct position
+        self.potions[0].pos = (1602, 680)
+        self.potions[1].pos = (1654, 726)
+        self.potions[2].pos = (1611, 788)
+        self.potions[3].pos = (1556, 739)
+    
+    def draw(self):
+        self.holder.draw()
+        
+        for potion in self.potions:
+            potion.draw()
+
+    def push_left(self):
+        self.selected = (self.selected + 1) % 4
+
+    def push_right(self):
+        self.selected = (self.selected - 1) % 4
 
 new_controls = NewControls()
 
@@ -1110,8 +1166,8 @@ def on_mouse_down(pos):
 # Temporary development tool: move a control around on the screen
 def on_mouse_move(pos):
     global dev_control
-    dev_control = Actor('switch_green_off')
-    dev_control.pos = pos
+    #dev_control = Actor('potion_1')
+    #dev_control.pos = pos
     pass
 
 # Maxine functions
