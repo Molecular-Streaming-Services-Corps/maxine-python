@@ -254,11 +254,23 @@ class NewControls:
         
         self.sawtooth_switch.animate()
 
+        if self.sawtooth_on and PLAYER == 'console' and LIVE:
+            if self.sawtooth_frame == 60:
+                self.sawtooth_frame = 0
+            else:
+                self.sawtooth_frame += 1
+            
+            MIN_VOLTAGE = -1000
+            MAX_VOLTAGE = 3500
+            RANGE = MAX_VOLTAGE - MIN_VOLTAGE
+            voltage = int(RANGE * self.sawtooth_frame / 60 + MIN_VOLTAGE)
+            self.set_voltage(voltage)
+
         # Hack: continuously rotate the voltage knob to test the display
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         
-        # Move the pump if required
-        if LIVE and PLAYER == 'console':
+        # Move the pump if required (controlled by the syringe)
+        if LIVE and PLAYER == 'console' and LIVE:
             #logger.debug('pump_speed_index: %s', self.pump_speed_index)
             if self.pump_speed_index == 0:
                 # Override the current number of steps and stop the pump
@@ -321,6 +333,12 @@ class NewControls:
                 self.hydrowag_timeout = 60
         elif self.control_index == self.sawtooth_index:
             self.sawtooth_on = not self.sawtooth_on
+            if self.sawtooth_on:
+                self.old_voltage = self.voltage
+                self.old_angle = self.voltage_knob.angle
+            else:
+                self.set_voltage(self.old_voltage)
+                self.voltage_knob.angle = self.old_angle
         
     def push_left(self):
         if self.control_index == self.voltage_index:
