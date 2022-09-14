@@ -69,6 +69,9 @@ DRAW_SPIRALS = False
 
 game_state = 'playing' # becomes 'won' or 'lost'
 
+# Temporary development tool
+dev_control = None
+
 class Controls:
     '''The obsolete controls'''
     def __init__(self):
@@ -150,43 +153,59 @@ class NewControls:
         self.font = pygame.font.Font('ds-digi.ttf', 40)
         
         self.voltage_knob = Actor('voltage_knob')
-        self.voltage_knob.left = 10
-        self.voltage_knob.top = 10
+        #self.voltage_knob.left = 10
+        #self.voltage_knob.top = 10
+        self.voltage_knob.pos = (1596, 527)
 
-        self.bg = Actor('led_display')
-        self.bg.left = 10
-        # voltage_knob.png is 83x83 and the voltage knob is drawn at 10,10
-        self.bg.top = 10 + 83 + 10
+        #self.bg = Actor('led_display')
+        #self.bg.left = 10
+        ## voltage_knob.png is 83x83 and the voltage knob is drawn at 10,10
+        #self.bg.top = 10 + 83 + 10
 
         self.zap_lever = Actor('switch_big_frame_1')
         self.zap_lever.images = ['switch_big_frame_1']
-        self.zap_lever.left = 10
-        self.zap_lever.top = self.bg.bottom + 10
+        #self.zap_lever.left = 10
+        #self.zap_lever.top = 10
+        self.zap_lever.pos = (1730, 579)
         
         self.zap_timeout = 0
         
         self.syringe = Actor('syringe')
-        self.syringe.left = 1470
-        self.syringe.top = 545
+        #self.syringe.left = 1470
+        #self.syringe.top = 545
+        self.syringe.pos = (1477, 399)
         
         # This is an index into a list of speed settings. Can be negative.
         self.pump_speed_index = 0
         self.pump_speed_delays = [20, 10, 5, 2, 1]
         
-        self.controls = [self.voltage_knob, self.zap_lever, self.syringe]
+        self.hydrowag_switch = Actor('switch_green_off')
+        self.hydrowag_switch.images = ['switch_green_off']
+        self.hydrowag_switch.pos = (1731, 665)
+        self.hydrowag_on = False
+        self.hydrowag_moving_forward = True
+        self.hydrowag_timeout = 0
+        
+        self.controls = [self.voltage_knob, self.zap_lever, self.syringe, self.hydrowag_switch]
         # The index of the presently selected control
         self.control_index = 0
         self.voltage_index = 0
         self.zap_index = 1
         self.syringe_index = 2
+        self.hydrowag_index = 3
         
         self.old_voltage = 0
         self.voltage = 0
         self.old_angle = 0
         
     def update(self):
+        if PLAYER == 'console':
+            if self.zap_timeout > 0:
+                self.zap_timeout -= 1    
+
+        # This code runs on both maxine and console, so maxine can draw the lever correctly
+        # when the timeout is updated over the internet
         if self.zap_timeout > 0:
-            self.zap_timeout -= 1
             self.zap_lever.images = ['switch_big_frame_2']
         else:
             self.zap_lever.images = ['switch_big_frame_1']
@@ -197,11 +216,18 @@ class NewControls:
         
         self.zap_lever.animate()
 
+        if self.hydrowag_on:
+            self.hydrowag_switch.images = ['switch_green_on']
+        else:
+            self.hydrowag_switch.images = ['switch_green_off']
+        
+        self.hydrowag_switch.animate()
+
         # Hack: continuously rotate the voltage knob to test the display
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         
         # Move the pump if required
-        if LIVE:
+        if LIVE and PLAYER == 'console':
             #logger.debug('pump_speed_index: %s', self.pump_speed_index)
             if self.pump_speed_index == 0:
                 # Override the current number of steps and stop the pump
@@ -228,13 +254,16 @@ class NewControls:
      
         self.voltage_knob.draw()
         
-        self.bg.draw()
+        #self.bg.draw()
         
-        self.draw_text(str(self.voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
+        #self.draw_text(str(self.voltage) + ' MV', (self.bg.left + 15, self.bg.top + 2))
+        self.draw_text(str(self.voltage) + ' MV', (1545, 594))
 
         self.zap_lever.draw()
         
         self.syringe.draw()
+        
+        self.hydrowag_switch.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
@@ -292,7 +321,7 @@ class NewControls:
         return voltage
 
     def set_voltage(self, voltage):
-        if LIVE:
+        if LIVE and PLAYER == 'console':
             lilith_client.set_bias(voltage)
         self.voltage = voltage
 
@@ -400,7 +429,7 @@ def load_actor_from_dict(data):
     return actor
 
 def draw():
-    global rotation
+    global rotation, dev_control
     # Murky green background color
     #screen.fill((128, 128, 0))
     
@@ -417,6 +446,9 @@ def draw():
     # Now we draw the controls for both players.
     #if PLAYER == 'console':
     new_controls.draw()
+    
+    if dev_control:
+        dev_control.draw()
     
     # In the old 1-player mode Maxine needed to touch controls on screen.
     #controls.draw()
@@ -746,7 +778,10 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
             pressed_before.remove(switch_name)
     
 def update_for_maxine_player():
-    global maxine_current_scale, game_state
+    global maxine_current_scale, game_state, new_controls
+    # This will update the images used on the controls. It won't send any duplicate signals to the server.
+    new_controls.update()
+
     maxine.animate()
 
     # Move Maxine.
@@ -989,6 +1024,13 @@ def on_key_down(key):
 # Development tool: when the mouse is clicked, print the mouse coordinates in the window
 def on_mouse_down(pos):
     print('Mouse clicked at:', pos)
+
+# Temporary development tool: move a control around on the screen
+def on_mouse_move(pos):
+    global dev_control
+    dev_control = Actor('switch_green_off')
+    dev_control.pos = pos
+    pass
 
 # Maxine functions
 
