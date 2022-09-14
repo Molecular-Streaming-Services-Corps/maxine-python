@@ -222,6 +222,19 @@ class NewControls:
             self.hydrowag_switch.images = ['switch_green_off']
         
         self.hydrowag_switch.animate()
+        
+        # Move the pump back and forward fast
+        if self.hydrowag_on and PLAYER == 'console' and LIVE:
+            if self.hydrowag_timeout > 0:
+                self.hydrowag_timeout -= 1
+                
+                if self.hydrowag_moving_forward:
+                    lilith_client.move_pump(500, 1)
+                else:
+                    lilith_client.move_pump(-500, 1)
+            else:
+                self.hydrowag_moving_forward = not self.hydrowag_moving_forward
+                self.hydrowag_timeout = 60
 
         # Hack: continuously rotate the voltage knob to test the display
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
@@ -282,6 +295,10 @@ class NewControls:
             self.set_voltage(3500)
         elif self.control_index == self.hydrowag_index:
             self.hydrowag_on = not self.hydrowag_on
+            # hydrowag has just been turned on now
+            if self.hydrowag_on:
+                self.hydrowag_moving_forward = True
+                self.hydrowag_timeout = 60
         
     def push_left(self):
         if self.control_index == self.voltage_index:
