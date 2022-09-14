@@ -186,19 +186,28 @@ class NewControls:
         self.hydrowag_moving_forward = True
         self.hydrowag_timeout = 0
         
-        self.controls = [self.voltage_knob, self.zap_lever, self.syringe, self.hydrowag_switch]
+        self.sawtooth_switch = Actor('switch_blue_off')
+        self.sawtooth_switch.images = ['switch_blue_off']
+        self.sawtooth_switch.pos = (1731, 719)
+        self.sawtooth_on = False
+        self.sawtooth_frame = 0
+        
+        self.controls = [self.voltage_knob, self.zap_lever, self.syringe,
+                         self.hydrowag_switch, self.sawtooth_switch]
         # The index of the presently selected control
         self.control_index = 0
         self.voltage_index = 0
         self.zap_index = 1
         self.syringe_index = 2
         self.hydrowag_index = 3
+        self.sawtooth_index = 4
         
         self.old_voltage = 0
         self.voltage = 0
         self.old_angle = 0
         
     def update(self):
+        # Zapper stuff
         if PLAYER == 'console':
             if self.zap_timeout > 0:
                 self.zap_timeout -= 1    
@@ -216,6 +225,7 @@ class NewControls:
         
         self.zap_lever.animate()
 
+        # Hydrowag stuff
         if self.hydrowag_on:
             self.hydrowag_switch.images = ['switch_green_on']
         else:
@@ -235,6 +245,14 @@ class NewControls:
             else:
                 self.hydrowag_moving_forward = not self.hydrowag_moving_forward
                 self.hydrowag_timeout = 60
+
+        # Sawtooth stuff
+        if self.sawtooth_on:
+            self.sawtooth_switch.images = ['switch_blue_on']
+        else:
+            self.sawtooth_switch.images = ['switch_blue_off']
+        
+        self.sawtooth_switch.animate()
 
         # Hack: continuously rotate the voltage knob to test the display
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
@@ -277,6 +295,8 @@ class NewControls:
         self.syringe.draw()
         
         self.hydrowag_switch.draw()
+        
+        self.sawtooth_switch.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
@@ -299,6 +319,8 @@ class NewControls:
             if self.hydrowag_on:
                 self.hydrowag_moving_forward = True
                 self.hydrowag_timeout = 60
+        elif self.control_index == self.sawtooth_index:
+            self.sawtooth_on = not self.sawtooth_on
         
     def push_left(self):
         if self.control_index == self.voltage_index:
@@ -354,6 +376,7 @@ class NewControls:
         save['old_voltage'] = self.old_voltage
         save['zap_timeout'] = self.zap_timeout
         save['hydrowag_on'] = self.hydrowag_on
+        save['sawtooth_on'] = self.sawtooth_on
         
         return wrapper
         
@@ -367,6 +390,7 @@ class NewControls:
         self.old_voltage = save['old_voltage']
         self.zap_timeout = save['zap_timeout']
         self.hydrowag_on = save['hydrowag_on']
+        self.sawtooth_on = save['sawtooth_on']
 
 new_controls = NewControls()
 
