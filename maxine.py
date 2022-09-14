@@ -266,6 +266,11 @@ class NewControls:
             voltage = int(RANGE * self.sawtooth_frame / 60 + MIN_VOLTAGE)
             self.set_voltage(voltage)
 
+            # Only change the angle while sawtooth is on
+            v = self.find_angle_from_voltage(self.voltage)
+            if v:
+                self.voltage_knob.angle = v
+
         # Hack: continuously rotate the voltage knob to test the display
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         
@@ -378,6 +383,19 @@ class NewControls:
             voltage = int(angle_compliment / 17 * 100)
 
         return voltage
+
+    def find_angle_from_voltage(self, voltage):
+        if voltage > 1000 or voltage < -1000:
+            angle = 190
+        elif voltage == 0:
+            angle = 0
+        elif voltage > 0:
+            angle = int(360 - voltage / 100 * 17)
+        else:
+            # Negative voltage
+            angle = int(-voltage / 100 * 17)
+        
+        return angle
 
     def set_voltage(self, voltage):
         if LIVE and PLAYER == 'console':
