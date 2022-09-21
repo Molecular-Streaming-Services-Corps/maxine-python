@@ -155,6 +155,10 @@ class LiveData(Data):
         
         return ret
 
+    def get_frame(self):
+        ret = self.data_frames[self.latest_frame]
+        return ret
+
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
         super().__init__()
@@ -244,3 +248,12 @@ class PrerecordedData(Data):
         
         return ret
 
+    def get_frame(self):
+        samples_per_frame = self.sample_rate // 60
+        
+        start = samples_per_frame * self.latest_frame
+        end = samples_per_frame * (self.latest_frame + 1)
+        
+        cd = self.sample_data[start : end]
+
+        return cd

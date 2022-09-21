@@ -20,6 +20,7 @@ import lilith_client
 import animated_image
 import serialization
 import image_ops
+import music_ops
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -828,6 +829,7 @@ def update():
     global maxine_current_scale
     global new_controls
     global logger
+    global playing_music
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -843,12 +845,22 @@ def update():
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
         d.get_one_frame_current()
+        
+        data = d.get_frame()
+        if playing_music:
+            music_ops.current_to_frequency(data)
+        
         d.advance_frame()
         
         if PLAYER == 'maxine' and d.middle_spike_exists():
             add_cell()
     elif LIVE:
         spikes = d.load_received_samples_and_count_spikes()
+    
+        data = d.get_frame()
+        if playing_music:
+            music_ops.current_to_frequency(data)    
+    
         if PLAYER == 'maxine':
             for i in range(0, spikes):
                 add_cell()    
@@ -1166,6 +1178,7 @@ def on_key_down(key):
         else:
             graph_type = 'heatmap'
     
+    # Turn music on and off
     if key == keys.M:
         playing_music = not playing_music
     
