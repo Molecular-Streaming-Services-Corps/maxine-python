@@ -311,7 +311,6 @@ class NewControls:
             # Only respond when the button is up
             if self.button_timeout == 0:
                 self.potion_holder.on_button_pushed()
-                # TODO send metadata to server
         
             self.button_timeout = 6
         
@@ -484,6 +483,10 @@ class PotionHolder:
             json_string =  serializer.save_dict_to_string(data)
             lilith_client.set_metadata('drop_history', json_string)
     
+            # Check if it worked
+            lilith_client.get_metadata('drop_counts', lilith_client.ws)
+            lilith_client.get_metadata('drop_history', lilith_client.ws)
+            
     def get_drops(self):
         return self.num_drops[self.selected]
 
