@@ -4,8 +4,8 @@ import pgzrun
 from pgzhelper import *
 import pygame
 import numpy as np
-# For the removed video background
-#import cv2
+# For the video
+import cv2
 import logging
 import time
 
@@ -19,6 +19,7 @@ import util
 import lilith_client
 import animated_image
 import serialization
+import image_ops
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -27,9 +28,6 @@ import sys
 handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
 logger.addHandler(handler)
-
-# Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
-#import matplotlib_pygame
 
 TITLE = 'Maxine\'s µMonsters'
 WIDTH = 1800
@@ -573,33 +571,18 @@ def load_actor_from_dict(data):
 
 def draw():
     global rotation, dev_control
-    # Murky green background color
-    #screen.fill((128, 128, 0))
-    
-    # For now we're drawing a video background (this can be included later)
     draw_living_background()
-    #draw_video()
-    #draw_metal_background()
-    
-    # Abandoned code to draw a graph using matplotlib. Too slow even for 3 datapoints!
-    #matplotlib_pygame.draw_graph(screen)
+
+    # Draw the microscope video in front of the background and behind the signal ring
+    draw_video()
     
     draw_graph()
     
     # Now we draw the controls for both players.
-    #if PLAYER == 'console':
     new_controls.draw()
     
     if dev_control:
         dev_control.draw()
-    
-    # In the old 1-player mode Maxine needed to touch controls on screen.
-    #controls.draw()
-    
-    # Now we draw the arena for both players
-    #if PLAYER == 'maxine':
-    # Replaced by Kent's video of a pore
-    #pore.draw()
 
     # Draw Maxine or the boom
     maxine.draw()
@@ -624,7 +607,6 @@ def draw():
     
     # Draw the signal ring.
     RED = (200, 0, 0)
-    #screen.draw.circle((WIDTH/2, HEIGHT/2), RING_RADIUS, RED)
     ring_rect = Rect((CENTER[0] - RING_WIDTH / 2, CENTER[1] - RING_HEIGHT / 2), 
                      (RING_WIDTH, RING_HEIGHT))
     pygame.draw.ellipse(screen.surface, RED, ring_rect, width = 1)
@@ -669,23 +651,58 @@ def draw_metal_background():
     surface = pygame.transform.scale(surface, (WIDTH, HEIGHT))
     screen.blit(surface, (0, 0))
 
+# Code for displaying the microscope footage inside the signal ring
 video = None
 restart_video = True
-def draw_video():
-    global video, restart_video
+frame = 0
+surf = None
+video_image = None
+def update_video():
+    global frame, video, restart_video, video_image, surf
+    frame += 1
 
     if restart_video:
-        video = cv2.VideoCapture("backgroundpore.mp4")
+        video = cv2.VideoCapture('cats.mp4')
         restart_video = False
 
-    success, video_image = video.read()
+    # Get one frame as an OpenCV image
+    prev_image = video_image
+    if frame % 2 in [0]:
+        success, video_image = video.read()
+    else:
+        success = True
     if success:
-        video_surf = pygame.image.frombuffer(
-            video_image.tobytes(), video_image.shape[1::-1], "BGR")
-        video_surf = pygame.transform.scale(video_surf, (WIDTH, HEIGHT))
-        screen.blit(video_surf, (0, 0))
+        if video_image is None:
+            return
+            
+        # Change it to our format
+        img = np.array(video_image)
+        img = img.transpose([1, 0, 2])
+        img = img[:,:,::-1]
+
+        light_purple = 203, 195, 227
+        bright_purple = 191, 64, 191
+        image_ops.tint(img, light_purple)
+        display = image_ops.composite(image_ops.ellipse, image_ops.green_image, img)
+        
+        # Get pygame surface (it's created from an array with no alpha channel
+        # so it has no alpha channel itself).
+        surf = pygame.surfarray.make_surface(display)
+        surf.set_colorkey((0, 255, 0))
+        surf = pygame.transform.scale(surf, (RING_WIDTH, RING_HEIGHT))
     else:
         restart_video = True    
+        frame = 0
+
+def draw_video():
+    global surf
+    
+    screen.fill((128,128,128))
+
+    if surf:
+        x = (WIDTH - RING_WIDTH) // 2
+        y = (HEIGHT - RING_HEIGHT) // 2
+        screen.blit(surf, (x, y))
 
 i = 0
 def draw_graph():
@@ -815,6 +832,9 @@ def update():
 
     if keyboard.q:
         import sys; sys.exit(0)
+    
+    # Update the microscope video
+    update_video()
     
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
@@ -1172,9 +1192,9 @@ def on_mouse_down(pos):
 # Temporary development tool: move a control around on the screen
 def on_mouse_move(pos):
     global dev_control
-    dev_control = Actor('button_off')
-    dev_control.pos = pos
-    dev_control.scale = 0.5
+    #dev_control = Actor('button_off')
+    #dev_control.pos = pos
+    #dev_control.scale = 0.5
     pass
 
 # Maxine functions
