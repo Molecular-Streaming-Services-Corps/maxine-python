@@ -67,6 +67,7 @@ MAKE_MUSHROOMS = True
 DRAW_SPIRALS = False
 
 game_state = 'playing' # becomes 'won' or 'lost'
+playing_music = True
 
 # Temporary development tool
 dev_control = None
@@ -1156,7 +1157,7 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def on_key_down(key):
-    global graph_type, new_controls, serializer
+    global graph_type, new_controls, serializer, playing_music
 
     # Change graph type
     if key == keys.G:
@@ -1164,6 +1165,9 @@ def on_key_down(key):
             graph_type = 'scatterplot'
         else:
             graph_type = 'heatmap'
+    
+    if key == keys.M:
+        playing_music = not playing_music
     
     # Save and load the state of the game to a file.
     if key == keys.S:
