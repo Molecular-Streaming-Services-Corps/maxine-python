@@ -640,11 +640,15 @@ def draw_cell(cell):
         screen.blit(cell.sprite_name, (cell.x, cell.y))    
 
 def draw_living_background():
+    global step_count
+    
     tile_size = 144
+    
+    offset = step_count % tile_size
 
-    for x in range(0, WIDTH, tile_size):
-        for y in range(0, HEIGHT, tile_size):
-            screen.blit('background_living_tissue', (x, y))
+    for x in range(-tile_size, WIDTH, tile_size):
+        for y in range(-tile_size, HEIGHT, tile_size):
+            screen.blit('background_living_tissue', (x + offset, y + offset))
 
 def draw_metal_background():
     surface = getattr(images, 'bg_cut')
@@ -697,8 +701,6 @@ def update_video():
 def draw_video():
     global surf
     
-    screen.fill((128,128,128))
-
     if surf:
         x = (WIDTH - RING_WIDTH) // 2
         y = (HEIGHT - RING_HEIGHT) // 2
