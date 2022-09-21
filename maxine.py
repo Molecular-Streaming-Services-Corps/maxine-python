@@ -849,6 +849,7 @@ def update():
         data = d.get_frame()
         if playing_music:
             music_ops.current_to_frequency(data)
+            music_ops.current_to_volume(data)
         
         d.advance_frame()
         
@@ -860,6 +861,7 @@ def update():
         data = d.get_frame()
         if playing_music:
             music_ops.current_to_frequency(data)    
+            music_ops.current_to_volume(data)
     
         if PLAYER == 'maxine':
             for i in range(0, spikes):

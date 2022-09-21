@@ -4,6 +4,14 @@ be added.'''
 import numpy as np
 import pygame
 
+def current_to_volume(current_data):
+    current_data *= 5
+    
+    sound = pygame.sndarray.make_sound(current_data)
+
+    sound.set_volume(1.0)
+    sound.play()
+
 def current_to_frequency(current_data):
     pos_values = current_data.astype('int32')
     pos_values += 32768
@@ -22,8 +30,6 @@ def current_to_frequency(current_data):
 
     sound.set_volume(1.0)
     sound.play()
-
-    return sound
 
 pygame.mixer.quit()
 pygame.mixer.init(frequency=100000, channels=1)
