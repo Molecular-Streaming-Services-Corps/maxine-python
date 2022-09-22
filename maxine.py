@@ -21,6 +21,7 @@ import animated_image
 import serialization
 import image_ops
 import music_ops
+import spike_graph
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -69,6 +70,8 @@ DRAW_SPIRALS = False
 
 game_state = 'playing' # becomes 'won' or 'lost'
 playing_music = True
+
+sg = None
 
 # Temporary development tool
 dev_control = None
@@ -572,13 +575,16 @@ def load_actor_from_dict(data):
     return actor
 
 def draw():
-    global rotation, dev_control
+    global rotation, dev_control, sg
     draw_living_background()
 
     # Draw the microscope video in front of the background and behind the signal ring
     draw_video()
     
     draw_graph()
+    
+    if sg:
+        sg.draw()
     
     # Now we draw the controls for both players.
     new_controls.draw()
@@ -664,8 +670,11 @@ frame = 0
 surf = None
 video_image = None
 def update_video():
-    global frame, video, restart_video, video_image, surf
+    global frame, video, restart_video, video_image, surf, sg
     frame += 1
+
+    if not sg:
+        sg = spike_graph.SpikeGraph(screen, Rect)
 
     if restart_video:
         video = cv2.VideoCapture('cats.mp4')
@@ -830,6 +839,7 @@ def update():
     global new_controls
     global logger
     global playing_music
+    global sg
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -851,9 +861,13 @@ def update():
             music_ops.current_to_frequency(data)
             music_ops.current_to_volume(data)
         
+        spike_exists = d.middle_spike_exists()
+        if spike_exists:
+            sg.set_frame(data)
+        
         d.advance_frame()
         
-        if PLAYER == 'maxine' and d.middle_spike_exists():
+        if PLAYER == 'maxine' and spike_exists:
             add_cell()
     elif LIVE:
         spikes = d.load_received_samples_and_count_spikes()
@@ -862,6 +876,9 @@ def update():
         if playing_music:
             music_ops.current_to_frequency(data)    
             music_ops.current_to_volume(data)
+        
+        # todo set it to the last frame containing a spike
+        sg.set_frame(data)
     
         if PLAYER == 'maxine':
             for i in range(0, spikes):
