@@ -65,7 +65,7 @@ animations = set()
 #graph_type = 'heatmap'
 graph_type = 'ring'
 
-MAKE_MUSHROOMS = True
+PLAY_LEVELS = True
 DRAW_SPIRALS = False
 
 game_state = 'playing' # becomes 'won' or 'lost'
@@ -501,7 +501,7 @@ cells = set()
 dead_cells = set()
 
 spiraling_monsters = set()
-dead_sms = set()
+dead_monsters = set()
 
 projectiles = set()
 
@@ -522,7 +522,7 @@ def save_arena_to_dict():
     
     save['maxine'] = save_actor_to_dict(maxine)
     save['spiraling_monsters'] = [save_actor_to_dict(m) for m in spiraling_monsters]
-    save['dead_sms'] = [save_actor_to_dict(m) for m in dead_sms]
+    save['dead_monsters'] = [save_actor_to_dict(m) for m in dead_monsters]
     save['projectiles'] = [save_actor_to_dict(m) for m in projectiles]
     
     return wrapper
@@ -539,7 +539,7 @@ def save_actor_to_dict(actor):
     return data
 
 def load_arena_from_dict(wrapper):
-    global maxine, spiraling_monsters, dead_sms, projectiles
+    global maxine, spiraling_monsters, dead_monsters, projectiles
 
     assert(wrapper['type'] == 'maxine')
     save = wrapper['state']
@@ -552,10 +552,10 @@ def load_arena_from_dict(wrapper):
         actor = load_actor_from_dict(data)
         spiraling_monsters.add(actor)
 
-    dead_sms = set()
-    for data in save['dead_sms']:
+    dead_monsters = set()
+    for data in save['dead_monsters']:
         actor = load_actor_from_dict(data)
-        dead_sms.add(actor)
+        dead_monsters.add(actor)
 
     projectiles = set()
     for data in save['projectiles']:
@@ -606,7 +606,7 @@ def draw():
 
     for monster in spiraling_monsters:
         monster.draw()
-    for monster in dead_sms:
+    for monster in dead_monsters:
         monster.draw()
         
     for p in projectiles:
@@ -1132,7 +1132,7 @@ def update_for_maxine_player():
 
     for monster in sm_to_blow_up:
         spiraling_monsters.remove(monster)
-        dead_sms.add(monster)
+        dead_monsters.add(monster)
         monster.images = boom_images()
         monster.fps = 30
         monster.scale = 0.25
@@ -1141,7 +1141,7 @@ def update_for_maxine_player():
         monster.disappear_timer = 31
         
     to_delete = set()
-    for monster in dead_sms:
+    for monster in dead_monsters:
         monster.animate()
         monster.disappear_timer -= 1
 
@@ -1149,7 +1149,7 @@ def update_for_maxine_player():
             to_delete.add(monster)
             
     for monster in to_delete:
-        dead_sms.remove(monster)
+        dead_monsters.remove(monster)
 
     # Handle projectiles (spores in the case of mushrooms)
     # Projectiles point toward Maxine when they're spawned. (Spored?)
@@ -1251,14 +1251,14 @@ def on_mouse_move(pos):
 
 # Prepare to move on to the next level
 def finished_level():
-    global game_state, level, switch_level_timeout, spiraling_monsters, dead_sms, projectiles
+    global game_state, level, switch_level_timeout, spiraling_monsters, dead_monsters, projectiles
     game_state = 'won'
     level += 1
     switch_level_timeout = 120
     # TODO send a signal to the server to close the file here and open a new file in start_next_level
     # TODO remove everything from Level 2
     spiraling_monsters.clear()
-    dead_sms.clear()
+    dead_monsters.clear()
     projectiles.clear()
     
     
@@ -1348,9 +1348,10 @@ def add_cell():
     if game_state != 'playing':
         return
         
-    if MAKE_MUSHROOMS:
-        mush = make_mushroom()
-        spiraling_monsters.add(mush)
+    if PLAY_LEVELS:
+        if level == 1:
+            mush = make_mushroom()
+            spiraling_monsters.add(mush)
     else:
         cell = make_sars_monster()
 
