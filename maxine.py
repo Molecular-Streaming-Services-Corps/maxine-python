@@ -496,6 +496,7 @@ class PotionHolder:
 new_controls = NewControls()
 
 spiraling_monsters = set()
+bouncing_monsters = set()
 dead_monsters = set()
 
 projectiles = set()
@@ -593,6 +594,8 @@ def draw():
     maxine.draw()
     
     for monster in spiraling_monsters:
+        monster.draw()
+    for monster in bouncing_monsters:
         monster.draw()
     for monster in dead_monsters:
         monster.draw()
@@ -1036,8 +1039,8 @@ def update_for_maxine_player():
         
         if point_outside_signal_ring(maxine.center):
             maxine.pos = prev_pos
-    
 
+    # Level 1 code
     # Process spiraling monsters
     sm_to_blow_up = set()
     for monster in spiraling_monsters:
@@ -1058,8 +1061,7 @@ def update_for_maxine_player():
             sm_to_blow_up.add(monster)
             
             if MAXINE_CHANGES_SIZE:
-                maxine_current_scale *= MAXINE_CHANGE_FACTOR
-                maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+                grow_maxine()
             
         # Spawn a spore if we are far enough from Maxine and time is up
         monster.spore_timeout -= 1
@@ -1099,8 +1101,7 @@ def update_for_maxine_player():
             projectiles_to_delete.add(p)
             
             if MAXINE_CHANGES_SIZE:
-                maxine_current_scale /= MAXINE_CHANGE_FACTOR
-                maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+                shrink_maxine()
             else:
                 kill_maxine()
         # For a circular ring.
@@ -1111,6 +1112,42 @@ def update_for_maxine_player():
     
     for p in projectiles_to_delete:
         projectiles.remove(p)
+
+    # Level 2 code
+    # Process bouncing monsters
+    bm_speed = 5
+    bm_to_blow_up = set()
+    for monster in bouncing_monsters:
+        monster.animate()
+
+        old_pos = monster.pos
+        monster.move_forward(bm_speed)
+
+        if point_outside_signal_ring(monster.pos):
+            monster.pos = old_pos
+            bounce_off_wall(monster)
+
+        # Blow up the monster when it gets to the center and reward Maxine
+        if util.distance_points(monster.center, CENTER) < 20:
+           bm_to_blow_up.add(monster)
+           grow_maxine()
+
+        # Make Maxine shrink if she collides with a bouncing monster
+        if maxine.collide_pixel(monster):
+            bm_to_blow_up.add(monster)
+            shrink_maxine()
+
+    for monster in bm_to_blow_up:
+        bouncing_monsters.remove(monster)
+        dead_monsters.add(monster)
+        monster.images = boom_images()
+        monster.fps = 30
+        monster.scale = 0.25
+        
+        # Set a disappear timer in frames.
+        monster.disappear_timer = 31
+
+    # All levels code
 
     # Check if Maxine has won or lost (or is still going)
     if game_state == 'playing':
@@ -1133,6 +1170,16 @@ def point_outside_signal_ring(point):
     scaled_coords = (point[0] - CENTER[0],
                      (point[1] - CENTER[1]) * rx/ry)
     return np.linalg.norm(scaled_coords, 2) > rx
+
+def grow_maxine():
+    global maxine_current_scale, maxine
+    maxine_current_scale *= MAXINE_CHANGE_FACTOR
+    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+    
+def shrink_maxine():
+    global maxine_current_scale, maxine
+    maxine_current_scale /= MAXINE_CHANGE_FACTOR
+    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
 
 def on_key_down(key):
     global graph_type, new_controls, serializer, playing_music
@@ -1193,9 +1240,9 @@ def finished_level():
     level += 1
     switch_level_timeout = 120
     # TODO send a signal to the server to close the file here and open a new file in start_next_level
-    # TODO remove everything from Level 2
     spiraling_monsters.clear()
     dead_monsters.clear()
+    bouncing_monsters.clear()
     projectiles.clear()
     
     
@@ -1229,7 +1276,8 @@ def reset_maxine():
     maxine.images = ['maxine']
     maxine.alive = True
 
-# Cell/Monster functions
+# Monster functions
+# Level 1
 def make_spore(shroom):
     '''Makes a spore starting at the center of the shroom and heading toward
     Maxine.'''
@@ -1260,6 +1308,32 @@ def make_mushroom():
     
     return mush
 
+# Level 2
+def make_bouncer():
+    global bouncing_monsters
+    
+    monster_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
+        'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
+    bouncer = Actor(monster_type)
+    bouncer.images = [monster_type]
+    bouncer.fps = 1
+    
+    # Give it an initial position on the signal ring
+    r = RING_RADIUS
+    theta = random.randrange(0, 360)
+    (x, y) = util.pol2cart(r, theta)
+    coords = adjust_coords(x, y)
+
+    bouncer.pos = coords
+    
+    bounce_off_wall(bouncer)
+    
+    return bouncer
+
+def bounce_off_wall(monster):
+    new_direction = random.randrange(0, 360)
+    monster.angle = new_direction
+
 # Neither of these next two functions work any more due to me removing obsolete
 # code. They're just here for reference.
 def make_midjourney_monster():
@@ -1283,13 +1357,16 @@ def make_sars_monster():
 
 def add_cell():
     # This is called by the clock, not the update function (in standalone mode)
-    global game_state
+    global game_state, spiraling_monsters, bouncing_monsters
     if game_state != 'playing':
         return
         
     if level == 1:
         mush = make_mushroom()
         spiraling_monsters.add(mush)
+    elif level == 2:
+        bouncer = make_bouncer()
+        bouncing_monsters.add(bouncer)
 
     if STANDALONE:
         delay = random.randrange(5, 8)
