@@ -69,6 +69,8 @@ MAKE_MUSHROOMS = True
 DRAW_SPIRALS = False
 
 game_state = 'playing' # becomes 'won' or 'lost'
+level = 1
+switch_level_timeout = 120
 playing_music = True
 
 sg = None
@@ -885,7 +887,7 @@ def update():
                 add_cell()    
 
     if PLAYER == 'maxine':
-        if game_state == 'playing':
+        if game_state in ['playing', 'won']:
             update_for_maxine_player()
         
             # Send updates to the other player    
@@ -975,7 +977,7 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
             pressed_before.remove(switch_name)
     
 def update_for_maxine_player():
-    global maxine_current_scale, game_state, new_controls
+    global maxine_current_scale, game_state, new_controls, switch_level_timeout
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     new_controls.update()
 
@@ -1174,10 +1176,18 @@ def update_for_maxine_player():
         projectiles.remove(p)
 
     # Check if Maxine has won or lost (or is still going)
-    if maxine_current_scale <= MAXINE_LOSE_SIZE:
-        game_state = 'lost'
-    elif maxine_current_scale >= MAXINE_WIN_SIZE:
-        game_state = 'won'
+    if game_state == 'playing':
+        if maxine_current_scale <= MAXINE_LOSE_SIZE:
+            game_state = 'lost'
+        elif maxine_current_scale >= MAXINE_WIN_SIZE:
+            finished_level()
+            
+    # Code for the transition between levels
+    if game_state == 'won':
+        if switch_level_timeout > 0:
+            switch_level_timeout -=1
+        else:
+            start_next_level()
 
 def point_outside_signal_ring(point):
     '''Calculate if a position is outside the ellipse. From Math StackExchange.'''
@@ -1200,6 +1210,10 @@ def on_key_down(key):
     # Turn music on and off
     if key == keys.M:
         playing_music = not playing_music
+    
+    # Temporary hack so you can test out levels more easily
+    if key == keys.N:
+        finished_level()
     
     # Save and load the state of the game to a file.
     if key == keys.S:
@@ -1234,6 +1248,33 @@ def on_mouse_move(pos):
     #dev_control.pos = pos
     #dev_control.scale = 0.5
     pass
+
+# Prepare to move on to the next level
+def finished_level():
+    global game_state, level, switch_level_timeout, spiraling_monsters, dead_sms, projectiles
+    game_state = 'won'
+    level += 1
+    switch_level_timeout = 120
+    # TODO send a signal to the server to close the file here and open a new file in start_next_level
+    # TODO remove everything from Level 2
+    spiraling_monsters.clear()
+    dead_sms.clear()
+    projectiles.clear()
+    
+    
+def start_next_level():
+    global game_state, maxine_current_scale, maxine
+    game_state = 'playing'
+
+    maxine_current_scale = 1
+    maxine.pos = MAXINE_START
+    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+
+    # This timer will have been shut down while the victory screen is displayed
+    # so we need to start it up again
+    if STANDALONE:
+        delay = random.randrange(5, 8)
+        clock.schedule_unique(add_cell, delay)
 
 # Maxine functions
 
