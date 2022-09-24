@@ -66,6 +66,7 @@ class LiveData(Data):
         # A dictionary mapping from frame index to a SampleData object 
         self.data_frames = {}
         self.pressed = []
+        self.latest_spike_frame = None
         
     def load_received_samples_and_count_spikes(self):
         spikes = 0
@@ -86,6 +87,7 @@ class LiveData(Data):
                 # we want to notice all the spikes
                 if self.middle_spike_exists():
                     spikes += 1
+                    self.latest_spike_frame = data.samples
             elif isinstance(data, lilith_client.JoystickData):
                 self.pressed = data.pressed
 
@@ -156,8 +158,15 @@ class LiveData(Data):
         return ret
 
     def get_frame(self):
-        ret = self.data_frames[self.latest_frame]
-        return ret
+        if self.latest_frame in self.data_frames:
+            ret = self.data_frames[self.latest_frame].samples
+            return ret
+        else:
+            return None
+
+    def get_latest_spike_frame(self):
+        '''This is only called when there has been a spike'''
+        return self.latest_spike_frame
 
 class PrerecordedData(Data):
     def __init__(self, num_boxes):

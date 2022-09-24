@@ -873,12 +873,12 @@ def update():
         spikes = d.load_received_samples_and_count_spikes()
     
         data = d.get_frame()
-        if playing_music:
+        if playing_music and not data is None:
             music_ops.current_to_frequency(data)    
             music_ops.current_to_volume(data)
         
-        # todo set it to the last frame containing a spike
-        sg.set_frame(data)
+        if spikes > 0:
+            sg.set_frame(data)
     
         if PLAYER == 'maxine':
             for i in range(0, spikes):
