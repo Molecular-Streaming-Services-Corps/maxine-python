@@ -662,7 +662,7 @@ def update_video():
         sg = spike_graph.SpikeGraph(screen, Rect)
 
     if restart_video:
-        video = cv2.VideoCapture('cats.mp4')
+        video = cv2.VideoCapture('cells.mp4')
         restart_video = False
 
     # Get one frame as an OpenCV image
@@ -844,7 +844,7 @@ def update():
         data = d.get_frame()
         if playing_music:
             music_ops.current_to_frequency(data)
-            music_ops.current_to_volume(data)
+            #music_ops.current_to_volume(data)
         
         spike_exists = d.middle_spike_exists()
         if spike_exists:
@@ -855,6 +855,8 @@ def update():
         if PLAYER == 'maxine' and spike_exists:
             add_cell()
     elif LIVE:
+        lilith_client.request_data(lilith_client.ws, 1)
+    
         spikes = d.load_received_samples_and_count_spikes()
     
         data = d.get_frame()

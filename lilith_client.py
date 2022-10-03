@@ -65,6 +65,9 @@ sample_index = 0
 SAMPLES_PER_SECOND = 10**5
 samples_per_packet = int(SAMPLES_PER_SECOND / 60) + 1
 
+WAIT_FOR_SAMPLES = False
+waiting = True
+
 def on_open(ws):
     global ws_connected, logger
     logger.info('Connected succesfully')
@@ -127,7 +130,7 @@ def get_typecode(message):
     return data[0]
     
 def process_message(code, message):
-    global pressed, channel, q, state_q, logger
+    global pressed, channel, q, state_q, logger, waiting, WAIT_FOR_SAMPLES
 
     # typecode 0: update
     if code == 0:
@@ -142,6 +145,8 @@ def process_message(code, message):
             #channel = data.channel
             
             q.put(data)
+            if WAIT_FOR_SAMPLES:
+                waiting = False
          
     # typecode 1: WEBSOCK_JSON_DATA
     elif code == 1:
@@ -299,7 +304,12 @@ def subscribe_data(ws, id, mac, file_id, stride, filter):
 
 # Requesting data.
 def request_data(ws, sample_stride):
-    global sample_index, samples_per_packet
+    global sample_index, samples_per_packet, waiting, WAIT_FOR_DATA
+    
+    if WAIT_FOR_DATA and waiting:
+        return
+    
+    waiting = True
 
     # Start code = 12
     # Device id (0 now)
@@ -314,12 +324,12 @@ def request_data(ws, sample_stride):
     ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
     
     sample_index += samples_per_packet
-    setup_request_data(ws, sample_stride)
+    #setup_request_data(ws, sample_stride)
     return None
 
-def setup_request_data(ws, sample_stride):
-    t = Timer(1.0 / 60, run_request_data, (ws, sample_stride))
-    t.start()
+#def setup_request_data(ws, sample_stride):
+#    t = Timer(1.0 / 60, run_request_data, (ws, sample_stride))
+#    t.start()
 
 def run_request_data(ws, sample_stride):
     request_data(ws, sample_stride)
