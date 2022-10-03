@@ -5,7 +5,8 @@ import numpy as np
 import pygame
 
 def current_to_volume(current_data):
-    current_data *= 5
+    # The current data is read-only for some reason; it is a ndarray
+    current_data = current_data * 5
     
     sound = pygame.sndarray.make_sound(current_data)
 
