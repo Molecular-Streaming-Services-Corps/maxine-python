@@ -71,6 +71,7 @@ def on_open(ws):
     
     get_metadata('version', ws)
     get_metadata('bias_settings_history', ws)
+    get_metadata('start_time')
 
     set_game_subscription(ws)
     logger.debug('Completed set_game_subscription')

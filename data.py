@@ -2,6 +2,7 @@ import numpy as np
 import json
 import os
 import math
+import time
 import logging
 
 import lilith_client
@@ -67,6 +68,7 @@ class LiveData(Data):
         self.data_frames = {}
         self.pressed = []
         self.latest_spike_frame = None
+        self.caught_up = False
         
     def load_received_samples_and_count_spikes(self):
         spikes = 0
@@ -143,7 +145,7 @@ class LiveData(Data):
         scale = range_ / 2
         mid = min_v + scale
         
-        scale == 0.01
+        scale += 1
         
         logger.debug('boxes: %s', self.get_boxes())
         # Pre-numpy code
@@ -167,6 +169,25 @@ class LiveData(Data):
     def get_latest_spike_frame(self):
         '''This is only called when there has been a spike'''
         return self.latest_spike_frame
+
+    def try_to_catch_up(self):
+        if self.caught_up:
+            return
+            
+        now = time.time()
+        md = lilith_client.metadata
+        if 'start_time' in md:
+            start_time = md['start_time']
+        
+        # This will be a float
+        time_difference = now - start_time
+        samples_so_far = int(time_difference * 100000)
+        
+        # Make it a frame
+        sample_index = samples_so_far // 1667 * 1667
+        lilith_client.sample_index = sample_index
+        
+        self.caught_up = True
 
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
