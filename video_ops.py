@@ -47,11 +47,11 @@ def update_video(RING_WIDTH, RING_HEIGHT):
         restart_video = True    
         frame = 0
 
-def draw_video(screen, RING_WIDTH, RING_HEIGHT, WIDTH, HEIGHT):
+def draw_video(screen):
     global surf
     
     if surf:
-        x = (WIDTH - RING_WIDTH) // 2
-        y = (HEIGHT - RING_HEIGHT) // 2
+        x = (constants.WIDTH - constants.RING_WIDTH) // 2
+        y = (constants.HEIGHT - constants.RING_HEIGHT) // 2
         screen.blit(surf, (x, y))
 

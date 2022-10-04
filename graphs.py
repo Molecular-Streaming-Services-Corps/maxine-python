@@ -1,6 +1,8 @@
 import numpy as np
 import logging
 
+import util
+
 # Set up logger for this module
 logger = logging.getLogger('spike_graph')
 logger.setLevel(logging.INFO)
@@ -73,4 +75,92 @@ class SpikeGraph:
             y2 = self.bottoms[i] + top
             
             l((x, y1), (x, y2), BLACK)
+
+def draw_graph(i, d, graph_type, screen, STANDALONE):
+    # Draw a rectangle behind the graph
+    RED = (200, 0, 0)
+    BLACK = (0, 0, 0)
+    GREEN = (0, 200, 0)
+    WHITE = (255, 255, 255)
+    BLUE = (0, 0, 255)
+    if graph_type not in ['boxes_ring','line_ring']:
+        BOX = Rect((9, 99), (302, 82))
+        screen.draw.filled_rect(BOX, GREEN)
+    
+    NEON_PINK = (251,72,196) # Positive
+    GRAPE = (128,49,167) # Negative
+    
+    # Sample data for the graph
+    if STANDALONE:
+        x_data = list(range(0, constants.NUM_BOXES))
+        x_data = [(x + i) % constants.NUM_BOXES for x in x_data]
+        inputs = [2*np.pi*x/constants.NUM_BOXES for x in x_data]
+        y_data = np.sin(inputs)  # update the data.
+        abs_y_data = y_data
+        #print('i', i)
+        #print('x_data:', x_data)
+        #print('inputs:', inputs)
+        #print('y_data:', y_data)
+    
+        # Calculate the color and location of each rectangle and draw it
+        min_value = -1.0
+        max_value = +1.0
+    else: # live or prerecorded mode        
+        y_data = d.get_scaled_boxes()
+        abs_y_data = d.get_absolute_scaled_boxes()
+        min_value = -1.0
+        max_value = +1.0
+    
+    MIDPOINT = constants.NUM_BOXES // 2
+    
+    # Plot the data
+    for x, (y, abs_y) in enumerate(zip(y_data, abs_y_data)):
+        if x == MIDPOINT:
+            # A single white line
+            color = WHITE
+            abs_y = 0
+        elif x == 0:
+            # A black line at the origin
+            color = RED
+            abs_y = 0
+        elif y < 0:
+            scale_factor = y / min_value
+            # Shades of red
+            #color = (255 * scale_factor, 0, 0)
+            color = np.multiply(scale_factor, BLUE)
+        else:
+            scale_factor = y / max_value
+            # Shades of blue
+            #color = (0, 0, 255 * scale_factor)
+            color = np.multiply(scale_factor, NEON_PINK)
             
+        if graph_type == 'heatmap':
+            rect = Rect((10 + 300.0 / constants.NUM_BOXES * x , 100), (300 / constants.NUM_BOXES, 80))
+            screen.draw.filled_rect(rect, color)
+        elif graph_type == 'scatterplot':
+            # Draw a 3x1 Rect because there's no function to draw a pixel
+            # y coord is between 100 and 180
+            y_coord = int(140 + 40 * -y)
+            rect = Rect((10 + 300.0 / constants.NUM_BOXES * x, y_coord), (3, 1))
+            screen.draw.filled_rect(rect, color)        
+        elif graph_type == 'boxes_ring':
+            # Draw lines around an ellipse using polar coordinates
+            LINE_LENGTH = 50
+            
+            # Calculate the offset, used to display absolute values.
+            offset = abs_y * LINE_LENGTH / 2
+            
+            # Calculate the coordinates for the inner end of the line
+            r = constants.RING_RADIUS - LINE_LENGTH / 2 + offset
+            theta = x / constants.NUM_BOXES * 360
+            (inner_x, inner_y) = util.pol2cart(r, theta)
+            inner_coords = util.adjust_coords(inner_x, inner_y)
+            
+            # Calculate the coordinates for the outer end of the line
+            r = constants.RING_RADIUS + LINE_LENGTH / 2 + offset
+            (outer_x, outer_y) = util.pol2cart(r, theta)
+            outer_coords = util.adjust_coords(outer_x, outer_y)
+            
+            # Finally draw the line
+            pygame.draw.line(screen.surface, color, inner_coords, outer_coords, width = 10)
+

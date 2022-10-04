@@ -19,6 +19,7 @@ import serialization
 import music_ops
 import video_ops
 import graphs
+import constants
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -29,12 +30,8 @@ handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(me
 logger.addHandler(handler)
 
 TITLE = 'Maxine\'s µMonsters'
-WIDTH = 1800
-HEIGHT = 900
-CENTER = (WIDTH / 2, HEIGHT / 2)
-RING_HEIGHT = 900
-RING_WIDTH = 1280
-RING_RADIUS = min(RING_HEIGHT, RING_WIDTH) // 2
+WIDTH = constants.WIDTH
+HEIGHT = constants.HEIGHT
 
 MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
 '''If this is set to False, Maxine explodes instead of changing size when she
@@ -505,8 +502,6 @@ score = 0
 # Represents data from a stored file.
 d = None
 
-NUM_BOXES = 100
-
 rotation = 0
 
 def save_arena_to_dict():
@@ -576,9 +571,9 @@ def draw():
     draw_living_background()
 
     # Draw the microscope video in front of the background and behind the signal ring
-    video_ops.draw_video(screen, RING_WIDTH, RING_HEIGHT, WIDTH, HEIGHT)
+    video_ops.draw_video(screen)
     
-    draw_graph()
+    graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
     
     if sg:
         sg.draw()
@@ -648,103 +643,6 @@ def draw_metal_background():
     screen.blit(surface, (0, 0))
 
 i = 0
-def draw_graph():
-    global i, d
-    # Draw a rectangle behind the graph
-    RED = (200, 0, 0)
-    BLACK = (0, 0, 0)
-    GREEN = (0, 200, 0)
-    WHITE = (255, 255, 255)
-    BLUE = (0, 0, 255)
-    if graph_type not in ['boxes_ring','line_ring']:
-        BOX = Rect((9, 99), (302, 82))
-        screen.draw.filled_rect(BOX, GREEN)
-    
-    NEON_PINK = (251,72,196) # Positive
-    GRAPE = (128,49,167) # Negative
-    
-    # Sample data for the graph
-    if STANDALONE:
-        x_data = list(range(0, NUM_BOXES))
-        x_data = [(x + i) % NUM_BOXES for x in x_data]
-        inputs = [2*np.pi*x/NUM_BOXES for x in x_data]
-        y_data = np.sin(inputs)  # update the data.
-        abs_y_data = y_data
-        #print('i', i)
-        #print('x_data:', x_data)
-        #print('inputs:', inputs)
-        #print('y_data:', y_data)
-    
-        # Calculate the color and location of each rectangle and draw it
-        min_value = -1.0
-        max_value = +1.0
-    else: # live or prerecorded mode        
-        y_data = d.get_scaled_boxes()
-        abs_y_data = d.get_absolute_scaled_boxes()
-        min_value = -1.0
-        max_value = +1.0
-    
-    MIDPOINT = NUM_BOXES // 2
-    
-    # Plot the data
-    for x, (y, abs_y) in enumerate(zip(y_data, abs_y_data)):
-        if x == MIDPOINT:
-            # A single white line
-            color = WHITE
-            abs_y = 0
-        elif x == 0:
-            # A black line at the origin
-            color = RED
-            abs_y = 0
-        elif y < 0:
-            scale_factor = y / min_value
-            # Shades of red
-            #color = (255 * scale_factor, 0, 0)
-            color = np.multiply(scale_factor, BLUE)
-        else:
-            scale_factor = y / max_value
-            # Shades of blue
-            #color = (0, 0, 255 * scale_factor)
-            color = np.multiply(scale_factor, NEON_PINK)
-            
-        if graph_type == 'heatmap':
-            rect = Rect((10 + 300.0 / NUM_BOXES * x , 100), (300 / NUM_BOXES, 80))
-            screen.draw.filled_rect(rect, color)
-        elif graph_type == 'scatterplot':
-            # Draw a 3x1 Rect because there's no function to draw a pixel
-            # y coord is between 100 and 180
-            y_coord = int(140 + 40 * -y)
-            rect = Rect((10 + 300.0 / NUM_BOXES * x, y_coord), (3, 1))
-            screen.draw.filled_rect(rect, color)        
-        elif graph_type == 'boxes_ring':
-            # Draw lines around an ellipse using polar coordinates
-            LINE_LENGTH = 50
-            
-            # Calculate the offset, used to display absolute values.
-            offset = abs_y * LINE_LENGTH / 2
-            
-            # Calculate the coordinates for the inner end of the line
-            r = RING_RADIUS - LINE_LENGTH / 2 + offset
-            theta = x / NUM_BOXES * 360
-            (inner_x, inner_y) = util.pol2cart(r, theta)
-            inner_coords = adjust_coords(inner_x, inner_y)
-            
-            # Calculate the coordinates for the outer end of the line
-            r = RING_RADIUS + LINE_LENGTH / 2 + offset
-            (outer_x, outer_y) = util.pol2cart(r, theta)
-            outer_coords = adjust_coords(outer_x, outer_y)
-            
-            # Finally draw the line
-            pygame.draw.line(screen.surface, color, inner_coords, outer_coords, width = 10)
-
-def adjust_coords(x, y):
-    # Stretch in the x dimension to match the greater width of the ellipse,
-    # and then add the center to the Cartesian coordinates
-    WIDTH_TO_HEIGHT_RATIO = RING_WIDTH / RING_HEIGHT
-
-    (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
-    (x, y) = (x + CENTER[0], y + CENTER[1])
-    return (x, y)
 
 def draw_spiral(rotation, color):
     GAP = 0.5
@@ -753,7 +651,7 @@ def draw_spiral(rotation, color):
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
         (x, y) = util.spiral(GAP, rotation, theta)
-        (x, y) = adjust_coords(x, y)
+        (x, y) = util.adjust_coords(x, y)
         screen.draw.filled_circle((x, y), 1, color)
 
 def boom_images():
@@ -1272,7 +1170,7 @@ def make_bouncer():
     r = RING_RADIUS
     theta = random.randrange(0, 360)
     (x, y) = util.pol2cart(r, theta)
-    coords = adjust_coords(x, y)
+    coords = util.adjust_coords(x, y)
 
     bouncer.pos = coords
     
@@ -1349,7 +1247,7 @@ if platform.system() == 'Darwin' and len(sys.argv) == 1:
 TITLE = TITLE + f' ({PLAYER})'
 
 if DATADIR:
-    d = data.PrerecordedData(NUM_BOXES)
+    d = data.PrerecordedData(constants.NUM_BOXES)
     d.load_files(DATADIR)
 
 elif STANDALONE:
@@ -1366,7 +1264,7 @@ elif LIVE:
     t.setDaemon(True)
     t.start()
     
-    d = data.LiveData(NUM_BOXES)
+    d = data.LiveData(constants.NUM_BOXES)
 
 if MULTIPLAYER and not LIVE:
     name = 'Kent'

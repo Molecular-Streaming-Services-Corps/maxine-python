@@ -62,3 +62,12 @@ class SpiralState:
         self.angle = 360 - ((self.theta + self.rotation) % 360)
         self.theta -= self.step_degrees
         
+def adjust_coords(x, y):
+    # Stretch in the x dimension to match the greater width of the ellipse,
+    # and then add the center to the Cartesian coordinates
+    WIDTH_TO_HEIGHT_RATIO = constants.RING_WIDTH / constants.RING_HEIGHT
+
+    (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
+    (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])
+    return (x, y)
+
