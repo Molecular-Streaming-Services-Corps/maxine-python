@@ -295,7 +295,7 @@ class NewControls:
             self.zap_timeout = 6
             
             # Send a message to change the voltage
-            self.set_voltage(3500)
+            self.set_voltage(1000)
         elif self.control_index == self.hydrowag_index:
             self.hydrowag_on = not self.hydrowag_on
             # hydrowag has just been turned on now
