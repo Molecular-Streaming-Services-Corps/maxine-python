@@ -62,7 +62,8 @@ pore.center = (WIDTH/2, HEIGHT/2)
 animations = set()
 
 #graph_type = 'heatmap'
-graph_type = 'ring_lines'
+#graph_type = 'line_ring'
+graph_type = 'boxes_ring'
 
 DRAW_SPIRALS = False
 
@@ -711,7 +712,7 @@ def draw_graph():
     GREEN = (0, 200, 0)
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 255)
-    if graph_type not in ['ring_boxes','ring_lines']:
+    if graph_type not in ['boxes_ring','line_ring']:
         BOX = Rect((9, 99), (302, 82))
         screen.draw.filled_rect(BOX, GREEN)
     
@@ -771,7 +772,7 @@ def draw_graph():
             y_coord = int(140 + 40 * -y)
             rect = Rect((10 + 300.0 / NUM_BOXES * x, y_coord), (3, 1))
             screen.draw.filled_rect(rect, color)        
-        elif graph_type == 'ring_boxes':
+        elif graph_type == 'boxes_ring':
             # Draw lines around an ellipse using polar coordinates
             LINE_LENGTH = 50
             
