@@ -4,8 +4,6 @@ import pgzrun
 from pgzhelper import *
 import pygame
 import numpy as np
-# For the video
-import cv2
 import logging
 import time
 
@@ -18,9 +16,9 @@ import data
 import util
 import lilith_client
 import serialization
-import image_ops
 import music_ops
-import spike_graph
+import video_ops
+import graphs
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -578,7 +576,7 @@ def draw():
     draw_living_background()
 
     # Draw the microscope video in front of the background and behind the signal ring
-    draw_video()
+    video_ops.draw_video(screen, RING_WIDTH, RING_HEIGHT, WIDTH, HEIGHT)
     
     draw_graph()
     
@@ -648,60 +646,6 @@ def draw_metal_background():
     surface = getattr(images, 'bg_cut')
     surface = pygame.transform.scale(surface, (WIDTH, HEIGHT))
     screen.blit(surface, (0, 0))
-
-# Code for displaying the microscope footage inside the signal ring
-video = None
-restart_video = True
-frame = 0
-surf = None
-video_image = None
-def update_video():
-    global frame, video, restart_video, video_image, surf, sg
-    frame += 1
-
-    if not sg:
-        sg = spike_graph.SpikeGraph(screen, Rect)
-
-    if restart_video:
-        video = cv2.VideoCapture('cells.mp4')
-        restart_video = False
-
-    # Get one frame as an OpenCV image
-    prev_image = video_image
-    if frame % 2 in [0]:
-        success, video_image = video.read()
-    else:
-        success = True
-    if success:
-        if video_image is None:
-            return
-            
-        # Change it to our format
-        img = np.array(video_image)
-        img = img.transpose([1, 0, 2])
-        img = img[:,:,::-1]
-
-        light_purple = 203, 195, 227
-        bright_purple = 191, 64, 191
-        image_ops.tint(img, light_purple)
-        display = image_ops.composite(image_ops.ellipse, image_ops.green_image, img)
-        
-        # Get pygame surface (it's created from an array with no alpha channel
-        # so it has no alpha channel itself).
-        surf = pygame.surfarray.make_surface(display)
-        surf.set_colorkey((0, 255, 0))
-        surf = pygame.transform.scale(surf, (RING_WIDTH, RING_HEIGHT))
-    else:
-        restart_video = True    
-        frame = 0
-
-def draw_video():
-    global surf
-    
-    if surf:
-        x = (WIDTH - RING_WIDTH) // 2
-        y = (HEIGHT - RING_HEIGHT) // 2
-        screen.blit(surf, (x, y))
 
 i = 0
 def draw_graph():
@@ -834,7 +778,10 @@ def update():
         import sys; sys.exit(0)
     
     # Update the microscope video
-    update_video()
+    video_ops.update_video(RING_WIDTH, RING_HEIGHT)
+
+    if not sg:
+        sg = graphs.SpikeGraph(screen, Rect)    
     
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
