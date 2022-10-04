@@ -1,7 +1,9 @@
 import numpy as np
 import logging
+import pygame
 
 import util
+import constants
 
 # Set up logger for this module
 logger = logging.getLogger('spike_graph')

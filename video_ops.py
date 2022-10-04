@@ -3,6 +3,7 @@ import numpy as np
 import pygame
 
 import image_ops
+import constants
 
 # Code for displaying the microscope footage inside the signal ring
 video = None
@@ -10,7 +11,7 @@ restart_video = True
 frame = 0
 surf = None
 video_image = None
-def update_video(RING_WIDTH, RING_HEIGHT):
+def update_video():
     global frame, video, restart_video, video_image, surf
     frame += 1
 
@@ -42,7 +43,7 @@ def update_video(RING_WIDTH, RING_HEIGHT):
         # so it has no alpha channel itself).
         surf = pygame.surfarray.make_surface(display)
         surf.set_colorkey((0, 255, 0))
-        surf = pygame.transform.scale(surf, (RING_WIDTH, RING_HEIGHT))
+        surf = pygame.transform.scale(surf, (constants.RING_WIDTH, constants.RING_HEIGHT))
     else:
         restart_video = True    
         frame = 0

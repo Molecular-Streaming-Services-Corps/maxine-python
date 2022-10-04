@@ -1,6 +1,8 @@
 import numpy as np
 import math
 
+import constants
+
 def process_joystick_data(joystick_data):
     binary_string = bin(joystick_data)[2:]
     return process_joystick_string(binary_string)

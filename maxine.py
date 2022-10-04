@@ -33,7 +33,7 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
-MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
+MAXINE_START = (constants.CENTER[0] + 100, constants.CENTER[1]) #(200, 600)
 '''If this is set to False, Maxine explodes instead of changing size when she
 is hurt, and just gets points when she kills a monster.'''
 MAXINE_CHANGES_SIZE = True
@@ -602,8 +602,8 @@ def draw():
     
     # Draw the signal ring.
     RED = (200, 0, 0)
-    ring_rect = Rect((CENTER[0] - RING_WIDTH / 2, CENTER[1] - RING_HEIGHT / 2), 
-                     (RING_WIDTH, RING_HEIGHT))
+    ring_rect = Rect((constants.CENTER[0] - constants.RING_WIDTH / 2, constants.CENTER[1] - constants.RING_HEIGHT / 2), 
+                     (constants.RING_WIDTH, constants.RING_HEIGHT))
     pygame.draw.ellipse(screen.surface, RED, ring_rect, width = 1)
     
     if DRAW_SPIRALS:
@@ -619,11 +619,11 @@ def draw():
         # Draw the victory or gameover graphics (or nothing if the game is still going).
         if game_state == 'lost':
             gameover = Actor('gameover')
-            gameover.pos = CENTER
+            gameover.pos = constants.CENTER
             gameover.draw()
         elif game_state == 'won':
             victory = Actor('victory')
-            victory.pos = CENTER
+            victory.pos = constants.CENTER
             victory.draw()
 
 def draw_living_background():
@@ -676,7 +676,7 @@ def update():
         import sys; sys.exit(0)
     
     # Update the microscope video
-    video_ops.update_video(RING_WIDTH, RING_HEIGHT)
+    video_ops.update_video()
 
     if not sg:
         sg = graphs.SpikeGraph(screen, Rect)    
@@ -1013,10 +1013,10 @@ def update_for_maxine_player():
 
 def point_outside_signal_ring(point):
     '''Calculate if a position is outside the ellipse. From Math StackExchange.'''
-    rx = RING_WIDTH / 2
-    ry = RING_HEIGHT / 2
-    scaled_coords = (point[0] - CENTER[0],
-                     (point[1] - CENTER[1]) * rx/ry)
+    rx = constants.RING_WIDTH / 2
+    ry = constants.RING_HEIGHT / 2
+    scaled_coords = (point[0] - constants.CENTER[0],
+                     (point[1] - constants.CENTER[1]) * rx/ry)
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def grow_maxine():
