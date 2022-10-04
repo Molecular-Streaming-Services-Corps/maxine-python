@@ -305,27 +305,29 @@ def subscribe_data(ws, id, mac, file_id, stride, filter):
 # Requesting data.
 def request_data(ws, sample_stride):
     global sample_index, samples_per_packet, waiting, WAIT_FOR_SAMPLES
+    global ws_connected
     
     if WAIT_FOR_SAMPLES and waiting:
         return
     
-    waiting = True
+    if ws and ws_connected:
+        waiting = True
 
-    # Start code = 12
-    # Device id (0 now)
-    # Channel
-    # sample length
-    # sample_start_high
-    # sample_start_low
-    # sample_stride
-    s = struct.Struct('!HHHlLLL')
-    data = [12, INDEX, channel, samples_per_packet, 0, sample_index, sample_stride]
-    packed_data = s.pack(*data)
-    ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
-    
-    sample_index += samples_per_packet
-    #setup_request_data(ws, sample_stride)
-    return None
+        # Start code = 12
+        # Device id (0 now)
+        # Channel
+        # sample length
+        # sample_start_high
+        # sample_start_low
+        # sample_stride
+        s = struct.Struct('!HHHlLLL')
+        data = [12, INDEX, channel, samples_per_packet, 0, sample_index, sample_stride]
+        packed_data = s.pack(*data)
+        ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+        
+        sample_index += samples_per_packet
+        #setup_request_data(ws, sample_stride)
+        return None
 
 #def setup_request_data(ws, sample_stride):
 #    t = Timer(1.0 / 60, run_request_data, (ws, sample_stride))
