@@ -34,9 +34,9 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = 1800
 HEIGHT = 900
 CENTER = (WIDTH / 2, HEIGHT / 2)
-RING_RADIUS = 350
-RING_HEIGHT = 700
-RING_WIDTH = 1000
+RING_RADIUS = 450
+RING_HEIGHT = 900
+RING_WIDTH = 1280
 
 MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
 '''If this is set to False, Maxine explodes instead of changing size when she
