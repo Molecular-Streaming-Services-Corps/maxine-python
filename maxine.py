@@ -200,15 +200,15 @@ class NewControls:
         self.sawtooth_switch.animate()
 
         if self.sawtooth_on and PLAYER == 'console' and LIVE:
-            if self.sawtooth_frame == 60:
+            if self.sawtooth_frame == 180:
                 self.sawtooth_frame = 0
             else:
                 self.sawtooth_frame += 1
             
             MIN_VOLTAGE = -1000
-            MAX_VOLTAGE = 3500
+            MAX_VOLTAGE = 1000
             RANGE = MAX_VOLTAGE - MIN_VOLTAGE
-            voltage = int(RANGE * self.sawtooth_frame / 60 + MIN_VOLTAGE)
+            voltage = int(RANGE * self.sawtooth_frame / 180 + MIN_VOLTAGE)
             self.set_voltage(voltage)
 
             # Only change the angle while sawtooth is on
