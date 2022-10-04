@@ -74,7 +74,7 @@ def on_open(ws):
     
     get_metadata('version', ws)
     get_metadata('bias_settings_history', ws)
-    get_metadata('start_time')
+    get_metadata('start_time', ws)
 
     set_game_subscription(ws)
     logger.debug('Completed set_game_subscription')
@@ -304,9 +304,9 @@ def subscribe_data(ws, id, mac, file_id, stride, filter):
 
 # Requesting data.
 def request_data(ws, sample_stride):
-    global sample_index, samples_per_packet, waiting, WAIT_FOR_DATA
+    global sample_index, samples_per_packet, waiting, WAIT_FOR_SAMPLES
     
-    if WAIT_FOR_DATA and waiting:
+    if WAIT_FOR_SAMPLES and waiting:
         return
     
     waiting = True

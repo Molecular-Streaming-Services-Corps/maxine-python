@@ -188,6 +188,8 @@ class LiveData(Data):
         lilith_client.sample_index = sample_index
         
         self.caught_up = True
+        
+        logger.info('Updated sample_index to: %s', sample_index)
 
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
