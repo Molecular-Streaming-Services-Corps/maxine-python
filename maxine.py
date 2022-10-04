@@ -34,9 +34,9 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = 1800
 HEIGHT = 900
 CENTER = (WIDTH / 2, HEIGHT / 2)
-RING_RADIUS = 450
 RING_HEIGHT = 900
 RING_WIDTH = 1280
+RING_RADIUS = min(RING_HEIGHT, RING_WIDTH) // 2
 
 MAXINE_START = (CENTER[0] + 100, CENTER[1]) #(200, 600)
 '''If this is set to False, Maxine explodes instead of changing size when she
@@ -62,7 +62,7 @@ pore.center = (WIDTH/2, HEIGHT/2)
 animations = set()
 
 #graph_type = 'heatmap'
-graph_type = 'ring'
+graph_type = 'ring_lines'
 
 DRAW_SPIRALS = False
 
@@ -711,7 +711,7 @@ def draw_graph():
     GREEN = (0, 200, 0)
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 255)
-    if graph_type != 'ring':
+    if graph_type not in ['ring_boxes','ring_lines']:
         BOX = Rect((9, 99), (302, 82))
         screen.draw.filled_rect(BOX, GREEN)
     
@@ -771,8 +771,7 @@ def draw_graph():
             y_coord = int(140 + 40 * -y)
             rect = Rect((10 + 300.0 / NUM_BOXES * x, y_coord), (3, 1))
             screen.draw.filled_rect(rect, color)        
-        else:
-            pass
+        elif graph_type == 'ring_boxes':
             # Draw lines around an ellipse using polar coordinates
             LINE_LENGTH = 50
             
@@ -804,7 +803,7 @@ def adjust_coords(x, y):
 
 def draw_spiral(rotation, color):
     GAP = 0.5
-    MAX_THETA = 690
+    MAX_THETA = 890
     STEP_DEGREES = 10
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
@@ -855,6 +854,7 @@ def update():
         if PLAYER == 'maxine' and spike_exists:
             add_cell()
     elif LIVE:
+        d.try_to_catch_up()
         lilith_client.request_data(lilith_client.ws, 1)
     
         spikes = d.load_received_samples_and_count_spikes()
@@ -1303,7 +1303,7 @@ def make_mushroom():
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(
-        0.5, rotation, 690, 1, CENTER, RING_WIDTH / RING_HEIGHT)
+        0.5, rotation, RING_HEIGHT - 10, 1, CENTER, RING_WIDTH / RING_HEIGHT)
     
     # Set the mushroom up to spawn a spore
     mush.spore_timeout = get_spore_timeout()

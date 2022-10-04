@@ -23,7 +23,7 @@ class Data:
         self.sample_rate = 10**5
         self.latest_frame = 0
         #self.amplifier_min = -10000
-        self.amplifier_max = 10000
+        self.amplifier_max = 20000
 
     def get_absolute_scaled_boxes(self):
         boxes = self.get_boxes()
@@ -179,17 +179,20 @@ class LiveData(Data):
         if 'start_time' in md:
             start_time = md['start_time']
         
-        # This will be a float
-        time_difference = now - start_time
-        samples_so_far = int(time_difference * 100000)
-        
-        # Make it a frame
-        sample_index = samples_so_far // 1667 * 1667
-        lilith_client.sample_index = sample_index
-        
-        self.caught_up = True
-        
-        logger.info('Updated sample_index to: %s', sample_index)
+            # This will be a float
+            time_difference = now - start_time
+            samples_so_far = int(time_difference * 100000)
+            
+            # Make it a frame
+            # The theory behind this line is that a) the sample index is always
+            # a multiple of 1667 and b) we need to wait until that frame is finished
+            # before we can download it. A slight lag would be ok anyway
+            sample_index = samples_so_far // 1667 * 1667 - 1667
+            lilith_client.sample_index = sample_index
+            
+            self.caught_up = True
+            
+            logger.info('Updated sample_index to: %s', sample_index)
 
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
