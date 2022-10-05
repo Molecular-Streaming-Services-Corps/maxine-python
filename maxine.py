@@ -729,6 +729,9 @@ def update():
         if PLAYER == 'maxine':
             for i in range(0, spikes):
                 add_cell() 
+                
+        last_n_samples = d.get_last_n_frames(100)
+        vlr.give_samples(last_n_samples)
     elif STANDALONE:
         vlr.give_samples([])   
 

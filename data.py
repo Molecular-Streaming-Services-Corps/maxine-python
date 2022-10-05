@@ -194,6 +194,31 @@ class LiveData(Data):
             
             logger.info('Updated sample_index to: %s', sample_index)
 
+    def get_last_n_frames(self, n):
+        '''Returns a Numpy array containing the samples from the last n frames.
+        If latest_frame is less than n, return latest_frame frames. Put 0s in
+        any empty frames.'''
+        n = min(n, self.latest_frame)
+        frame_size = 1667
+        
+        end_frame = self.latest_frame
+        start_frame = max(0, end_frame - n + 1)
+        
+        samples = np.zeros(n, dtype='int16')
+        empty_frame = np.zeros(frame_size, dtype='int16')
+        for i in range(start_frame, end_frame + 1):
+            start = i * frame_size
+            end = (i + 1) * frame_size
+            
+            if i in self.data_frames:
+                data = self.data_frames[i].samples
+            else:
+                data = empty_frame
+            
+            samples[start:end] = data
+        
+        return samples
+
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
         super().__init__()
