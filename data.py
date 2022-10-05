@@ -294,5 +294,13 @@ class PrerecordedData(Data):
         return cd
         
     def get_last_n_samples(self, n):
-        '''Returns all the samples if there are less than n samples'''
-        return self.sample_data[-n:]
+        '''Return the last n samples up to the present frame. Returns all the
+        samples if there are less than n samples'''
+        samples_per_frame = 1667
+        
+        start = samples_per_frame * (self.latest_frame + 1) - n
+        start = max(start, 0)
+        end = samples_per_frame * (self.latest_frame + 1)
+        
+        cd = self.sample_data[start : end]
+        return cd

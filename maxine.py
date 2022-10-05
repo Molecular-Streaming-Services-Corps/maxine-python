@@ -705,7 +705,7 @@ def update():
         if spike_exists:
             sg.set_frame(data)
         
-        last_n_samples = d.get_last_n_samples(1667*60)
+        last_n_samples = d.get_last_n_samples(1667*100)
         vlr.give_samples(last_n_samples)
         
         d.advance_frame()
@@ -728,7 +728,9 @@ def update():
     
         if PLAYER == 'maxine':
             for i in range(0, spikes):
-                add_cell()    
+                add_cell() 
+    elif STANDALONE:
+        vlr.give_samples([])   
 
     if PLAYER == 'maxine':
         if game_state in ['playing', 'won']:

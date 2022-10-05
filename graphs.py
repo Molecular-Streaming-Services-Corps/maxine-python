@@ -19,13 +19,62 @@ class VerticalLineRing:
     def __init__(self, screen):
         self.screen = screen
         self.samples = []
-        self.present_angle = 0
+        self.present_box = 0
+        self.line_extent = 25
+        
+        self.samples_to_show = 100 * 1667
+
+        # These are in the range from -line_extent to +line_extent.
+        # They only go up to the point where data has been provided.
+        self.tops = []
+        self.bottoms = []
+
+        self.fake_tops = np.random.randint(0, self.line_extent, constants.NUM_BOXES)
+        self.fake_bottoms = np.random.randint(-self.line_extent, 0, constants.NUM_BOXES)
     
     def give_samples(self, samples):
         self.samples = samples
+        
+        # TODO update the angle based on the number of new samples
+        self.present_box = int(self.present_box + 1) % constants.NUM_BOXES
     
+        # Calculate tops and bottoms.
+#        self.tops = np.zeros(int(self.present_angle / 360 * constants.NUM_BOXES)) + self.line_extent
+#        self.bottoms = np.zeros(int(self.present_angle / 360 * constants.NUM_BOXES)) - self.line_extent
+
+        #self.tops = self.fake_tops[:self.present_box]
+        #self.bottoms = self.fake_bottoms[:self.present_box]
+
+        # This represents the number of lines used by the present data
+        self.num_used_lines = int(len(samples) / self.samples_to_show * constants.NUM_BOXES)
+        
     def draw(self):
-        pass
+        # Draw the vertical lines
+        WHITE = (255, 255, 255)
+        num_lines = len(self.tops)
+        for i in range(0, num_lines):
+            top = self.tops[i]
+            bottom = self.bottoms[i]
+            angle = i * 3.6
+            self.draw_line(angle, top, bottom, WHITE)
+        
+        # Draw the red line at present_angle
+        RED = (200, 0, 0)
+        self.draw_line(self.present_box * 3.6, -self.line_extent, self.line_extent, RED)
+        
+    def draw_line(self, theta, top, bottom, color):
+        # Calculate the coordinates for the inner end of the line
+        r = constants.RING_RADIUS + top
+        (inner_x, inner_y) = util.pol2cart(r, theta)
+        inner_coords = util.adjust_coords(inner_x, inner_y)
+        
+        # Calculate the coordinates for the outer end of the line
+        r = constants.RING_RADIUS + bottom
+        (outer_x, outer_y) = util.pol2cart(r, theta)
+        outer_coords = util.adjust_coords(outer_x, outer_y)
+        
+        # Finally draw the line
+        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 10)
 
 class SpikeGraph:
     def __init__(self, screen, Rect):
