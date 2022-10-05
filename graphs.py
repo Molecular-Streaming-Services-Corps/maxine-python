@@ -46,21 +46,46 @@ class VerticalLineRing:
         #self.bottoms = self.fake_bottoms[:self.present_box]
 
         # This represents the number of lines used by the present data
-        self.num_used_lines = int(len(samples) / self.samples_to_show * constants.NUM_BOXES)
+        num_used_lines = int(len(samples) / self.samples_to_show * constants.NUM_BOXES)
+        min_ = np.min(samples)
+        max_ = np.max(samples)
+        range_ = max_ - min_ + 1
+        # Convert it to be between -1 and +1
+        maxes = np.zeros(num_used_lines)
+        mins = np.zeros(num_used_lines)
         
+        box_width = self.samples_to_show // constants.NUM_BOXES
+        
+        #for i in range(0, box_width):
+        for i in range(0, num_used_lines):
+            box_start = box_width * i
+            box_end = box_width * (i + 1)
+            values = samples[box_start : box_end]
+            
+            maxes[i] = values.max()
+            mins[i] = values.min()
+        
+        h = 2*self.line_extent
+        self.tops = np.array([- int((v - min_) / range_ * h) for v in maxes])
+        self.bottoms = np.array([- int((v - min_) / range_ * h) for v in mins])
+
     def draw(self):
         # Draw the vertical lines
-        WHITE = (255, 255, 255)
+        #WHITE = (255, 255, 255)
+        #BLUE = (0, 0, 255)
         num_lines = len(self.tops)
+        data_start_box = (self.present_box - num_lines) % constants.NUM_BOXES
         for i in range(0, num_lines):
+            color = (0, 0, int(255 * i / constants.NUM_BOXES))
+        
             top = self.tops[i]
             bottom = self.bottoms[i]
-            angle = i * 3.6
-            self.draw_line(angle, top, bottom, WHITE)
+            angle = ((data_start_box + i) * 3.6) % 360
+            self.draw_line(angle, top, bottom, color)
         
         # Draw the red line at present_angle
         RED = (200, 0, 0)
-        self.draw_line(self.present_box * 3.6, -self.line_extent, self.line_extent, RED)
+        self.draw_line(self.present_box * 3.6, -2*self.line_extent, 0, RED)
         
     def draw_line(self, theta, top, bottom, color):
         # Calculate the coordinates for the inner end of the line
