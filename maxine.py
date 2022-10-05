@@ -1182,7 +1182,7 @@ def make_bouncer():
     bouncer.fps = 1
     
     # Give it an initial position on the signal ring
-    r = RING_RADIUS
+    r = constants.RING_RADIUS
     theta = random.randrange(0, 360)
     (x, y) = util.pol2cart(r, theta)
     coords = util.adjust_coords(x, y)

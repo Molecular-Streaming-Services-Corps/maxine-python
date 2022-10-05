@@ -34,6 +34,8 @@ class VerticalLineRing:
     
     def give_samples(self, samples):
         self.samples = samples
+        if not len(samples):
+            return
         
         # TODO update the angle based on the number of new samples
         self.present_box = int(self.present_box + 1) % constants.NUM_BOXES
