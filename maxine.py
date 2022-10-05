@@ -914,7 +914,7 @@ def update_for_maxine_player():
         monster.angle = (ss.angle + 90) % 360
         
         # Blow up the monster when it gets to the center for now
-        if util.distance_points(monster.center, CENTER) < 20:
+        if util.distance_points(monster.center, constants.CENTER) < 20:
             sm_to_blow_up.add(monster)
 
         # Blow up monsters that collide with Maxine
@@ -989,7 +989,7 @@ def update_for_maxine_player():
             bounce_off_wall(monster)
 
         # Blow up the monster when it gets to the center and reward Maxine
-        if util.distance_points(monster.center, CENTER) < 20:
+        if util.distance_points(monster.center, constants.CENTER) < 20:
            bm_to_blow_up.add(monster)
            grow_maxine()
 
@@ -1162,7 +1162,7 @@ def make_mushroom():
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(
-        0.5, rotation, RING_HEIGHT - 10, 1, CENTER, RING_WIDTH / RING_HEIGHT)
+        0.5, rotation, constants.RING_HEIGHT - 10, 1, constants.CENTER, constants.RING_WIDTH / constants.RING_HEIGHT)
     
     # Set the mushroom up to spawn a spore
     mush.spore_timeout = get_spore_timeout()
