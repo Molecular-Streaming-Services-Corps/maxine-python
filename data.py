@@ -292,3 +292,7 @@ class PrerecordedData(Data):
         cd = self.sample_data[start : end]
 
         return cd
+        
+    def get_last_n_samples(self, n):
+        '''Returns all the samples if there are less than n samples'''
+        return self.sample_data[-n:]

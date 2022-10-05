@@ -13,6 +13,20 @@ handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
 logger.addHandler(handler)
 
+class VerticalLineRing:
+    '''Draws a vertical-line based signal ring using sample data. It uses
+    constants.NUM_BOXES to choose the number of vertical lines on the ring.'''
+    def __init__(self, screen):
+        self.screen = screen
+        self.samples = []
+        self.present_angle = 0
+    
+    def give_samples(self, samples):
+        self.samples = samples
+    
+    def draw(self):
+        pass
+
 class SpikeGraph:
     def __init__(self, screen, Rect):
         '''screen: the pgzero screen object.

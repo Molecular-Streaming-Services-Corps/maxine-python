@@ -57,8 +57,8 @@ pore.center = (WIDTH/2, HEIGHT/2)
 animations = set()
 
 #graph_type = 'heatmap'
-#graph_type = 'line_ring'
-graph_type = 'boxes_ring'
+graph_type = 'line_ring'
+#graph_type = 'boxes_ring'
 
 DRAW_SPIRALS = False
 
@@ -67,7 +67,10 @@ level = 1
 switch_level_timeout = 120
 playing_music = True
 
+'''Spike Graph'''
 sg = None
+'''Vertical Line Ring'''
+vlr = None
 
 # Temporary development tool
 dev_control = None
@@ -567,13 +570,16 @@ def load_actor_from_dict(data):
     return actor
 
 def draw():
-    global rotation, dev_control, sg
+    global rotation, dev_control, sg, graph_type
     draw_living_background()
 
     # Draw the microscope video in front of the background and behind the signal ring
     video_ops.draw_video(screen)
     
-    graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
+    if graph_type == 'line_ring':
+        vlr.draw()
+    else:
+        graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
     
     if sg:
         sg.draw()
@@ -667,6 +673,7 @@ def update():
     global logger
     global playing_music
     global sg
+    global vlr
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -679,7 +686,10 @@ def update():
     video_ops.update_video()
 
     if not sg:
-        sg = graphs.SpikeGraph(screen, Rect)    
+        sg = graphs.SpikeGraph(screen, Rect)
+    
+    if not vlr:
+        vlr = graphs.VerticalLineRing(screen)
     
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
@@ -694,6 +704,9 @@ def update():
         spike_exists = d.middle_spike_exists()
         if spike_exists:
             sg.set_frame(data)
+        
+        last_n_samples = d.get_last_n_samples(1667*60)
+        vlr.give_samples(last_n_samples)
         
         d.advance_frame()
         
