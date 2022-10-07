@@ -705,7 +705,7 @@ def update():
         if spike_exists:
             sg.set_frame(data)
         
-        last_n_samples = d.get_last_n_samples(1667*100)
+        last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
         
         d.advance_frame()
@@ -730,7 +730,7 @@ def update():
             for i in range(0, spikes):
                 add_cell() 
                 
-        last_n_samples = d.get_last_n_frames(100)
+        last_n_samples = d.get_last_n_frames(constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
     elif STANDALONE:
         vlr.give_samples([])   

@@ -22,7 +22,7 @@ class VerticalLineRing:
         self.present_box = 0
         self.line_extent = 25
         
-        self.samples_to_show = 100 * 1667
+        self.samples_to_show = constants.NUM_BOXES * 1667
 
         # These are in the range from -line_extent to +line_extent.
         # They only go up to the point where data has been provided.
@@ -82,12 +82,12 @@ class VerticalLineRing:
         
             top = self.tops[i]
             bottom = self.bottoms[i]
-            angle = ((data_start_box + i) * 3.6) % 360
+            angle = ((data_start_box + i) * 360 / constants.NUM_BOXES) % 360
             self.draw_line(angle, top, bottom, color)
         
         # Draw the red line at present_angle
         RED = (200, 0, 0)
-        self.draw_line(self.present_box * 3.6, -2*self.line_extent, 0, RED)
+        self.draw_line(self.present_box * 360 / constants.NUM_BOXES, -2*self.line_extent, 0, RED)
         
     def draw_line(self, theta, top, bottom, color):
         # Calculate the coordinates for the inner end of the line
