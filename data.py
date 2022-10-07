@@ -6,6 +6,7 @@ import time
 import logging
 
 import lilith_client
+import util
 
 # Set up logger for this module
 logger = logging.getLogger('data')
@@ -21,7 +22,7 @@ class Data:
         self.sample_data = []
         self.joystick_data = []
         self.sample_rate = 10**5
-        self.latest_frame = 0
+        self.latest_frame = -1
         #self.amplifier_min = -10000
         self.amplifier_max = 20000
 
@@ -82,6 +83,14 @@ class LiveData(Data):
                 
                 # Update the latest frame index. There may be missing frames in
                 # between if the frames arrive in the wrong order.
+                
+                # See if it skips frames (it doesn't)
+                if sd_frame_index > self.latest_frame + 1:
+                    logger.info('Skipping %s frames', sd_frame_index - self.latest_frame + 1)
+                
+                if util.all_zeros(data.samples):
+                    logger.info('Received frame with all 0s')
+                
                 if sd_frame_index > self.latest_frame:
                     self.latest_frame = sd_frame_index
                     
@@ -105,7 +114,7 @@ class LiveData(Data):
         A frame in this method is a SampleData object corresponding to a
         particular frame of gameplay.'''
         if self.latest_frame < 100:
-            num_real_boxes = self.latest_frame
+            num_real_boxes = self.latest_frame + 1
             padding = [-1, 1] + [0] * (98 - num_real_boxes)
         else:
             num_real_boxes = 100
@@ -179,8 +188,8 @@ class LiveData(Data):
         if 'start_time' in md:
             start_time = md['start_time']
         
-            # This will be a float
-            time_difference = now - start_time
+            # This will be a float (or not)
+            time_difference = int(now) - start_time
             samples_so_far = int(time_difference * 100000)
             
             # Make it a frame
@@ -209,18 +218,27 @@ class LiveData(Data):
         samples = np.zeros(num_samples, dtype='int16')
         empty_frame = np.zeros(frame_size, dtype='int16')
         
-        for i in range(start_frame, end_frame + 1):
+        # samples has indexes from 1667*0 to 1667*NUM_BOXES,
+        # i goes from say 7 to 106
+        for i in range(start_frame, end_frame):
             #import pdb; pdb.set_trace()
-            start = i * frame_size
-            end = (i + 1) * frame_size
-            
+            start = (i - start_frame) * frame_size
+            end = (i - start_frame + 1) * frame_size
+                        
             if i in self.data_frames:
                 data = self.data_frames[i].samples
             else:
                 data = empty_frame
+                logger.info('Used empty_frame')
             
             samples[start:end] = data
+            #logger.info('%s %s %s', samples[start:end].shape, data.shape, (start, end))
         
+        if util.all_zeros(samples):
+            logger.info('Somehow samples is all 0s in get_last_n_frames')
+            logger.info('%s %s %s', num_samples, start_frame, end_frame)
+            import pdb; pdb.set_trace()
+
         return samples
 
 class PrerecordedData(Data):

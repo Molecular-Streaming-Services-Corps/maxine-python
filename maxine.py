@@ -37,7 +37,7 @@ MAXINE_START = (constants.CENTER[0] + 100, constants.CENTER[1]) #(200, 600)
 '''If this is set to False, Maxine explodes instead of changing size when she
 is hurt, and just gets points when she kills a monster.'''
 MAXINE_CHANGES_SIZE = True
-MAXINE_INITIAL_SCALE = 0.25
+MAXINE_INITIAL_SCALE = 0.5
 MAXINE_CHANGE_FACTOR = 1.2
 '''These will make Maxine win when she is 4x the size (after about 8 hits) or
 lose when she is a quarter of the size.'''
@@ -57,8 +57,8 @@ pore.center = (WIDTH/2, HEIGHT/2)
 animations = set()
 
 #graph_type = 'heatmap'
-graph_type = 'line_ring'
-#graph_type = 'boxes_ring'
+#graph_type = 'line_ring'
+graph_type = 'boxes_ring'
 
 DRAW_SPIRALS = False
 
@@ -713,7 +713,7 @@ def update():
         if PLAYER == 'maxine' and spike_exists:
             add_cell()
     elif LIVE:
-        d.try_to_catch_up()
+        #d.try_to_catch_up()
         lilith_client.request_data(lilith_client.ws, 1)
     
         spikes = d.load_received_samples_and_count_spikes()

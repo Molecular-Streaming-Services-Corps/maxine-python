@@ -6,8 +6,8 @@ import util
 import constants
 
 # Set up logger for this module
-logger = logging.getLogger('spike_graph')
-logger.setLevel(logging.INFO)
+logger = logging.getLogger('graphs')
+logger.setLevel(logging.DEBUG)
 import sys
 handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
@@ -33,6 +33,7 @@ class VerticalLineRing:
         self.fake_bottoms = np.random.randint(-self.line_extent, 0, constants.NUM_BOXES)
     
     def give_samples(self, samples):
+        samples = samples.astype('int32')
         self.samples = samples
         if not len(samples):
             return
@@ -55,6 +56,8 @@ class VerticalLineRing:
         # Convert it to be between -1 and +1
         maxes = np.zeros(num_used_lines)
         mins = np.zeros(num_used_lines)
+        # Used for diagnostics
+        averages = np.zeros(num_used_lines)
         
         box_width = self.samples_to_show // constants.NUM_BOXES
         
@@ -66,10 +69,21 @@ class VerticalLineRing:
             
             maxes[i] = values.max()
             mins[i] = values.min()
+            averages[i] = values.mean()
+            
+        if util.all_zeros(samples):
+            logger.info('Somehow samples is all 0s in give_samples')
         
         h = 2*self.line_extent
         self.tops = np.array([- int((v - min_) / range_ * h) for v in maxes])
         self.bottoms = np.array([- int((v - min_) / range_ * h) for v in mins])
+
+        logger.debug('means: %s', averages)
+        logger.debug('maxes: %s', maxes)
+        logger.debug('mins: %s', mins)
+
+        logger.debug('self.tops: %s', self.tops)
+        logger.debug('self.bottoms: %s', self.bottoms)        
 
     def draw(self):
         # Draw the vertical lines
@@ -82,6 +96,12 @@ class VerticalLineRing:
         
             top = self.tops[i]
             bottom = self.bottoms[i]
+            
+            #print(num_lines)
+            #if top == self.bottoms[i]:
+            #    if num_lines == constants.NUM_BOXES:
+            #        import pdb; pdb.set_trace()
+            
             angle = ((data_start_box + i) * 360 / constants.NUM_BOXES) % 360
             self.draw_line(angle, top, bottom, color)
         
@@ -101,7 +121,7 @@ class VerticalLineRing:
         outer_coords = util.adjust_coords(outer_x, outer_y)
         
         # Finally draw the line
-        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 10)
+        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 35)
 
 class SpikeGraph:
     def __init__(self, screen, Rect):

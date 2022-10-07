@@ -10,11 +10,7 @@ import time
 import queue
 import numpy as np
 
-# Enable websocket logging of exceptions
 import logging
-wslogger = logging.getLogger('websocket')
-wslogger.setLevel(logging.INFO)
-wslogger.addHandler(logging.StreamHandler())
 
 # Set up logger for this module
 logger = logging.getLogger('lilith_client')
@@ -23,6 +19,11 @@ import sys
 handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
 logger.addHandler(handler)
+
+# Enable websocket logging of exceptions
+wslogger = logging.getLogger('websocket')
+wslogger.setLevel(logging.DEBUG)
+wslogger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Must set the root logger to debug or info to allow messages to show
 logging.getLogger().setLevel(logging.DEBUG)

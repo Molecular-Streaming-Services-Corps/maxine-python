@@ -73,3 +73,7 @@ def adjust_coords(x, y):
     (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])
     return (x, y)
 
+def all_zeros(a):
+    are_zeros = a == 0
+    az = np.all(are_zeros)
+    return az and len(a)
