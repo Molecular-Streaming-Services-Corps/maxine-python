@@ -49,8 +49,8 @@ class VerticalLineRing:
 
         # This represents the number of lines used by the present data
         num_used_lines = int(len(samples) / self.samples_to_show * constants.NUM_BOXES)
-        min_ = np.min(samples)
-        max_ = np.max(samples)
+        min_ = int(np.min(samples))
+        max_ = int(np.max(samples))
         range_ = max_ - min_ + 1
         # Convert it to be between -1 and +1
         maxes = np.zeros(num_used_lines)

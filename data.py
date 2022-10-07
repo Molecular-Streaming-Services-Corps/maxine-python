@@ -198,15 +198,19 @@ class LiveData(Data):
         '''Returns a Numpy array containing the samples from the last n frames.
         If latest_frame is less than n, return latest_frame frames. Put 0s in
         any empty frames.'''
-        n = min(n, self.latest_frame)
+        # latest_frame + 1 == the number of frames so far
+        n = min(n, self.latest_frame + 1)
         frame_size = 1667
+        num_samples = n * frame_size
         
         end_frame = self.latest_frame
         start_frame = max(0, end_frame - n + 1)
         
-        samples = np.zeros(n, dtype='int16')
+        samples = np.zeros(num_samples, dtype='int16')
         empty_frame = np.zeros(frame_size, dtype='int16')
+        
         for i in range(start_frame, end_frame + 1):
+            #import pdb; pdb.set_trace()
             start = i * frame_size
             end = (i + 1) * frame_size
             
