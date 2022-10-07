@@ -37,9 +37,6 @@ class VerticalLineRing:
         self.samples = samples
         if not len(samples):
             return
-        
-        # TODO update the angle based on the number of new samples
-        self.present_box = int(self.present_box + 1) % constants.NUM_BOXES
     
         # Calculate tops and bottoms.
 #        self.tops = np.zeros(int(self.present_angle / 360 * constants.NUM_BOXES)) + self.line_extent
@@ -84,6 +81,9 @@ class VerticalLineRing:
 
         logger.debug('self.tops: %s', self.tops)
         logger.debug('self.bottoms: %s', self.bottoms)        
+
+    def advance_n_frames(self, n):
+        self.present_box = int(self.present_box + n) % constants.NUM_BOXES
 
     def draw(self):
         # Draw the vertical lines

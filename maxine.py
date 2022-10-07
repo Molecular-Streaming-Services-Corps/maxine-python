@@ -57,8 +57,8 @@ pore.center = (WIDTH/2, HEIGHT/2)
 animations = set()
 
 #graph_type = 'heatmap'
-#graph_type = 'line_ring'
-graph_type = 'boxes_ring'
+graph_type = 'line_ring'
+#graph_type = 'boxes_ring'
 
 DRAW_SPIRALS = False
 
@@ -707,6 +707,7 @@ def update():
         
         last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
+        vlr.advance_n_frames(1)
         
         d.advance_frame()
         
@@ -732,6 +733,8 @@ def update():
                 
         last_n_samples = d.get_last_n_frames(constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
+        num_frames_just_received = d.get_num_frames_just_received()
+        vlr.advance_n_frames(num_frames_just_received)
     elif STANDALONE:
         vlr.give_samples([])   
 

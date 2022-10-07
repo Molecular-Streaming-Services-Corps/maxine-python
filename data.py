@@ -70,9 +70,11 @@ class LiveData(Data):
         self.pressed = []
         self.latest_spike_frame = None
         self.caught_up = False
+        self.num_frames_just_received = 0
         
     def load_received_samples_and_count_spikes(self):
         spikes = 0
+        prev_frame = self.latest_frame
     
         d_list = lilith_client.consume_latest_samples(lilith_client.q)
         
@@ -101,6 +103,8 @@ class LiveData(Data):
                     self.latest_spike_frame = data.samples
             elif isinstance(data, lilith_client.JoystickData):
                 self.pressed = data.pressed
+
+        self.num_frames_just_received = self.latest_frame - prev_frame
 
         return spikes
 
@@ -240,6 +244,9 @@ class LiveData(Data):
             import pdb; pdb.set_trace()
 
         return samples
+
+    def get_num_frames_just_received(self):
+        return self.num_frames_just_received
 
 class PrerecordedData(Data):
     def __init__(self, num_boxes):
