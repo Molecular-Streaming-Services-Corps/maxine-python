@@ -1,7 +1,10 @@
 import numpy as np
 
-VIDEO_WIDTH = 640
-VIDEO_HEIGHT = 360
+#VIDEO_WIDTH = 640
+#VIDEO_HEIGHT = 360
+
+VIDEO_WIDTH = 618
+VIDEO_HEIGHT = 348
 
 def make_ellipse():
     '''Only needs to be called once.'''

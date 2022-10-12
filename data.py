@@ -241,7 +241,6 @@ class LiveData(Data):
         if util.all_zeros(samples):
             logger.info('Somehow samples is all 0s in get_last_n_frames')
             logger.info('%s %s %s', num_samples, start_frame, end_frame)
-            import pdb; pdb.set_trace()
 
         return samples
 

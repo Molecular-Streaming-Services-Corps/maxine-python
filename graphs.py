@@ -33,7 +33,7 @@ class VerticalLineRing:
         self.fake_bottoms = np.random.randint(-self.line_extent, 0, constants.NUM_BOXES)
     
     def give_samples(self, samples):
-        samples = samples.astype('int32')
+        #samples = samples.astype('int32')
         self.samples = samples
         if not len(samples):
             return

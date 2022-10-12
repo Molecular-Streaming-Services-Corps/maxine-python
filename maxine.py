@@ -714,6 +714,7 @@ def update():
         if PLAYER == 'maxine' and spike_exists:
             add_cell()
     elif LIVE:
+        MONSTERS_PER_SPIKE = 10
         #d.try_to_catch_up()
         lilith_client.request_data(lilith_client.ws, 1)
     
@@ -728,7 +729,7 @@ def update():
             sg.set_frame(data)
     
         if PLAYER == 'maxine':
-            for i in range(0, spikes):
+            for i in range(0, spikes * MONSTERS_PER_SPIKE):
                 add_cell() 
                 
         last_n_samples = d.get_last_n_frames(constants.NUM_BOXES)

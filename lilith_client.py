@@ -197,7 +197,8 @@ class SampleData:
         #s = struct_definitions.numbers_1667
         #self.samples = s.unpack(samples_bytes)
         dt = np.dtype(np.int16)
-        dt = dt.newbyteorder('>')
+        #dt = dt.newbyteorder('>')
+        dt = dt.newbyteorder('<')
         self.samples = np.frombuffer(message, dtype=dt, offset=16)
         
         logger.debug('samples: %s %s', len(self.samples), self.samples[0 : 10])

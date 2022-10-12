@@ -16,7 +16,7 @@ def update_video():
     frame += 1
 
     if restart_video:
-        video = cv2.VideoCapture('cells.mp4')
+        video = cv2.VideoCapture('pore.mp4')
         restart_video = False
 
     # Get one frame as an OpenCV image
@@ -36,7 +36,7 @@ def update_video():
 
         light_purple = 203, 195, 227
         bright_purple = 191, 64, 191
-        image_ops.tint(img, light_purple)
+        image_ops.tint(img, bright_purple)
         display = image_ops.composite(image_ops.ellipse, image_ops.green_image, img)
         
         # Get pygame surface (it's created from an array with no alpha channel
