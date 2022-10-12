@@ -1054,6 +1054,12 @@ def shrink_maxine():
 def on_key_down(key):
     global graph_type, new_controls, serializer, playing_music
 
+    # Switch between full screen and windowed
+    if key == keys.F:
+        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+    elif key == keys.W:
+        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT))
+
     # Change graph type
     if key == keys.G:
         if graph_type == 'heatmap':
