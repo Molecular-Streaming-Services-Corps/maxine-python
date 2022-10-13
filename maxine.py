@@ -696,37 +696,42 @@ def update():
     if DATADIR:
         d.get_one_frame_current()
         
-        data = d.get_frame()
+        frame = d.get_frame()
         if playing_music:
-            music_ops.current_to_frequency(data)
-            #music_ops.current_to_volume(data)
+            music_ops.current_to_frequency(frame)
+            #music_ops.current_to_volume(frame)
         
-        spike_exists = d.middle_spike_exists()
-        if spike_exists:
-            sg.set_frame(data)
+        #spike_exists = d.middle_spike_exists()
+        #if spike_exists:
+        #    sg.set_frame(frame)
         
         last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
         vlr.advance_n_frames(1)
+
+        maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
+        spike_exists = data.Data.end_spike_exists(maxes_mins)
+        if spike_exists:
+            sg.set_frame(frame)
         
         d.advance_frame()
         
         if PLAYER == 'maxine' and spike_exists:
             add_cell()
     elif LIVE:
-        MONSTERS_PER_SPIKE = 10
+        MONSTERS_PER_SPIKE = 1
         #d.try_to_catch_up()
         lilith_client.request_data(lilith_client.ws, 1)
     
         spikes = d.load_received_samples_and_count_spikes()
     
-        data = d.get_frame()
+        frame = d.get_frame()
         if playing_music and not data is None:
-            music_ops.current_to_frequency(data)    
-            music_ops.current_to_volume(data)
+            music_ops.current_to_frequency(frame)    
+            music_ops.current_to_volume(frame)
         
         if spikes > 0:
-            sg.set_frame(data)
+            sg.set_frame(frame)
     
         if PLAYER == 'maxine':
             for i in range(0, spikes * MONSTERS_PER_SPIKE):

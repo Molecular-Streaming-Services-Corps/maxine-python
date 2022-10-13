@@ -67,7 +67,9 @@ class Data:
         return count
         
     @staticmethod
-    def calculate_maxes_and_mins(samples, samples_to_show):
+    def calculate_maxes_and_mins(samples):
+        samples_to_show = 1667*constants.NUM_BOXES
+    
         if not len(samples):
             return ([], [])
 
@@ -76,7 +78,7 @@ class Data:
         min_ = int(np.min(samples))
         max_ = int(np.max(samples))
         range_ = max_ - min_ + 1
-        # Convert it to be between -1 and +1
+
         maxes = np.zeros(num_used_lines)
         mins = np.zeros(num_used_lines)
         # Used for diagnostics
@@ -102,6 +104,29 @@ class Data:
         logger.debug('mins: %s', mins)
         
         return (maxes, mins)
+
+    @staticmethod
+    def end_spike_exists(maxes_mins):
+        '''Detects whether the final box is a spike (positive or negative).'''
+        # The required difference between a box and the previous box to count
+        # as a spike
+        SPIKE_THRESHOLD = 500
+        maxes, mins = maxes_mins
+        
+        if len(maxes) < 2:
+            return False
+        
+        # We don't want this to be the absolute difference, or we'd detect
+        # returns to baseline after a spike as well
+        diff_maxes = maxes[-1] - maxes[-2]
+        if diff_maxes > SPIKE_THRESHOLD:
+            return True
+        
+        diff_mins = -(mins[-1] - mins[-2])
+        if diff_mins > SPIKE_THRESHOLD:
+            return True
+        
+        return False
 
 class LiveData(Data):
     def __init__(self, num_boxes):
@@ -140,9 +165,15 @@ class LiveData(Data):
                     
                 # If we process multiple frames of current data during a frame of animation,
                 # we want to notice all the spikes
-                if self.middle_spike_exists():
+                #if self.middle_spike_exists():
+                #    spikes += 1
+                #    self.latest_spike_frame = data.samples
+                last_n_frames = self.get_last_n_frames(constants.NUM_BOXES)
+                maxes_mins = Data.calculate_maxes_and_mins(last_n_frames)
+                if Data.end_spike_exists(maxes_mins):
                     spikes += 1
                     self.latest_spike_frame = data.samples
+                    
             elif isinstance(data, lilith_client.JoystickData):
                 self.pressed = data.pressed
 

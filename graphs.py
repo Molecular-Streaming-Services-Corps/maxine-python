@@ -40,7 +40,7 @@ class VerticalLineRing:
         #samples = samples.astype('int32')
         self.samples = samples
 
-        maxes, mins = data.Data.calculate_maxes_and_mins(samples, self.samples_to_show)
+        maxes, mins = data.Data.calculate_maxes_and_mins(samples)
         
         min_ = int(np.min(samples))
         max_ = int(np.max(samples))
