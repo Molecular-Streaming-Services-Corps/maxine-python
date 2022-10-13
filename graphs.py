@@ -4,6 +4,7 @@ import pygame
 
 import util
 import constants
+import data
 
 # Set up logger for this module
 logger = logging.getLogger('graphs')
@@ -33,51 +34,21 @@ class VerticalLineRing:
         self.fake_bottoms = np.random.randint(-self.line_extent, 0, constants.NUM_BOXES)
     
     def give_samples(self, samples):
-        #samples = samples.astype('int32')
-        self.samples = samples
         if not len(samples):
             return
     
-        # Calculate tops and bottoms.
-#        self.tops = np.zeros(int(self.present_angle / 360 * constants.NUM_BOXES)) + self.line_extent
-#        self.bottoms = np.zeros(int(self.present_angle / 360 * constants.NUM_BOXES)) - self.line_extent
+        #samples = samples.astype('int32')
+        self.samples = samples
 
-        #self.tops = self.fake_tops[:self.present_box]
-        #self.bottoms = self.fake_bottoms[:self.present_box]
-
-        # This represents the number of lines used by the present data
-        num_used_lines = int(len(samples) / self.samples_to_show * constants.NUM_BOXES)
+        maxes, mins = data.Data.calculate_maxes_and_mins(samples, self.samples_to_show)
+        
         min_ = int(np.min(samples))
         max_ = int(np.max(samples))
         range_ = max_ - min_ + 1
-        # Convert it to be between -1 and +1
-        maxes = np.zeros(num_used_lines)
-        mins = np.zeros(num_used_lines)
-        # Used for diagnostics
-        averages = np.zeros(num_used_lines)
-        
-        box_width = self.samples_to_show // constants.NUM_BOXES
-        
-        #for i in range(0, box_width):
-        for i in range(0, num_used_lines):
-            box_start = box_width * i
-            box_end = box_width * (i + 1)
-            values = samples[box_start : box_end]
-            
-            maxes[i] = values.max()
-            mins[i] = values.min()
-            averages[i] = values.mean()
-            
-        if util.all_zeros(samples):
-            logger.info('Somehow samples is all 0s in give_samples')
         
         h = 2*self.line_extent
         self.tops = np.array([- int((v - min_) / range_ * h) for v in maxes])
         self.bottoms = np.array([- int((v - min_) / range_ * h) for v in mins])
-
-        logger.debug('means: %s', averages)
-        logger.debug('maxes: %s', maxes)
-        logger.debug('mins: %s', mins)
 
         logger.debug('self.tops: %s', self.tops)
         logger.debug('self.bottoms: %s', self.bottoms)        

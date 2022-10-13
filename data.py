@@ -7,6 +7,7 @@ import logging
 
 import lilith_client
 import util
+import constants
 
 # Set up logger for this module
 logger = logging.getLogger('data')
@@ -25,7 +26,7 @@ class Data:
         self.latest_frame = -1
         #self.amplifier_min = -10000
         self.amplifier_max = 20000
-
+        
     def get_absolute_scaled_boxes(self):
         boxes = self.get_boxes()
         
@@ -65,6 +66,43 @@ class Data:
         
         return count
         
+    @staticmethod
+    def calculate_maxes_and_mins(samples, samples_to_show):
+        if not len(samples):
+            return ([], [])
+
+        # This represents the number of lines used by the present data
+        num_used_lines = int(len(samples) / samples_to_show * constants.NUM_BOXES)
+        min_ = int(np.min(samples))
+        max_ = int(np.max(samples))
+        range_ = max_ - min_ + 1
+        # Convert it to be between -1 and +1
+        maxes = np.zeros(num_used_lines)
+        mins = np.zeros(num_used_lines)
+        # Used for diagnostics
+        averages = np.zeros(num_used_lines)
+        
+        box_width = samples_to_show // constants.NUM_BOXES
+        
+        #for i in range(0, box_width):
+        for i in range(0, num_used_lines):
+            box_start = box_width * i
+            box_end = box_width * (i + 1)
+            values = samples[box_start : box_end]
+            
+            maxes[i] = values.max()
+            mins[i] = values.min()
+            averages[i] = values.mean()
+            
+        if util.all_zeros(samples):
+            logger.info('Somehow samples is all 0s in give_samples')
+
+        logger.debug('means: %s', averages)
+        logger.debug('maxes: %s', maxes)
+        logger.debug('mins: %s', mins)
+        
+        return (maxes, mins)
+
 class LiveData(Data):
     def __init__(self, num_boxes):
         super().__init__()
