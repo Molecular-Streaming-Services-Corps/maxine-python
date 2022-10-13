@@ -33,10 +33,14 @@ class Data:
         return asb
     
     def middle_spike_exists(self):
+        '''This is supposed to calculate whether a spike exists in the middle box.
+        It uses the middle box in case there's a voltage change and the graph moves
+        up or down. It's too strict to use. And it's based on the boxes which only
+        handle minnimums so they miss some spikes.'''
         sb = self.get_scaled_boxes()
     
         MIDPOINT = self.num_boxes // 2
-        BLUE_THRESHOLD = 0.5
+        BLUE_THRESHOLD = 0.1
         
         blue_enough_boxes = [(v > BLUE_THRESHOLD) for v in sb]
         blue_fraction = self.count_true(blue_enough_boxes) / self.num_boxes
@@ -44,11 +48,11 @@ class Data:
         #print('blue_fraction:', blue_fraction)
         
         # If at least 90% of the boxes are brightish blue
-        if blue_fraction > 0.9:
+        if blue_fraction > 0.7:
             middle_box = sb[MIDPOINT]
             # Find the first part of a red section at the midline. Ignore the
             # later boxes in the same spike.
-            if middle_box < -0.5 and sb[MIDPOINT - 1] >= 0:
+            if middle_box < -0.1 and sb[MIDPOINT - 1] >= 0:
                 return True
         
         return False
