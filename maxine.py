@@ -707,12 +707,14 @@ def update():
         
         last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
-        vlr.advance_n_frames(1)
 
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
         spike_exists = data.Data.end_spike_exists(maxes_mins)
         if spike_exists:
             sg.set_frame(frame)
+            vlr.add_spike()
+
+        vlr.advance_n_frames(1)
         
         d.advance_frame()
         

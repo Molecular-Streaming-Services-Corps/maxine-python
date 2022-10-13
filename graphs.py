@@ -33,6 +33,8 @@ class VerticalLineRing:
         self.fake_tops = np.random.randint(0, self.line_extent, constants.NUM_BOXES)
         self.fake_bottoms = np.random.randint(-self.line_extent, 0, constants.NUM_BOXES)
     
+        self.box_is_spike = [False] * constants.NUM_BOXES
+        
     def give_samples(self, samples):
         if not len(samples):
             return
@@ -54,17 +56,27 @@ class VerticalLineRing:
         logger.debug('self.bottoms: %s', self.bottoms)        
 
     def advance_n_frames(self, n):
+        # Remove the spikes from boxes that are being overwritten on the graph.
+        for i in range(1, n + 1):
+            box = (self.present_box + i) % constants.NUM_BOXES
+            self.box_is_spike[box] = False
+        
+        # Advance present_box
         self.present_box = int(self.present_box + n) % constants.NUM_BOXES
 
     def draw(self):
         # Draw the vertical lines
-        #WHITE = (255, 255, 255)
+        WHITE = (255, 255, 255)
         #BLUE = (0, 0, 255)
         num_lines = len(self.tops)
         data_start_box = (self.present_box - num_lines) % constants.NUM_BOXES
         for i in range(0, num_lines):
             color = (0, 0, int(255 * i / constants.NUM_BOXES))
-        
+            
+            index = (data_start_box + i) % constants.NUM_BOXES
+            if self.box_is_spike[index]:
+                color = WHITE
+            
             top = self.tops[i]
             bottom = self.bottoms[i]
             
@@ -93,6 +105,10 @@ class VerticalLineRing:
         
         # Finally draw the line
         pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 35)
+
+    def add_spike(self):
+        '''Sets the box represented by present_box to be a spike.'''
+        self.box_is_spike[self.present_box] = True
 
 class SpikeGraph:
     def __init__(self, screen, Rect):
