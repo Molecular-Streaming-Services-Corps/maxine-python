@@ -104,7 +104,7 @@ class VerticalLineRing:
         outer_coords = util.adjust_coords(outer_x, outer_y)
         
         # Finally draw the line
-        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 35)
+        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 10)
 
     def add_spike(self):
         '''Sets the box represented by present_box to be a spike.'''

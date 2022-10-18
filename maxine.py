@@ -741,8 +741,15 @@ def update():
                 
         last_n_samples = d.get_last_n_frames(constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
-        num_frames_just_received = d.get_num_frames_just_received()
-        vlr.advance_n_frames(num_frames_just_received)
+        
+        booleans = d.get_recent_frames_contain_spikes()
+        for b in booleans:
+            vlr.advance_n_frames(1)
+            if b:
+                vlr.add_spike()
+        
+        #num_frames_just_received = d.get_num_frames_just_received()
+        #vlr.advance_n_frames(num_frames_just_received)
     elif STANDALONE:
         vlr.give_samples([])   
 
