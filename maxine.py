@@ -60,7 +60,7 @@ animations = set()
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
 
-DRAW_SPIRALS = False
+DRAW_SPIRALS = True
 
 game_state = 'playing' # becomes 'won' or 'lost'
 level = 1
@@ -654,7 +654,7 @@ i = 0
 
 def draw_spiral(rotation, color):
     GAP = 0.5
-    MAX_THETA = 890
+    MAX_THETA = constants.TORUS_INNER_HEIGHT
     STEP_DEGREES = 10
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
@@ -1050,9 +1050,9 @@ def update_for_maxine_player():
             start_next_level()
 
 def point_outside_signal_ring(point):
-    '''Calculate if a position is outside the ellipse. From Math StackExchange.'''
-    rx = constants.RING_WIDTH / 2
-    ry = constants.RING_HEIGHT / 2
+    '''Calculate if a position is colliding with the torus. From Math StackExchange.'''
+    rx = constants.TORUS_INNER_WIDTH / 2
+    ry = constants.TORUS_INNER_HEIGHT / 2
     scaled_coords = (point[0] - constants.CENTER[0],
                      (point[1] - constants.CENTER[1]) * rx/ry)
     return np.linalg.norm(scaled_coords, 2) > rx
@@ -1193,7 +1193,7 @@ def make_mushroom():
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(
-        0.5, rotation, constants.RING_HEIGHT - 10, 1, constants.CENTER, constants.RING_WIDTH / constants.RING_HEIGHT)
+        0.5, rotation, constants.TORUS_INNER_HEIGHT, 1, constants.CENTER, constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT)
     
     # Set the mushroom up to spawn a spore
     mush.spore_timeout = get_spore_timeout()
@@ -1211,7 +1211,7 @@ def make_bouncer():
     bouncer.fps = 1
     
     # Give it an initial position on the signal ring
-    r = constants.RING_RADIUS
+    r = constants.TORUS_INNER_RADIUS
     theta = random.randrange(0, 360)
     (x, y) = util.pol2cart(r, theta)
     coords = util.adjust_coords(x, y)
