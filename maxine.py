@@ -576,6 +576,8 @@ def draw():
     # Draw the microscope video in front of the background and behind the signal ring
     video_ops.draw_video(screen)
     
+    graphs.draw_torus(screen, images)
+    
     if graph_type == 'line_ring':
         vlr.draw()
     else:

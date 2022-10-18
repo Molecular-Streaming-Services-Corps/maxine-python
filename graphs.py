@@ -8,7 +8,7 @@ import data
 
 # Set up logger for this module
 logger = logging.getLogger('graphs')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 import sys
 handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
@@ -262,4 +262,19 @@ def draw_graph(i, d, graph_type, screen, STANDALONE):
             
             # Finally draw the line
             pygame.draw.line(screen.surface, color, inner_coords, outer_coords, width = 10)
+
+torus_image = None
+def draw_torus(screen, images):
+    global torus_image
+    if not torus_image:
+        #image_width = 629
+        #image_height = 470
+        scale = (constants.TORUS_OUTER_WIDTH, constants.TORUS_OUTER_HEIGHT)
+        
+        surf = images.torus
+        torus_image = pygame.transform.scale(surf, scale)
+        
+    left = constants.CENTER[0] - constants.TORUS_OUTER_WIDTH // 2
+    top = constants.CENTER[1] - constants.TORUS_OUTER_HEIGHT // 2
+    screen.blit(torus_image, (left, top))
 
