@@ -697,16 +697,9 @@ def update():
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
         d.get_one_frame_current()
-        
+
         frame = d.get_frame()
-        if playing_music:
-            music_ops.current_to_frequency(frame)
-            #music_ops.current_to_volume(frame)
-        
-        #spike_exists = d.middle_spike_exists()
-        #if spike_exists:
-        #    sg.set_frame(frame)
-        
+                
         last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
 
@@ -717,6 +710,11 @@ def update():
             vlr.add_spike()
 
         vlr.advance_n_frames(1)
+        
+        if playing_music:
+            #music_ops.current_to_frequency(frame)
+            #music_ops.current_to_volume(frame)
+            music_ops.stats_to_frequency(maxes_mins)
         
         d.advance_frame()
         
