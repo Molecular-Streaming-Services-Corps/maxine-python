@@ -1059,11 +1059,13 @@ def grow_maxine():
     global maxine_current_scale, maxine
     maxine_current_scale *= MAXINE_CHANGE_FACTOR
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+    sounds.good.play()
     
 def shrink_maxine():
     global maxine_current_scale, maxine
     maxine_current_scale /= MAXINE_CHANGE_FACTOR
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+    sounds.eep.play()
 
 def on_key_down(key):
     global graph_type, new_controls, serializer, playing_music
