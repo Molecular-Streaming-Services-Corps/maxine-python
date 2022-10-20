@@ -621,7 +621,7 @@ def draw():
         GREEN = (0, 200, 0)
         rotation += 1
         draw_spiral(rotation + 0, WHITE)
-        draw_spiral(rotation + 180, GREEN)
+        draw_spiral(rotation + 180, WHITE)
 
     if PLAYER == 'maxine':
         # Draw the victory or gameover graphics (or nothing if the game is still going).
