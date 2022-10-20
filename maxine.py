@@ -956,12 +956,12 @@ def update_for_maxine_player():
     for monster in sm_to_blow_up:
         spiraling_monsters.remove(monster)
         dead_monsters.add(monster)
-        monster.images = boom_images()
-        monster.fps = 30
-        monster.scale = 0.25
+        #monster.images = boom_images()
+        #monster.fps = 30
+        #monster.scale = 0.25
         
         # Set a disappear timer in frames.
-        monster.disappear_timer = 31
+        monster.disappear_timer = 3
         
     to_delete = set()
     for monster in dead_monsters:
