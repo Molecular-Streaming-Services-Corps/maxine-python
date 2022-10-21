@@ -34,9 +34,6 @@ WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
 MAXINE_START = (constants.CENTER[0] + 100, constants.CENTER[1]) #(200, 600)
-'''If this is set to False, Maxine explodes instead of changing size when she
-is hurt, and just gets points when she kills a monster.'''
-MAXINE_CHANGES_SIZE = True
 MAXINE_INITIAL_SCALE = 0.5
 MAXINE_CHANGE_FACTOR = 1.2
 '''These will make Maxine win when she is 4x the size (after about 8 hits) or
@@ -74,6 +71,27 @@ vlr = None
 
 # Temporary development tool
 dev_control = None
+
+# Stuff for the gurk cannon
+cannon = Actor('gurk1')
+cannon.images = ('gurk1','gurk2')
+cannon.center = (WIDTH/2, HEIGHT/2)
+cannon.scale = 0.5
+cannon.spore_timeout = 60
+cannon.fps = 10
+
+cannon_in_level = True
+cannon_shooting = True
+cannon_blast_delay = 500
+cannon_blast_timeout = cannon_blast_delay
+
+spore_count = 0
+
+challenger_image = Actor('challengeplayer')
+challenger_image.center = (40, 40)
+
+console_image = Actor('consoleplayer')
+console_image.center = (40, 100)
 
 class NewControls:
     def __init__(self):
@@ -497,10 +515,12 @@ new_controls = NewControls()
 spiraling_monsters = set()
 bouncing_monsters = set()
 dead_monsters = set()
+ranged_monsters = [cannon]
 
 projectiles = set()
 
-score = 0
+challenger_score = 0
+console_score = 0
 
 # Represents data from a stored file.
 d = None
@@ -571,7 +591,16 @@ def load_actor_from_dict(data):
 
 def draw():
     global rotation, dev_control, sg, graph_type
+    global challenger_score, console_score, challenger_image, console_image
+    global cannon_in_level, ranged_monsters
     draw_living_background()
+
+    screen.draw.text('CHALLENGER SCORE: ' + str(challenger_score), (90, 40))
+    screen.draw.text('CONSOLE SCORE: ' + str(console_score), (90, 100))
+
+    #Draw Player Images   
+    challenger_image.draw()    
+    console_image.draw()
 
     # Draw the microscope video in front of the background and behind the signal ring
     video_ops.draw_video(screen)
@@ -592,6 +621,11 @@ def draw():
     if dev_control:
         dev_control.draw()
 
+    # Draw Cannon
+    if cannon_in_level:
+        for cannon in ranged_monsters:
+            cannon.draw()
+
     # Draw Maxine or the boom
     maxine.draw()
     
@@ -605,9 +639,6 @@ def draw():
     for p in projectiles:
         p.draw()
 
-    if not MAXINE_CHANGES_SIZE:
-        screen.draw.text('SCORE ' + str(score), (10, 10))
-    
     # Draw the signal ring.
     RED = (200, 0, 0)
     ring_rect = Rect((constants.CENTER[0] - constants.RING_WIDTH / 2, constants.CENTER[1] - constants.RING_HEIGHT / 2), 
@@ -669,13 +700,14 @@ step_count = 0
 space_pressed_before = False
 button_pressed_before = False
 def update():
-    global score, i, step_count, d, space_pressed_before, button_pressed_before
+    global i, step_count, d, space_pressed_before, button_pressed_before
     global maxine_current_scale
     global new_controls
     global logger
     global playing_music
     global sg
     global vlr
+    global challenger_score, console_score
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -845,6 +877,7 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
     
 def update_for_maxine_player():
     global maxine_current_scale, game_state, new_controls, switch_level_timeout
+    global cannon_shooting, spore, cannon_blast_timeout, cannon_blast_delay, spore_count
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     new_controls.update()
 
@@ -905,11 +938,11 @@ def update_for_maxine_player():
         
         # Now we have collide_pixel
         # Detect if Maxine gets too close to the pore. (She'll explode!)
-        #dist = maxine.distance_to(pore)
-        #if dist < 100:
-        #    kill_maxine()
-        if maxine.collide_pixel(pore):
+        dist = maxine.distance_to(pore)
+        if dist < 50:
             kill_maxine()
+        #if maxine.collide_pixel(pore):
+        #    kill_maxine()
         
         # This is not used now there is a signal ring.
         # Stop Maxine at the edges of the screen.
@@ -925,6 +958,14 @@ def update_for_maxine_player():
             maxine.pos = prev_pos
 
     # Level 1 code
+    # Cannon Behavior
+    cannon.spore_timeout -= 4
+    if cannon.spore_timeout <= 0 and cannon.distance_to(maxine) > 100:
+        cannon.spore_timeout = get_spore_timeout()
+        if cannon_shooting:
+            spore_count += 1
+            make_cannon_spore()  
+
     # Process spiraling monsters
     sm_to_blow_up = set()
     for monster in spiraling_monsters:
@@ -944,14 +985,14 @@ def update_for_maxine_player():
         if maxine.collide_pixel(monster):
             sm_to_blow_up.add(monster)
             
-            if MAXINE_CHANGES_SIZE:
-                grow_maxine()
+            grow_maxine()
             
         # Spawn a spore if we are far enough from Maxine and time is up
         monster.spore_timeout -= 1
         if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
             monster.spore_timeout = get_spore_timeout()
             make_spore(monster)
+            spore_count += 1
 
     for monster in sm_to_blow_up:
         spiraling_monsters.remove(monster)
@@ -983,16 +1024,16 @@ def update_for_maxine_player():
         p.move_forward(SPORE_SPEED)
         if maxine.collide_pixel(p):
             projectiles_to_delete.add(p)
+            spore_count -= 1
             
-            if MAXINE_CHANGES_SIZE:
-                shrink_maxine()
-            else:
-                kill_maxine()
+            shrink_maxine()
+
         # For a circular ring.
         #elif util.distance_points(p.center, CENTER) > RING_RADIUS:
         elif point_outside_signal_ring(p.center):
             # Delete projectiles that hit the ring
             projectiles_to_delete.add(p)
+            spore_count -= 1
     
     for p in projectiles_to_delete:
         projectiles.remove(p)
@@ -1012,7 +1053,7 @@ def update_for_maxine_player():
             bounce_off_wall(monster)
 
         # Blow up the monster when it gets to the center and reward Maxine
-        if util.distance_points(monster.center, constants.CENTER) < 20:
+        if util.distance_points(monster.center, constants.CENTER) < 45:
            bm_to_blow_up.add(monster)
            grow_maxine()
 
@@ -1030,6 +1071,28 @@ def update_for_maxine_player():
         
         # Set a disappear timer in frames.
         monster.disappear_timer = 31
+
+    # Level 3 Code
+    
+    if level == 3:
+        cannon.animate()
+        cannon_blast_timeout -= 1
+        cannon.spore_timeout -= 5
+        if cannon_blast_timeout >= 0:
+            for spore in projectiles:
+                ss = util.SpiralState(
+                0.5, rotation, constants.RING_HEIGHT - 10, 1, constants.CENTER, constants.RING_WIDTH / constants.RING_HEIGHT)
+                ss.update()
+                spore.angle = (ss.angle + 90) % 360
+        else:
+            if cannon_blast_timeout == -1:
+                cannon_shooting = False
+                for spore in projectiles:
+                    spore.point_towards(maxine)    
+             
+            if spore_count == 0:
+                cannon_blast_timeout = cannon_blast_delay
+                cannon_shooting = True
 
     # All levels code
 
@@ -1056,16 +1119,18 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def grow_maxine():
-    global maxine_current_scale, maxine
+    global maxine_current_scale, maxine, challenger_score
     maxine_current_scale *= MAXINE_CHANGE_FACTOR
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
     sounds.good.play()
+    challenger_score = challenger_score + 100
     
 def shrink_maxine():
-    global maxine_current_scale, maxine
+    global maxine_current_scale, maxine, console_score
     maxine_current_scale /= MAXINE_CHANGE_FACTOR
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
     sounds.eep.play()
+    console_score = console_score + 100
 
 def on_key_down(key):
     global graph_type, new_controls, serializer, playing_music
@@ -1128,6 +1193,7 @@ def on_mouse_move(pos):
 # Prepare to move on to the next level
 def finished_level():
     global game_state, level, switch_level_timeout, spiraling_monsters, dead_monsters, projectiles
+    global ranged_monsters, cannon_in_level, spore_count
     game_state = 'won'
     level += 1
     switch_level_timeout = 120
@@ -1137,14 +1203,20 @@ def finished_level():
     bouncing_monsters.clear()
     projectiles.clear()
     
+    spore_count = 0
+    cannon_in_level = False   
     
 def start_next_level():
     global game_state, maxine_current_scale, maxine
+    global ranged_monsters, cannon_in_level, spore_count
     game_state = 'playing'
 
     maxine_current_scale = 1
     maxine.pos = MAXINE_START
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+
+    cannon_in_level = True
+    spore_count = 0
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -1226,7 +1298,20 @@ def bounce_off_wall(monster):
     new_direction = random.randrange(0, 360)
     monster.angle = new_direction
 
-# Neither of these next two functions work any more due to me removing obsolete
+# Level 3-5
+def make_cannon_spore():
+    '''Makes a spore starting at the center of the cannon and heading toward
+    Maxine.'''
+    if cannon_in_level:
+        spore = Actor('spore')
+        spore.images = ['spore1', 'spore2', 'spore3']
+        spore.scale = 0.25
+        spore.pos = cannon.pos
+        spore.point_towards(maxine)
+        projectiles.add(spore)
+        return spore
+
+# Neither of these next two functions work any more due to Jade removing obsolete
 # code. They're just here for reference.
 def make_midjourney_monster():
     cell_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
