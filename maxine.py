@@ -1007,17 +1007,6 @@ def update_for_maxine_player():
             # Set a disappear timer in frames.
             monster.disappear_timer = 3
             
-        to_delete = set()
-        for monster in dead_monsters:
-            monster.animate()
-            monster.disappear_timer -= 1
-
-            if monster.disappear_timer <= 0:
-                to_delete.add(monster)
-                
-        for monster in to_delete:
-            dead_monsters.remove(monster)
-
     # Handle projectiles (spores in the case of mushrooms)
     # Projectiles point toward Maxine when they're spawned. (Spored?)
     SPORE_SPEED = 3
@@ -1099,6 +1088,18 @@ def update_for_maxine_player():
                 cannon_shooting = True
 
     # All levels code
+    
+    # Animate exploding monsters
+    to_delete = set()
+    for monster in dead_monsters:
+        monster.animate()
+        monster.disappear_timer -= 1
+
+        if monster.disappear_timer <= 0:
+            to_delete.add(monster)
+            
+    for monster in to_delete:
+        dead_monsters.remove(monster)
 
     # Check if Maxine has won or lost (or is still going)
     if game_state == 'playing':
