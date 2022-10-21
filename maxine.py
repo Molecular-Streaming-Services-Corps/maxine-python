@@ -878,6 +878,7 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
 def update_for_maxine_player():
     global maxine_current_scale, game_state, new_controls, switch_level_timeout
     global cannon_shooting, spore, cannon_blast_timeout, cannon_blast_delay, spore_count
+    global challenger_score, console_score
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     new_controls.update()
 
@@ -985,7 +986,7 @@ def update_for_maxine_player():
         if maxine.collide_pixel(monster):
             sm_to_blow_up.add(monster)
             
-            grow_maxine()
+            reward_maxine()
             
         # Spawn a spore if we are far enough from Maxine and time is up
         monster.spore_timeout -= 1
@@ -1026,7 +1027,7 @@ def update_for_maxine_player():
             projectiles_to_delete.add(p)
             spore_count -= 1
             
-            shrink_maxine()
+            punish_maxine()
 
         # For a circular ring.
         #elif util.distance_points(p.center, CENTER) > RING_RADIUS:
@@ -1055,12 +1056,12 @@ def update_for_maxine_player():
         # Blow up the monster when it gets to the center and reward Maxine
         if util.distance_points(monster.center, constants.CENTER) < 45:
            bm_to_blow_up.add(monster)
-           grow_maxine()
+           reward_maxine()
 
         # Make Maxine shrink if she collides with a bouncing monster
         if maxine.collide_pixel(monster):
             bm_to_blow_up.add(monster)
-            shrink_maxine()
+            punish_maxine()
 
     for monster in bm_to_blow_up:
         bouncing_monsters.remove(monster)
@@ -1098,9 +1099,9 @@ def update_for_maxine_player():
 
     # Check if Maxine has won or lost (or is still going)
     if game_state == 'playing':
-        if maxine_current_scale <= MAXINE_LOSE_SIZE:
+        if console_score >= 1000:
             game_state = 'lost'
-        elif maxine_current_scale >= MAXINE_WIN_SIZE:
+        elif challenger_score >= 1000:
             finished_level()
             
     # Code for the transition between levels
@@ -1119,16 +1120,22 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def grow_maxine():
-    global maxine_current_scale, maxine, challenger_score
+    global maxine_current_scale, maxine
     maxine_current_scale *= MAXINE_CHANGE_FACTOR
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
-    sounds.good.play()
-    challenger_score = challenger_score + 100
     
 def shrink_maxine():
     global maxine_current_scale, maxine, console_score
     maxine_current_scale /= MAXINE_CHANGE_FACTOR
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+
+def reward_maxine():
+    global challenger_score
+    sounds.good.play()
+    challenger_score = challenger_score + 100
+
+def punish_maxine():
+    global console_score
     sounds.eep.play()
     console_score = console_score + 100
 
@@ -1209,11 +1216,15 @@ def finished_level():
 def start_next_level():
     global game_state, maxine_current_scale, maxine
     global ranged_monsters, cannon_in_level, spore_count
+    global challenger_score, console_score
     game_state = 'playing'
 
     maxine_current_scale = 1
     maxine.pos = MAXINE_START
     maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+
+    challenger_score = 0
+    console_score = 0
 
     cannon_in_level = True
     spore_count = 0
@@ -1227,6 +1238,7 @@ def start_next_level():
 # Maxine functions
 
 def kill_maxine():
+    global console_score
     sounds.eep.play()
     maxine.images = boom_images()
     maxine.fps = 30
@@ -1234,6 +1246,8 @@ def kill_maxine():
     
     delay = 1.0
     clock.schedule_unique(reset_maxine, delay)
+    
+    console_score += 100
 
 def reset_maxine():
     maxine.pos = MAXINE_START
