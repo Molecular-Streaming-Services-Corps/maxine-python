@@ -33,7 +33,7 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
-MAXINE_START = (constants.CENTER[0] + 100, constants.CENTER[1]) #(200, 600)
+MAXINE_START = (constants.CENTER[0] + 200, constants.CENTER[1]) #(200, 600)
 MAXINE_INITIAL_SCALE = 0.5
 MAXINE_CHANGE_FACTOR = 1.2
 '''These will make Maxine win when she is 4x the size (after about 8 hits) or
@@ -961,6 +961,7 @@ def update_for_maxine_player():
 
     # Cannon Behavior
     if level in [3, 4, 5]:
+        cannon.animate()
         cannon.spore_timeout -= 4
         if cannon.spore_timeout <= 0 and cannon.distance_to(maxine) > 100:
             cannon.spore_timeout = get_spore_timeout()
@@ -1068,7 +1069,6 @@ def update_for_maxine_player():
     # Level 5 Code
     # Get the gurk cannon to make a ring of spores and throw them at Maxine
     if level == 5:
-        cannon.animate()
         cannon_blast_timeout -= 1
         cannon.spore_timeout -= 5
         if cannon_blast_timeout >= 0:
