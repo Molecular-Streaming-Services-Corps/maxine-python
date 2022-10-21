@@ -1010,11 +1010,10 @@ def update_for_maxine_player():
             
     # Handle projectiles (spores in the case of mushrooms)
     # Projectiles point toward Maxine when they're spawned. (Spored?)
-    SPORE_SPEED = 3
     projectiles_to_delete = set()
     for p in projectiles:
         p.animate()
-        p.move_forward(SPORE_SPEED)
+        p.move_forward(p.speed)
         if maxine.collide_pixel(p):
             projectiles_to_delete.add(p)
             spore_count -= 1
@@ -1073,6 +1072,7 @@ def update_for_maxine_player():
         cannon.spore_timeout -= 5
         if cannon_blast_timeout >= 0:
             for spore in projectiles:
+                spore.speed = 3
                 ss = util.SpiralState(
                 0.5, rotation, constants.RING_HEIGHT - 10, 1, constants.CENTER, constants.RING_WIDTH / constants.RING_HEIGHT)
                 ss.update()
@@ -1081,6 +1081,7 @@ def update_for_maxine_player():
             if cannon_blast_timeout == -1:
                 cannon_shooting = False
                 for spore in projectiles:
+                    spore.speed = 10
                     spore.point_towards(maxine)    
              
             if spore_count == 0:
@@ -1274,6 +1275,7 @@ def make_spore(shroom):
     spore.scale = 0.25
     spore.pos = shroom.pos
     spore.point_towards(maxine)
+    spore.speed = 3
     projectiles.add(spore)
     return spore
 
@@ -1332,6 +1334,7 @@ def make_cannon_spore():
         spore.scale = 0.25
         spore.pos = cannon.pos
         spore.point_towards(maxine)
+        spore.speed = 3
         projectiles.add(spore)
         return spore
 
