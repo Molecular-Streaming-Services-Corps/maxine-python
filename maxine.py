@@ -80,8 +80,8 @@ cannon.scale = 0.5
 cannon.spore_timeout = 60
 cannon.fps = 10
 
-cannon_in_level = True
-cannon_shooting = True
+cannon_in_level = False
+cannon_shooting = False
 cannon_blast_delay = 500
 cannon_blast_timeout = cannon_blast_delay
 
@@ -939,11 +939,12 @@ def update_for_maxine_player():
         
         # Now we have collide_pixel
         # Detect if Maxine gets too close to the pore. (She'll explode!)
-        dist = maxine.distance_to(pore)
-        if dist < 50:
-            kill_maxine()
-        #if maxine.collide_pixel(pore):
+        #dist = maxine.distance_to(pore)
+        #if dist < 50:
         #    kill_maxine()
+        if (maxine.collide_pixel(pore) or 
+            (cannon_in_level and maxine.collide_pixel(cannon))):
+            kill_maxine()
         
         # This is not used now there is a signal ring.
         # Stop Maxine at the edges of the screen.
@@ -958,63 +959,64 @@ def update_for_maxine_player():
         if point_outside_signal_ring(maxine.center):
             maxine.pos = prev_pos
 
-    # Level 1 code
     # Cannon Behavior
-    cannon.spore_timeout -= 4
-    if cannon.spore_timeout <= 0 and cannon.distance_to(maxine) > 100:
-        cannon.spore_timeout = get_spore_timeout()
-        if cannon_shooting:
-            spore_count += 1
-            make_cannon_spore()  
+    if level in [3, 4, 5]:
+        cannon.spore_timeout -= 4
+        if cannon.spore_timeout <= 0 and cannon.distance_to(maxine) > 100:
+            cannon.spore_timeout = get_spore_timeout()
+            if cannon_shooting:
+                spore_count += 1
+                make_cannon_spore()  
 
     # Process spiraling monsters
-    sm_to_blow_up = set()
-    for monster in spiraling_monsters:
-        monster.animate()
-        
-        # Move along the spiral
-        ss = monster.spiral_state
-        ss.update()
-        monster.pos = ss.pos
-        monster.angle = (ss.angle + 90) % 360
-        
-        # Blow up the monster when it gets to the center for now
-        if util.distance_points(monster.center, constants.CENTER) < 20:
-            sm_to_blow_up.add(monster)
-
-        # Blow up monsters that collide with Maxine
-        if maxine.collide_pixel(monster):
-            sm_to_blow_up.add(monster)
+    if level in [1, 3]:
+        sm_to_blow_up = set()
+        for monster in spiraling_monsters:
+            monster.animate()
             
-            reward_maxine()
+            # Move along the spiral
+            ss = monster.spiral_state
+            ss.update()
+            monster.pos = ss.pos
+            monster.angle = (ss.angle + 90) % 360
             
-        # Spawn a spore if we are far enough from Maxine and time is up
-        monster.spore_timeout -= 1
-        if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
-            monster.spore_timeout = get_spore_timeout()
-            make_spore(monster)
-            spore_count += 1
+            # Blow up the monster when it gets to the center for now
+            if util.distance_points(monster.center, constants.CENTER) < 20:
+                sm_to_blow_up.add(monster)
 
-    for monster in sm_to_blow_up:
-        spiraling_monsters.remove(monster)
-        dead_monsters.add(monster)
-        #monster.images = boom_images()
-        #monster.fps = 30
-        #monster.scale = 0.25
-        
-        # Set a disappear timer in frames.
-        monster.disappear_timer = 3
-        
-    to_delete = set()
-    for monster in dead_monsters:
-        monster.animate()
-        monster.disappear_timer -= 1
+            # Blow up monsters that collide with Maxine
+            if maxine.collide_pixel(monster):
+                sm_to_blow_up.add(monster)
+                
+                reward_maxine()
+                
+            # Spawn a spore if we are far enough from Maxine and time is up
+            monster.spore_timeout -= 1
+            if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
+                monster.spore_timeout = get_spore_timeout()
+                make_spore(monster)
+                spore_count += 1
 
-        if monster.disappear_timer <= 0:
-            to_delete.add(monster)
+        for monster in sm_to_blow_up:
+            spiraling_monsters.remove(monster)
+            dead_monsters.add(monster)
+            #monster.images = boom_images()
+            #monster.fps = 30
+            #monster.scale = 0.25
             
-    for monster in to_delete:
-        dead_monsters.remove(monster)
+            # Set a disappear timer in frames.
+            monster.disappear_timer = 3
+            
+        to_delete = set()
+        for monster in dead_monsters:
+            monster.animate()
+            monster.disappear_timer -= 1
+
+            if monster.disappear_timer <= 0:
+                to_delete.add(monster)
+                
+        for monster in to_delete:
+            dead_monsters.remove(monster)
 
     # Handle projectiles (spores in the case of mushrooms)
     # Projectiles point toward Maxine when they're spawned. (Spored?)
@@ -1039,43 +1041,44 @@ def update_for_maxine_player():
     for p in projectiles_to_delete:
         projectiles.remove(p)
 
-    # Level 2 code
+    # Level 2, 4, 5 code
     # Process bouncing monsters
-    bm_speed = 5
-    bm_to_blow_up = set()
-    for monster in bouncing_monsters:
-        monster.animate()
+    if level in [2, 4, 5]:
+        bm_speed = 5
+        bm_to_blow_up = set()
+        for monster in bouncing_monsters:
+            monster.animate()
 
-        old_pos = monster.pos
-        monster.move_forward(bm_speed)
+            old_pos = monster.pos
+            monster.move_forward(bm_speed)
 
-        if point_outside_signal_ring(monster.pos):
-            monster.pos = old_pos
-            bounce_off_wall(monster)
+            if point_outside_signal_ring(monster.pos):
+                monster.pos = old_pos
+                bounce_off_wall(monster)
 
-        # Blow up the monster when it gets to the center and reward Maxine
-        if util.distance_points(monster.center, constants.CENTER) < 45:
-           bm_to_blow_up.add(monster)
-           reward_maxine()
+            # Blow up the monster when it gets to the center and reward Maxine
+            if util.distance_points(monster.center, constants.CENTER) < 45:
+               bm_to_blow_up.add(monster)
+               reward_maxine()
 
-        # Make Maxine shrink if she collides with a bouncing monster
-        if maxine.collide_pixel(monster):
-            bm_to_blow_up.add(monster)
-            punish_maxine()
+            # Make Maxine shrink if she collides with a bouncing monster
+            if maxine.collide_pixel(monster):
+                bm_to_blow_up.add(monster)
+                punish_maxine()
 
-    for monster in bm_to_blow_up:
-        bouncing_monsters.remove(monster)
-        dead_monsters.add(monster)
-        monster.images = boom_images()
-        monster.fps = 30
-        monster.scale = 0.25
-        
-        # Set a disappear timer in frames.
-        monster.disappear_timer = 31
+        for monster in bm_to_blow_up:
+            bouncing_monsters.remove(monster)
+            dead_monsters.add(monster)
+            monster.images = boom_images()
+            monster.fps = 30
+            monster.scale = 0.25
+            
+            # Set a disappear timer in frames.
+            monster.disappear_timer = 31
 
-    # Level 3 Code
-    
-    if level == 3:
+    # Level 5 Code
+    # Get the gurk cannon to make a ring of spores and throw them at Maxine
+    if level == 5:
         cannon.animate()
         cannon_blast_timeout -= 1
         cannon.spore_timeout -= 5
@@ -1211,11 +1214,12 @@ def finished_level():
     projectiles.clear()
     
     spore_count = 0
-    cannon_in_level = False   
+    cannon_in_level = False
+    cannon_shooting = False 
     
 def start_next_level():
     global game_state, maxine_current_scale, maxine
-    global ranged_monsters, cannon_in_level, spore_count
+    global ranged_monsters, cannon_in_level, cannon_shooting, spore_count
     global challenger_score, console_score
     game_state = 'playing'
 
@@ -1226,7 +1230,10 @@ def start_next_level():
     challenger_score = 0
     console_score = 0
 
-    cannon_in_level = True
+    if level in [3, 4, 5]:
+        cannon_in_level = True
+        cannon_shooting = True
+
     spore_count = 0
 
     # This timer will have been shut down while the victory screen is displayed
@@ -1238,6 +1245,8 @@ def start_next_level():
 # Maxine functions
 
 def kill_maxine():
+    '''Used when maxine crashes into an indestructible object such as the pore
+    or the gurk cannon, and her position needs to be reset.'''
     global console_score
     sounds.eep.play()
     maxine.images = boom_images()
@@ -1352,10 +1361,10 @@ def add_cell():
     if game_state != 'playing':
         return
         
-    if level == 1:
+    if level in [1, 3]:
         mush = make_mushroom()
         spiraling_monsters.add(mush)
-    elif level == 2:
+    elif level in [2, 4, 5]:
         bouncer = make_bouncer()
         bouncing_monsters.add(bouncer)
 
