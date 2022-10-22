@@ -1149,9 +1149,9 @@ def on_key_down(key):
 
     # Switch between full screen and windowed
     if key == keys.F:
-        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+        set_fullscreen()
     elif key == keys.W:
-        screen.surface = pygame.display.set_mode((WIDTH, HEIGHT))
+        set_windowed()
 
     # Change graph type
     if key == keys.G:
