@@ -21,6 +21,7 @@ import video_ops
 import graphs
 import mazes
 import constants
+import colors
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -658,12 +659,9 @@ def draw():
     
     if DRAW_SPIRALS:
         # Draw spirals to indicate where the monsters will move
-        WHITE = (255, 255, 255)
-        BLUE = (0, 0, 255)
-        GREEN = (0, 200, 0)
         rotation += 1
-        draw_spiral(rotation + 0, WHITE)
-        draw_spiral(rotation + 180, WHITE)
+        draw_spiral(rotation + 0, colors.WHITE)
+        draw_spiral(rotation + 180, colors.WHITE)
 
     if PLAYER == 'maxine':
         # Draw the victory or gameover graphics (or nothing if the game is still going).

@@ -5,6 +5,7 @@ import pygame
 import util
 import constants
 import data
+import colors
 
 # Set up logger for this module
 logger = logging.getLogger('graphs')
@@ -66,8 +67,6 @@ class VerticalLineRing:
 
     def draw(self):
         # Draw the vertical lines
-        WHITE = (255, 255, 255)
-        #BLUE = (0, 0, 255)
         num_lines = len(self.tops)
         data_start_box = (self.present_box - num_lines) % constants.NUM_BOXES
         for i in range(0, num_lines):
@@ -75,7 +74,7 @@ class VerticalLineRing:
             
             index = (data_start_box + i) % constants.NUM_BOXES
             if self.box_is_spike[index]:
-                color = WHITE
+                color = colors.WHITE
             
             top = self.tops[i]
             bottom = self.bottoms[i]
@@ -89,8 +88,7 @@ class VerticalLineRing:
             self.draw_line(angle, top, bottom, color)
         
         # Draw the red line at present_angle
-        RED = (200, 0, 0)
-        self.draw_line(self.present_box * 360 / constants.NUM_BOXES, -2*self.line_extent, 0, RED)
+        self.draw_line(self.present_box * 360 / constants.NUM_BOXES, -2*self.line_extent, 0, colors.MEDIUM_RED)
         
     def draw_line(self, theta, top, bottom, color):
         # Calculate the coordinates for the inner end of the line
@@ -157,13 +155,8 @@ class SpikeGraph:
         #logger.info('bottoms: %s', self.bottoms)
     
     def draw(self):
-        RED = (200, 0, 0)
-        BLACK = (0, 0, 0)
-        GREEN = (0, 200, 0)
-        WHITE = (255, 255, 255)
-        BLUE = (0, 0, 255)
         BOX = self.Rect(self.top_left, (self.width, self.height))
-        self.screen.draw.filled_rect(BOX, WHITE)
+        self.screen.draw.filled_rect(BOX, colors.WHITE)
         
         l = self.screen.draw.line
         # Draw the lines
@@ -173,21 +166,15 @@ class SpikeGraph:
             y1 = self.tops[i] + top
             y2 = self.bottoms[i] + top
             
-            l((x, y1), (x, y2), BLACK)
+            l((x, y1), (x, y2), colors.BLACK)
 
 def draw_graph(i, d, graph_type, screen, STANDALONE):
     # Draw a rectangle behind the graph
-    RED = (200, 0, 0)
-    BLACK = (0, 0, 0)
-    GREEN = (0, 200, 0)
-    WHITE = (255, 255, 255)
-    BLUE = (0, 0, 255)
     if graph_type not in ['boxes_ring','line_ring']:
         BOX = Rect((9, 99), (302, 82))
-        screen.draw.filled_rect(BOX, GREEN)
+        screen.draw.filled_rect(BOX, colors.MEDIUM_GREEN)
     
-    NEON_PINK = (251,72,196) # Positive
-    GRAPE = (128,49,167) # Negative
+    # Neon pink is positive and grape is negative
     
     # Sample data for the graph
     if STANDALONE:
@@ -216,22 +203,22 @@ def draw_graph(i, d, graph_type, screen, STANDALONE):
     for x, (y, abs_y) in enumerate(zip(y_data, abs_y_data)):
         if x == MIDPOINT:
             # A single white line
-            color = WHITE
+            color = colors.WHITE
             abs_y = 0
         elif x == 0:
             # A black line at the origin
-            color = RED
+            color = colors.MEDIUM_RED
             abs_y = 0
         elif y < 0:
             scale_factor = y / min_value
             # Shades of red
             #color = (255 * scale_factor, 0, 0)
-            color = np.multiply(scale_factor, BLUE)
+            color = np.multiply(scale_factor, colors.BLUE)
         else:
             scale_factor = y / max_value
             # Shades of blue
             #color = (0, 0, 255 * scale_factor)
-            color = np.multiply(scale_factor, NEON_PINK)
+            color = np.multiply(scale_factor, colors.NEON_PINK)
             
         if graph_type == 'heatmap':
             rect = Rect((10 + 300.0 / constants.NUM_BOXES * x , 100), (300 / constants.NUM_BOXES, 80))
