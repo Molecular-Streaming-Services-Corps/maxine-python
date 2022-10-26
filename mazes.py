@@ -1,5 +1,8 @@
 import random
 import math
+import pygame
+
+import constants
 
 class Grid:
     '''Abstract base class of grids.'''
@@ -80,7 +83,54 @@ class PolarGrid(Grid):
         else:
             num_columns = column % len(self.grid[row])
             return self.grid[row][num_columns]
-           
+
+    def draw(self, screen):
+        wall = (0, 0, 0)
+
+        cell_size = constants.TORUS_INNER_RADIUS // self.rows        
+        
+        for cell in self.get_cells():
+            if cell.row == 0:
+                continue
+                
+            # Uses radians.
+            theta        = 2 * math.pi / len(self.grid[cell.row])
+            inner_radius = cell.row * cell_size
+            outer_radius = (cell.row + 1) * cell_size
+            theta_ccw    = cell.column * theta
+            theta_cw     = (cell.column + 1) * theta
+            
+            ax = int(inner_radius * math.cos(theta_ccw))
+            ay = int(inner_radius * math.sin(theta_ccw))
+            bx = int(outer_radius * math.cos(theta_ccw))
+            by = int(outer_radius * math.sin(theta_ccw))
+            cx = int(inner_radius * math.cos(theta_cw))
+            cy = int(inner_radius * math.sin(theta_cw))
+            dx = int(outer_radius * math.cos(theta_cw))
+            dy = int(outer_radius * math.sin(theta_cw))
+            
+            ax, ay = self._adjust_coords(ax, ay)
+            cx, cy = self._adjust_coords(cx, cy)
+            dx, dy = self._adjust_coords(dx, dy)
+            
+            
+            if not cell.is_linked(cell.inward):
+                pygame.draw.line(screen.surface, wall, (ax, ay), (cx, cy), width = 3)
+            if not cell.is_linked(cell.cw):
+                pygame.draw.line(screen.surface, wall, (cx, cy), (dx, dy), width = 3)
+
+        # skip the bounding ellipse because it draws in the wrong place (?!)        
+        #bounds = pygame.Rect(
+        #    (x - constants.TORUS_INNER_WIDTH // 2, y - constants.TORUS_INNER_HEIGHT // 2),
+        #    (x + constants.TORUS_INNER_WIDTH // 2, y + constants.TORUS_INNER_HEIGHT // 2))
+        #pygame.draw.ellipse(screen.surface, wall, bounds, width = 3)
+        
+    def _adjust_coords(self, x, y):
+        WIDTH_TO_HEIGHT_RATIO = constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT
+        x, y = (WIDTH_TO_HEIGHT_RATIO * x, y)
+        x, y = (x + constants.CENTER[0], y + constants.CENTER[1])
+        return (x, y)
+    
 class Cell:
     '''Abstract base class of cells for any kind of grid. A subclass must
     define neighbors() and attributes for neighbors in specific directions.'''

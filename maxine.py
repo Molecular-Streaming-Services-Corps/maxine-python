@@ -19,6 +19,7 @@ import serialization
 import music_ops
 import video_ops
 import graphs
+import mazes
 import constants
 
 # Set up logger for this module
@@ -57,7 +58,7 @@ animations = set()
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
 
-DRAW_SPIRALS = True
+DRAW_SPIRALS = False
 
 game_state = 'playing' # becomes 'won' or 'lost'
 level = 1
@@ -87,11 +88,17 @@ cannon_blast_timeout = cannon_blast_delay
 
 spore_count = 0
 
+maze = None
+
 challenger_image = Actor('challengeplayer')
 challenger_image.center = (40, 40)
 
 console_image = Actor('consoleplayer')
 console_image.center = (40, 100)
+
+# This is to call start_next_level in the first call to update() in case
+# a level has been chosen on the command-line.
+started_chosen_level = False
 
 class NewControls:
     def __init__(self):
@@ -615,6 +622,10 @@ def draw():
     if sg:
         sg.draw()
     
+    # Dragon Tyrant level
+    if level == 6:
+        maze.draw(screen)
+    
     # Now we draw the controls for both players.
     new_controls.draw()
     
@@ -708,6 +719,7 @@ def update():
     global sg
     global vlr
     global challenger_score, console_score
+    global started_chosen_level
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -715,6 +727,10 @@ def update():
 
     if keyboard.q:
         import sys; sys.exit(0)
+    
+    if not started_chosen_level:
+        start_next_level()
+        started_chosen_level = True
     
     # Update the microscope video
     video_ops.update_video()
@@ -1223,6 +1239,7 @@ def start_next_level():
     global game_state, maxine_current_scale, maxine
     global ranged_monsters, cannon_in_level, cannon_shooting, spore_count
     global challenger_score, console_score
+    global level, maze
     game_state = 'playing'
 
     maxine_current_scale = 1
@@ -1232,11 +1249,16 @@ def start_next_level():
     challenger_score = 0
     console_score = 0
 
+    # Zavier's levels
     if level in [3, 4, 5]:
         cannon_in_level = True
         cannon_shooting = True
 
     spore_count = 0
+
+    # Dragon Tyrant level
+    if level == 6:
+        maze = mazes.PolarGrid(8)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -1390,10 +1412,13 @@ else:
 
 BOARD = args.live # Could be None
 
+if args.level:
+    level = int(args.level)
+
 # Detect Kent's computer and apply default parameters (can be overridden)
 import platform
 import sys
-if platform.system() == 'Darwin' and len(sys.argv) == 1:
+if platform.system() == 'Windows' and len(sys.argv) == 1:
     BOARD = 'Kent'
     LIVE = True
     PLAYER = 'console'
