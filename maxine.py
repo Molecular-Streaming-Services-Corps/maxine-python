@@ -1262,6 +1262,10 @@ def start_next_level():
         #mazes.RecursiveBacktracker.on(maze)
         mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
         maze.braid()
+        #maze.remove_walls(0.2)
+        # This must be called after running the maze generation algorithm,
+        # never before or it will block off the rooms half the time.
+        maze.make_rooms()
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again

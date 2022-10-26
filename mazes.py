@@ -39,7 +39,7 @@ class Grid:
     def braid(self, p=1.0):
         '''A braid maze is a maze with loops. This function can take a perfect
         maze (i.e. without loops) and knock through a specified proportion of
-        the walls to create a braid maze. p is the proportion from 0 to 1.'''
+        the deadends to create a braid maze. p is the proportion from 0 to 1.'''
         de = self.deadends()
         random.shuffle(de)
         
@@ -54,6 +54,26 @@ class Grid:
             
             neighbor = random.choice(best)
             cell.link(neighbor)
+    
+    def remove_walls(self, p=0.2):
+        '''Randomly remove a certain percentage of the walls.
+        Returns a list of the walls removed as tuples of (cell1, cell2).'''
+        size = len(list(self.get_cells()))
+        num = int(p * size)
+        
+        linked = []
+        
+        for i in range(0, num):
+            cell = self.get_random_cell()
+            neighbors = [n for n in cell.neighbors() if not cell.is_linked(n)]
+            
+            if len(neighbors) > 0:
+                n = random.choice(neighbors)
+                cell.link(n)
+                
+                linked.append((cell, n))
+        
+        return linked
     
 class PolarGrid(Grid):
     def __init__(self, rows):
@@ -150,6 +170,33 @@ class PolarGrid(Grid):
         x, y = (x + constants.CENTER[0], y + constants.CENTER[1])
         return (x, y)
 
+    def make_room_row(self, row, ccw_column, cw_column, connect_inward = False):
+        for i in range(ccw_column, cw_column):
+            cell1 = self[(row, i)]
+            cell2 = self[(row, i + 1)]
+            cell1.link(cell2)
+        
+        if connect_inward:
+            for i in range(ccw_column, cw_column + 1):
+                cell = self[(row, i)]
+                cell.link(cell.inward)
+
+    def make_room(self, inner_row, ccw_column, num_rows, num_inner_columns):
+        # TODO handle the case where the number of columns doubles partway through
+        for row in range(inner_row, inner_row + num_rows):
+            #connect_inward = (row != inner_row)
+            # Connect the inner row to the rest of the maze. GrowingTree won't do it
+            connect_inward = True
+            self.make_room_row(row, ccw_column,
+                               ccw_column + num_inner_columns - 1, connect_inward)
+
+    def make_rooms(self):
+        self.make_room(3, 2, 3, 4)
+        self.make_room(3, 8, 3, 4)
+        self.make_room(3, 14, 3, 4)
+        self.make_room(3, 20, 3, 4)
+        
+    
 # Cell classes
     
 class Cell:
