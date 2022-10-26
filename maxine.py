@@ -1259,7 +1259,8 @@ def start_next_level():
     # Dragon Tyrant level
     if level == 6:
         maze = mazes.PolarGrid(8)
-        mazes.RecursiveBacktracker.on(maze)
+        #mazes.RecursiveBacktracker.on(maze)
+        mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
         maze.braid()
 
     # This timer will have been shut down while the victory screen is displayed

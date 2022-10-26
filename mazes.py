@@ -242,3 +242,33 @@ class RecursiveBacktracker:
                 
         return grid
 
+class GrowingTree:
+    @staticmethod
+    def on(grid, function, start_at = None):
+        if start_at is None:
+            start_at = grid.get_random_cell()
+ 
+        active = []
+        active.append(start_at)
+        
+        while len(active) > 0:
+            cell = function(active)
+            available_neighbors = [n for n in cell.neighbors() if len(n.get_links()) == 0]
+            
+            if len(available_neighbors) > 0:
+                neighbor = random.choice(available_neighbors)
+                cell.link(neighbor)
+                active.append(neighbor)
+            else:
+                active.remove(cell)
+        
+        return grid
+    
+    @staticmethod
+    def use_random(active):
+        return random.choice(active)
+    
+    @staticmethod
+    def use_last(active):
+        return active[-1]
+
