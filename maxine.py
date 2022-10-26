@@ -956,9 +956,10 @@ def update_for_maxine_player():
         #dist = maxine.distance_to(pore)
         #if dist < 50:
         #    kill_maxine()
-        if (maxine.collide_pixel(pore) or 
-            (cannon_in_level and maxine.collide_pixel(cannon))):
-            kill_maxine()
+        if level != 6:
+            if (maxine.collide_pixel(pore) or 
+                (cannon_in_level and maxine.collide_pixel(cannon))):
+                kill_maxine()
         
         # This is not used now there is a signal ring.
         # Stop Maxine at the edges of the screen.
@@ -1256,6 +1257,8 @@ def start_next_level():
 
     # Dragon Tyrant level
     if level == 6:
+        # Set up maze
+        
         maze = mazes.PolarGrid(8)
         #mazes.RecursiveBacktracker.on(maze)
         mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
@@ -1264,6 +1267,9 @@ def start_next_level():
         # This must be called after running the maze generation algorithm,
         # never before or it will block off the rooms half the time.
         maze.make_rooms()
+        
+        # Make Maxine small enough to fit in maze
+        maxine.scale = 0.125
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
