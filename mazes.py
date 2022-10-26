@@ -4,6 +4,8 @@ import pygame
 
 import constants
 
+# Grid classes
+
 class Grid:
     '''Abstract base class of grids.'''
     def deadends(self):
@@ -23,7 +25,7 @@ class Grid:
                 yield cell
     
     def get_random_cell(self):
-        cells = list(self.get_cells)
+        cells = list(self.get_cells())
         return random.choice(cells)
     
     def __str__(self):
@@ -34,7 +36,24 @@ class Grid:
             ret += '\n'
         return ret
     
-    # TODO implement braid
+    def braid(self, p=1.0):
+        '''A braid maze is a maze with loops. This function can take a perfect
+        maze (i.e. without loops) and knock through a specified proportion of
+        the walls to create a braid maze. p is the proportion from 0 to 1.'''
+        de = self.deadends()
+        random.shuffle(de)
+        
+        for cell in de:
+            if len(cell.get_links()) != 1 or random.random() > p:
+                continue
+            
+            neighbors = [n for n in cell.neighbors() if not cell.is_linked(n)]
+            best = [n for n in neighbors if len(n.links) == 1]
+            if len(best) == 0:
+                best = neighbors
+            
+            neighbor = random.choice(best)
+            cell.link(neighbor)
     
 class PolarGrid(Grid):
     def __init__(self, rows):
@@ -130,6 +149,8 @@ class PolarGrid(Grid):
         x, y = (WIDTH_TO_HEIGHT_RATIO * x, y)
         x, y = (x + constants.CENTER[0], y + constants.CENTER[1])
         return (x, y)
+
+# Cell classes
     
 class Cell:
     '''Abstract base class of cells for any kind of grid. A subclass must
@@ -192,7 +213,32 @@ class PolarCell(Cell):
         self.outward = []
     
     def neighbors(self):
-        ret = [n for n in [self.cw, self.ccw, self.inward] if n] + outward
+        ret = [n for n in [self.cw, self.ccw, self.inward] if n] + self.outward
+        return ret
         
 # TODO implement Distances
+
+# Maze generating algorithm classes
+
+class RecursiveBacktracker:
+    @staticmethod
+    def on(grid, start_at = None):
+        if start_at is None:
+            start_at = grid.get_random_cell()
+            
+        stack = []
+        stack.append(start_at)
+        
+        while len(stack) > 0:
+            current = stack[-1]
+            neighbors = [n for n in current.neighbors() if len(n.get_links()) == 0]
+            
+            if len(neighbors) == 0:
+                stack.pop()
+            else:
+                neighbor = random.choice(neighbors)
+                current.link(neighbor)
+                stack.append(neighbor)
+                
+        return grid
 
