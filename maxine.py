@@ -24,7 +24,7 @@ import constants
 import colors
 import components
 import game_object
-import controls
+import controls_object
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -63,7 +63,7 @@ spore_count = 0
 
 maze = None
 
-new_controls = None
+controls = None
 
 challenger_image = Actor('challengeplayer')
 challenger_image.center = (40, 40)
@@ -111,7 +111,7 @@ def draw():
         maze.draw(screen)
     
     # Now we draw the controls for both players.
-    new_controls.draw()
+    controls.draw()
     
     if dev_control:
         dev_control.draw()
@@ -192,13 +192,12 @@ space_pressed_before = False
 button_pressed_before = False
 def update():
     global i, step_count, d, space_pressed_before, button_pressed_before
-    global new_controls
     global logger
     global playing_music
     global sg
     global vlr
     global started_chosen_level
-    global new_controls
+    global controls
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -220,8 +219,8 @@ def update():
     if not vlr:
         vlr = graphs.VerticalLineRing(screen)
     
-    if not new_controls:
-        new_controls = controls.NewControls(Actor, serializer, LIVE, PLAYER, screen)
+    if not controls:
+        controls = controls_object.Controls(Actor, serializer, LIVE, PLAYER, screen)
     
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
@@ -296,7 +295,7 @@ def update():
         update_for_console_player()
 
         if MULTIPLAYER:
-            wrapper = new_controls.save_to_dict()
+            wrapper = controls.save_to_dict()
             json_string = serializer.save_dict_to_string(wrapper)
             lilith_client.send_status(json_string)
 
@@ -306,7 +305,7 @@ def update():
         wrapper = serializer.load_dict_from_string(state_data.json_string)
         ty = wrapper['type']
         if ty == 'controls' and PLAYER == 'maxine':
-            new_controls.load_from_dict(wrapper)
+            controls.load_from_dict(wrapper)
             logger.info('loaded controls state from the internet')
         elif ty == 'maxine' and PLAYER == 'console':
             game.load_arena_from_dict(wrapper)
@@ -316,9 +315,9 @@ pressed_before = set()
 def update_for_console_player():
     '''Allows the console player to use either the joystick or the keyboard
     (for testing) to manipulate the onscreen controls.'''
-    global pressed_before, new_controls
+    global pressed_before, controls
 
-    new_controls.update()
+    controls.update()
 
     # Determine the list of pressed joystick switches
     if LIVE:
@@ -348,21 +347,21 @@ def update_for_console_player():
 
     # Finally respond to the switches/keys that have been turned on this frame.
     if 'up' in pressed_just_now:
-        new_controls.select_up()
+        controls.select_up()
     elif 'down' in pressed_just_now:
-        new_controls.select_down()
+        controls.select_down()
     
     # Some controls only respond the moment the button is pressed.
     if 'button' in pressed_just_now:
-        new_controls.push()
+        controls.push()
 
     # In contrast, allow the player to press and hold the button while pressing
     # left and right.
     if on['button']:        
         if 'left' in pressed_just_now:
-            new_controls.push_left()
+            controls.push_left()
         elif 'right' in pressed_just_now:
-            new_controls.push_right()
+            controls.push_right()
 
 def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
     if on[switch_name]:
@@ -374,10 +373,10 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
             pressed_before.remove(switch_name)
     
 def update_for_maxine_player():
-    global game, game_state, new_controls, switch_level_timeout
+    global game, game_state, controls, switch_level_timeout
     global spore_count
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
-    new_controls.update()
+    controls.update()
 
     game.maxine.animate()
 
@@ -599,7 +598,7 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def on_key_down(key):
-    global graph_type, new_controls, serializer, playing_music, game
+    global graph_type, controls, serializer, playing_music, game
 
     # Switch between full screen and windowed
     if key == keys.F:
@@ -626,7 +625,7 @@ def on_key_down(key):
     if key == keys.S:
         # Only save the information that this player is in charge of updating
         if PLAYER == 'console':
-            data = new_controls.save_to_dict()
+            data = controls.save_to_dict()
             serializer.save_dict_to_file(data, 'console.json')
         else:
             data = game.save_arena_to_dict()
@@ -638,7 +637,7 @@ def on_key_down(key):
         # enough to continue operating the console.
         if PLAYER == 'maxine':
             data = serializer.load_dict_from_file('console.json')
-            new_controls.load_from_dict(data)
+            controls.load_from_dict(data)
 
         if PLAYER == 'console':
             data = serializer.load_dict_from_file('maxine.json')
