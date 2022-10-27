@@ -504,12 +504,7 @@ class PotionHolder:
 
 new_controls = NewControls()
 
-spiraling_monsters = set()
-bouncing_monsters = set()
-dead_monsters = set()
 ranged_monsters = [cannon]
-maze_monsters = set()
-
 projectiles = set()
 
 challenger_score = 0
@@ -527,8 +522,8 @@ def save_arena_to_dict():
     save['maxine_alive'] = game.maxine.alive
     
     save['maxine'] = save_actor_to_dict(game.maxine)
-    save['spiraling_monsters'] = [save_actor_to_dict(m) for m in spiraling_monsters]
-    save['dead_monsters'] = [save_actor_to_dict(m) for m in dead_monsters]
+    save['spiraling_monsters'] = [save_actor_to_dict(m) for m in game.spiraling_monsters]
+    save['dead_monsters'] = [save_actor_to_dict(m) for m in game.dead_monsters]
     save['projectiles'] = [save_actor_to_dict(m) for m in projectiles]
     
     return wrapper
@@ -545,7 +540,7 @@ def save_actor_to_dict(actor):
     return data
 
 def load_arena_from_dict(wrapper):
-    global game, spiraling_monsters, dead_monsters, projectiles
+    global game, projectiles
 
     assert(wrapper['type'] == 'maxine')
     save = wrapper['state']
@@ -553,15 +548,15 @@ def load_arena_from_dict(wrapper):
     game.maxine = load_actor_from_dict(save['maxine'])
     game.maxine.alive = save['maxine_alive']
     
-    spiraling_monsters = set()
+    game.spiraling_monsters = set()
     for data in save['spiraling_monsters']:
         actor = load_actor_from_dict(data)
-        spiraling_monsters.add(actor)
+        game.spiraling_monsters.add(actor)
 
-    dead_monsters = set()
+    game.dead_monsters = set()
     for data in save['dead_monsters']:
         actor = load_actor_from_dict(data)
-        dead_monsters.add(actor)
+        game.dead_monsters.add(actor)
 
     projectiles = set()
     for data in save['projectiles']:
@@ -610,7 +605,7 @@ def draw():
         sg.draw()
     
     # Dragon Tyrant level
-    if level == 6:
+    if level == 6 and maze:
         maze.draw(screen)
     
     # Now we draw the controls for both players.
@@ -627,13 +622,13 @@ def draw():
     # Draw Maxine or the boom
     game.maxine.draw()
     
-    for monster in spiraling_monsters:
+    for monster in game.spiraling_monsters:
         monster.draw()
-    for monster in bouncing_monsters:
+    for monster in game.bouncing_monsters:
         monster.draw()
-    for monster in dead_monsters:
+    for monster in game.dead_monsters:
         monster.draw()
-    for monster in maze_monsters:
+    for monster in game.maze_monsters:
         monster.draw()
         
     for p in projectiles:
@@ -925,8 +920,10 @@ def update_for_maxine_player():
 
     # Update Maxine's position onscreen after she moves on the maze.
     if level == 6:
-        game.maxine.gridnav.update()
-        game.maxine.center = game.maxine.gridnav.get_location()
+        # This is necessary because of the moment that the level is 6 but it hasn't been initialized yet.
+        if hasattr(game.maxine, 'gridnav'):
+            game.maxine.gridnav.update()
+            game.maxine.center = game.maxine.gridnav.get_location()
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -941,7 +938,7 @@ def update_for_maxine_player():
     # Process spiraling monsters
     if level in [1, 3]:
         sm_to_blow_up = set()
-        for monster in spiraling_monsters:
+        for monster in game.spiraling_monsters:
             monster.animate()
             
             # Move along the spiral
@@ -968,8 +965,8 @@ def update_for_maxine_player():
                 spore_count += 1
 
         for monster in sm_to_blow_up:
-            spiraling_monsters.remove(monster)
-            dead_monsters.add(monster)
+            game.spiraling_monsters.remove(monster)
+            game.dead_monsters.add(monster)
             #monster.images = boom_images()
             #monster.fps = 30
             #monster.scale = 0.25
@@ -1004,7 +1001,7 @@ def update_for_maxine_player():
     if level in [2, 4, 5]:
         bm_speed = 5
         bm_to_blow_up = set()
-        for monster in bouncing_monsters:
+        for monster in game.bouncing_monsters:
             monster.animate()
 
             old_pos = monster.pos
@@ -1025,8 +1022,8 @@ def update_for_maxine_player():
                 punish_maxine()
 
         for monster in bm_to_blow_up:
-            bouncing_monsters.remove(monster)
-            dead_monsters.add(monster)
+            game.bouncing_monsters.remove(monster)
+            game.dead_monsters.add(monster)
             monster.images = boom_images()
             monster.fps = 30
             monster.scale = 0.25
@@ -1058,7 +1055,7 @@ def update_for_maxine_player():
                 cannon_shooting = True
 
     # Level 6 code
-    for monster in maze_monsters:
+    for monster in game.maze_monsters:
         monster.gridnav.update()
         monster.ai.update()
         monster.center = monster.gridnav.get_location()
@@ -1067,7 +1064,7 @@ def update_for_maxine_player():
     
     # Animate exploding monsters
     to_delete = set()
-    for monster in dead_monsters:
+    for monster in game.dead_monsters:
         monster.animate()
         monster.disappear_timer -= 1
 
@@ -1075,7 +1072,7 @@ def update_for_maxine_player():
             to_delete.add(monster)
             
     for monster in to_delete:
-        dead_monsters.remove(monster)
+        game.dead_monsters.remove(monster)
 
     # Check if Maxine has won or lost (or is still going)
     if game_state == 'playing':
@@ -1173,19 +1170,18 @@ def on_mouse_move(pos):
 
 # Prepare to move on to the next level
 def finished_level():
-    global game_state, level, switch_level_timeout, spiraling_monsters, dead_monsters, projectiles
+    global game_state, level, switch_level_timeout, projectiles
     global ranged_monsters, cannon_in_level, spore_count
-    global maze_monsters
     global game
     game_state = 'won'
     level += 1
     switch_level_timeout = 120
     # TODO send a signal to the server to close the file here and open a new file in start_next_level
-    spiraling_monsters.clear()
-    dead_monsters.clear()
-    bouncing_monsters.clear()
+    game.spiraling_monsters.clear()
+    game.dead_monsters.clear()
+    game.bouncing_monsters.clear()
     projectiles.clear()
-    maze_monsters.clear()
+    game.maze_monsters.clear()
     
     spore_count = 0
     cannon_in_level = False
@@ -1297,8 +1293,6 @@ def make_mushroom():
 
 # Level 2
 def make_bouncer():
-    global bouncing_monsters
-    
     monster_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
         'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
     bouncer = Actor(monster_type)
@@ -1339,7 +1333,7 @@ def make_cannon_spore():
 def make_dragon():
     '''Makes a dragon that moves around inside the maze. Randomly to start
     with.'''
-    global maze, maze_monsters
+    global maze
     
     dragon = Actor('dragon_tyrant_a')
     dragon.images = ['dragon_tyrant_a']
@@ -1374,19 +1368,19 @@ def make_sars_monster():
 
 def add_cell():
     # This is called by the clock, not the update function (in standalone mode)
-    global game_state, spiraling_monsters, bouncing_monsters
+    global game_state
     if game_state != 'playing':
         return
         
     if level in [1, 3]:
         mush = make_mushroom()
-        spiraling_monsters.add(mush)
+        game.spiraling_monsters.add(mush)
     elif level in [2, 4, 5]:
         bouncer = make_bouncer()
-        bouncing_monsters.add(bouncer)
+        game.bouncing_monsters.add(bouncer)
     elif level == 6:
         dragon = make_dragon()
-        maze_monsters.add(dragon)
+        game.maze_monsters.add(dragon)
 
     if STANDALONE:
         delay = random.randrange(5, 8)

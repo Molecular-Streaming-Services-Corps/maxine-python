@@ -24,6 +24,10 @@ class Game:
         self.pore = Actor('pore')
         self.pore.center = (constants.WIDTH/2, constants.HEIGHT/2)
 
+        self.spiraling_monsters = set()
+        self.bouncing_monsters = set()
+        self.dead_monsters = set()
+        self.maze_monsters = set()
 
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR
