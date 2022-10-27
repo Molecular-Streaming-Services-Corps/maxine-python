@@ -39,6 +39,22 @@ class Game:
         self.challenger_score = 0
         self.console_score = 0
 
+        # Stuff for the gurk cannon
+        cannon = Actor('gurk1')
+        cannon.images = ('gurk1','gurk2')
+        cannon.center = (constants.WIDTH/2, constants.HEIGHT/2)
+        cannon.scale = 0.5
+        cannon.spore_timeout = 60
+        cannon.fps = 10
+        self.cannon = cannon
+
+        self.cannon_in_level = False
+        self.cannon_shooting = False
+        self.cannon_blast_delay = 500
+        self.cannon_blast_timeout = self.cannon_blast_delay
+        
+        self.ranged_monsters = [cannon]
+
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR
         self.maxine.scale = MAXINE_INITIAL_SCALE * self.maxine_current_scale

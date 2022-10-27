@@ -58,19 +58,6 @@ vlr = None
 # Temporary development tool
 dev_control = None
 
-# Stuff for the gurk cannon
-cannon = Actor('gurk1')
-cannon.images = ('gurk1','gurk2')
-cannon.center = (WIDTH/2, HEIGHT/2)
-cannon.scale = 0.5
-cannon.spore_timeout = 60
-cannon.fps = 10
-
-cannon_in_level = False
-cannon_shooting = False
-cannon_blast_delay = 500
-cannon_blast_timeout = cannon_blast_delay
-
 spore_count = 0
 
 maze = None
@@ -504,8 +491,6 @@ class PotionHolder:
 
 new_controls = NewControls()
 
-ranged_monsters = [cannon]
-
 # Represents data from a stored file.
 d = None
 
@@ -514,7 +499,6 @@ rotation = 0
 def draw():
     global rotation, dev_control, sg, graph_type
     global challenger_image, console_image
-    global cannon_in_level, ranged_monsters
     global game
     draw_living_background()
 
@@ -549,8 +533,8 @@ def draw():
         dev_control.draw()
 
     # Draw Cannon
-    if cannon_in_level:
-        for cannon in ranged_monsters:
+    if game.cannon_in_level:
+        for cannon in game.ranged_monsters:
             cannon.draw()
 
     # Draw Maxine or the boom
@@ -803,7 +787,7 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
     
 def update_for_maxine_player():
     global game, game_state, new_controls, switch_level_timeout
-    global cannon_shooting, spore, cannon_blast_timeout, cannon_blast_delay, spore_count
+    global spore_count
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     new_controls.update()
 
@@ -841,7 +825,7 @@ def update_for_maxine_player():
         #    kill_maxine()
         if level != 6:
             if (game.maxine.collide_pixel(game.pore) or 
-                (cannon_in_level and game.maxine.collide_pixel(cannon))):
+                (game.cannon_in_level and game.maxine.collide_pixel(game.cannon))):
                 game.kill_maxine()
         
         if point_outside_signal_ring(game.maxine.center):
@@ -856,11 +840,12 @@ def update_for_maxine_player():
 
     # Cannon Behavior
     if level in [3, 4, 5]:
+        cannon = game.cannon
         cannon.animate()
         cannon.spore_timeout -= 4
         if cannon.spore_timeout <= 0 and cannon.distance_to(game.maxine) > 100:
             cannon.spore_timeout = get_spore_timeout()
-            if cannon_shooting:
+            if game.cannon_shooting:
                 spore_count += 1
                 make_cannon_spore()  
 
@@ -963,9 +948,9 @@ def update_for_maxine_player():
     # Level 5 Code
     # Get the gurk cannon to make a ring of spores and throw them at Maxine
     if level == 5:
-        cannon_blast_timeout -= 1
-        cannon.spore_timeout -= 5
-        if cannon_blast_timeout >= 0:
+        game.cannon_blast_timeout -= 1
+        game.cannon.spore_timeout -= 5
+        if game.cannon_blast_timeout >= 0:
             for spore in game.projectiles:
                 spore.speed = 3
                 ss = util.SpiralState(
@@ -973,15 +958,15 @@ def update_for_maxine_player():
                 ss.update()
                 spore.angle = (ss.angle + 90) % 360
         else:
-            if cannon_blast_timeout == -1:
-                cannon_shooting = False
+            if game.cannon_blast_timeout == -1:
+                game.cannon_shooting = False
                 for spore in game.projectiles:
                     spore.speed = 10
                     spore.point_towards(game.maxine)    
              
             if spore_count == 0:
-                cannon_blast_timeout = cannon_blast_delay
-                cannon_shooting = True
+                game.cannon_blast_timeout = game.cannon_blast_delay
+                game.cannon_shooting = True
 
     # Level 6 code
     for monster in game.maze_monsters:
@@ -1090,7 +1075,7 @@ def on_mouse_move(pos):
 # Prepare to move on to the next level
 def finished_level():
     global game_state, level, switch_level_timeout
-    global ranged_monsters, cannon_in_level, spore_count
+    global spore_count
     global game
     game_state = 'won'
     level += 1
@@ -1103,16 +1088,15 @@ def finished_level():
     game.maze_monsters.clear()
     
     spore_count = 0
-    cannon_in_level = False
-    cannon_shooting = False 
+    game.cannon_in_level = False
+    game.cannon_shooting = False 
     
     if hasattr(game.maxine, 'gridnav'):
         del maxine.gridnav
     
 def start_next_level():
     global game_state
-    global ranged_monsters, cannon_in_level, cannon_shooting, spore_count
-    global challenger_score, console_score
+    global spore_count
     global level, maze
     global game
     game_state = 'playing'
@@ -1121,13 +1105,13 @@ def start_next_level():
     game.maxine.pos = game_object.MAXINE_START
     game.maxine.scale = game_object.MAXINE_INITIAL_SCALE * game.maxine_current_scale
 
-    challenger_score = 0
-    console_score = 0
+    game.challenger_score = 0
+    game.console_score = 0
 
     # Zavier's levels
     if level in [3, 4, 5]:
-        cannon_in_level = True
-        cannon_shooting = True
+        game.cannon_in_level = True
+        game.cannon_shooting = True
 
     spore_count = 0
 
@@ -1217,11 +1201,11 @@ def bounce_off_wall(monster):
 def make_cannon_spore():
     '''Makes a spore starting at the center of the cannon and heading toward
     Maxine.'''
-    if cannon_in_level:
+    if game.cannon_in_level:
         spore = Actor('spore')
         spore.images = ['spore1', 'spore2', 'spore3']
         spore.scale = 0.25
-        spore.pos = cannon.pos
+        spore.pos = game.cannon.pos
         spore.point_towards(game.maxine)
         spore.speed = 3
         game.projectiles.add(spore)
