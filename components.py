@@ -17,14 +17,15 @@ class BaseComponent:
 
 class GridNavigation(BaseComponent):
     '''Keeps track of the position of the Actor in the maze.'''
-    def __init__(self, grid, in_cell):
+    def __init__(self, grid, in_cell, game):
         self.grid = grid
         self.in_cell = in_cell
+        self.game = game
 
 class PolarGridNavigation(GridNavigation):
     '''Adds functions to navigate in a polar grid.'''
-    def __init__(self, grid, in_cell):
-        super().__init__(grid, in_cell)
+    def __init__(self, grid, in_cell, game):
+        super().__init__(grid, in_cell, game)
         self.next_cell = None
         self.num_frames_for_move = 60
         self.num_frames_moved = 0
@@ -121,6 +122,7 @@ class PolarGridNavigation(GridNavigation):
 class BaseMazeAI(BaseComponent):
     def __init__(self, gridnav):
         self.gridnav = gridnav
+        self.game = gridnav.game
 
 
 class RandomMazeAI(BaseMazeAI):

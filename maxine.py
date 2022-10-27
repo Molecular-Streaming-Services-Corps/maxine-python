@@ -719,7 +719,7 @@ def start_next_level():
         game.maxine.scale = 0.125
         
         # Give Maxine a Grid Navigation component
-        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0])
+        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -808,7 +808,7 @@ def make_dragon():
     dragon.images = ['dragon_tyrant_a']
     dragon.scale = 1 / 32
     # TODO don't spawn on top of another dragon or Maxine
-    dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell())
+    dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game)
     dragon.ai = components.RandomMazeAI(dragon.gridnav)
     dragon.center = dragon.gridnav.get_location()
     
