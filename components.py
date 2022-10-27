@@ -1,5 +1,9 @@
+import random
+
 class BaseComponent:
     pass
+
+# Grid navigation components
 
 class GridNavigation(BaseComponent):
     '''Keeps track of the position of the Actor in the maze.
@@ -55,4 +59,33 @@ class PolarGridNavigation(GridNavigation):
 
     def get_location(self):
         return self.grid.get_center(self.in_cell)
+
+    def move_to_cell(self, cell):
+        self.in_cell = cell
+    
+    def get_linked_cells(self):
+        ret = []
+        for c in self.in_cell.neighbors():
+            if self.in_cell.is_linked(c):
+                ret.append(c)
+        return ret
+
+# AI components
+
+class BaseMazeAI(BaseComponent):
+    def __init__(self, gridnav):
+        self.gridnav = gridnav
+
+class RandomMazeAI(BaseMazeAI):
+    def __init__(self, gridnav):
+        super().__init__(gridnav)
+        
+    def move(self):
+        options = self.gridnav.get_linked_cells()
+        
+        if not options:
+            return
+        else:
+            cell = random.choice(options)
+            self.gridnav.move_to_cell(cell)
 

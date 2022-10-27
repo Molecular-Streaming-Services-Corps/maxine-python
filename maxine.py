@@ -525,6 +525,7 @@ spiraling_monsters = set()
 bouncing_monsters = set()
 dead_monsters = set()
 ranged_monsters = [cannon]
+maze_monsters = set()
 
 projectiles = set()
 
@@ -647,6 +648,8 @@ def draw():
     for monster in bouncing_monsters:
         monster.draw()
     for monster in dead_monsters:
+        monster.draw()
+    for monster in maze_monsters:
         monster.draw()
         
     for p in projectiles:
@@ -1108,6 +1111,11 @@ def update_for_maxine_player():
                 cannon_blast_timeout = cannon_blast_delay
                 cannon_shooting = True
 
+    # Level 6 code
+    for monster in maze_monsters:
+        monster.ai.move()
+        monster.center = monster.gridnav.get_location()
+
     # All levels code
     
     # Animate exploding monsters
@@ -1386,6 +1394,22 @@ def make_cannon_spore():
         projectiles.add(spore)
         return spore
 
+# Level 6
+def make_dragon():
+    '''Makes a dragon that moves around inside the maze. Randomly to start
+    with.'''
+    global maze, maze_monsters
+    
+    dragon = Actor('dragon_tyrant_a')
+    dragon.images = ['dragon_tyrant_a']
+    dragon.scale = 1 / 32
+    # TODO don't spawn on top of another dragon or Maxine
+    dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell())
+    dragon.ai = components.RandomMazeAI(dragon.gridnav)
+    dragon.center = dragon.gridnav.get_location()
+    
+    return dragon
+
 # Neither of these next two functions work any more due to Jade removing obsolete
 # code. They're just here for reference.
 def make_midjourney_monster():
@@ -1419,6 +1443,9 @@ def add_cell():
     elif level in [2, 4, 5]:
         bouncer = make_bouncer()
         bouncing_monsters.add(bouncer)
+    elif level == 6:
+        dragon = make_dragon()
+        maze_monsters.add(dragon)
 
     if STANDALONE:
         delay = random.randrange(5, 8)
