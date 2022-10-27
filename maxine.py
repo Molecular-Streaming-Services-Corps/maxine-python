@@ -37,6 +37,8 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
+game = game_object.Game(Actor)
+
 #graph_type = 'heatmap'
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
