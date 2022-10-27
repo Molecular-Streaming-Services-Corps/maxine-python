@@ -37,11 +37,6 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
-game = game_object.Game(Actor)
-
-pore = Actor('pore')
-pore.center = (WIDTH/2, HEIGHT/2)
-
 #graph_type = 'heatmap'
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
@@ -919,7 +914,7 @@ def update_for_maxine_player():
         #if dist < 50:
         #    kill_maxine()
         if level != 6:
-            if (game.maxine.collide_pixel(pore) or 
+            if (game.maxine.collide_pixel(game.pore) or 
                 (cannon_in_level and game.maxine.collide_pixel(cannon))):
                 kill_maxine()
         

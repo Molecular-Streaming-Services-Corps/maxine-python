@@ -20,6 +20,10 @@ class Game:
         maxine.alive = True
         maxine.scale = MAXINE_INITIAL_SCALE * self.maxine_current_scale
         self.maxine = maxine
+        
+        self.pore = Actor('pore')
+        self.pore.center = (constants.WIDTH/2, constants.HEIGHT/2)
+
 
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR
