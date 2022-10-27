@@ -22,6 +22,7 @@ import graphs
 import mazes
 import constants
 import colors
+import components
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -902,7 +903,7 @@ def update_for_maxine_player():
     # s is Maxine's speed per frame.
     s = 6
     
-    if maxine.alive:
+    if maxine.alive and level != 6:
         prev_pos = maxine.pos
 
         # Allow the user to use either the keyboard or the joystick    
@@ -973,6 +974,10 @@ def update_for_maxine_player():
         
         if point_outside_signal_ring(maxine.center):
             maxine.pos = prev_pos
+
+    # Update Maxine's position onscreen after she moves on the maze.
+    if level == 6:
+        maxine.center = maxine.gridnav.get_location()
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -1205,6 +1210,10 @@ def on_key_down(key):
             data = serializer.load_dict_from_file('maxine.json')
             load_arena_from_dict(data)
 
+    # Move maxine around a grid (maze)
+    if hasattr(maxine, 'gridnav'):
+        maxine.gridnav.process_keypress(keyboard)
+
 # Development tool: when the mouse is clicked, print the mouse coordinates in the window
 def on_mouse_down(pos):
     print('Mouse clicked at:', pos)
@@ -1233,6 +1242,9 @@ def finished_level():
     spore_count = 0
     cannon_in_level = False
     cannon_shooting = False 
+    
+    if hasattr(maxine, 'gridnav'):
+        del maxine.gridnav
     
 def start_next_level():
     global game_state, maxine_current_scale, maxine
@@ -1270,6 +1282,9 @@ def start_next_level():
         
         # Make Maxine small enough to fit in maze
         maxine.scale = 0.125
+        
+        # Give Maxine a Grid Navigation component
+        maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0])
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again

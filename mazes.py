@@ -139,6 +139,7 @@ class PolarGrid(Grid):
             theta_ccw    = cell.column * theta
             theta_cw     = (cell.column + 1) * theta
             
+            # TODO replace this with pol2cart
             ax = int(inner_radius * math.cos(theta_ccw))
             ay = int(inner_radius * math.sin(theta_ccw))
             bx = int(outer_radius * math.cos(theta_ccw))
@@ -196,7 +197,29 @@ class PolarGrid(Grid):
         self.make_room(3, 14, 3, 4)
         self.make_room(3, 20, 3, 4)
         
-    
+    def get_center(self, cell):
+        cell_size = constants.TORUS_INNER_RADIUS // self.rows        
+        
+        # Uses radians.
+        theta        = 2 * math.pi / len(self.grid[cell.row])
+        inner_radius = cell.row * cell_size
+        theta_ccw    = cell.column * theta
+        
+        center_radius = (cell.row + 0.5) * cell_size
+        theta_center = (cell.column + 0.5) * theta
+        
+        ax = int(inner_radius * math.cos(theta_ccw))
+        ay = int(inner_radius * math.sin(theta_ccw))
+
+        ax, ay = self._adjust_coords(ax, ay)
+        
+        x = int(center_radius * math.cos(theta_center))
+        y = int(center_radius * math.sin(theta_center))
+
+        x, y = self._adjust_coords(x, y)
+        
+        return (x, y)
+
 # Cell classes
     
 class Cell:
