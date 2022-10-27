@@ -23,6 +23,7 @@ import mazes
 import constants
 import colors
 import components
+import game_object
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -36,25 +37,10 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
-MAXINE_START = (constants.CENTER[0] + 200, constants.CENTER[1]) #(200, 600)
-MAXINE_INITIAL_SCALE = 0.5
-MAXINE_CHANGE_FACTOR = 1.2
-'''These will make Maxine win when she is 4x the size (after about 8 hits) or
-lose when she is a quarter of the size.'''
-MAXINE_WIN_SIZE = 4
-MAXINE_LOSE_SIZE = 0.25
-maxine_current_scale = 1
-
-maxine = Actor('maxine')
-maxine.images = ['maxine']
-maxine.pos = MAXINE_START
-maxine.alive = True
-maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+game = game_object.Game(Actor)
 
 pore = Actor('pore')
 pore.center = (WIDTH/2, HEIGHT/2)
-
-animations = set()
 
 #graph_type = 'heatmap'
 graph_type = 'line_ring'
@@ -541,9 +527,9 @@ def save_arena_to_dict():
     save = {}
     wrapper = {'type': 'maxine', 'state': save}
 
-    save['maxine_alive'] = maxine.alive
+    save['maxine_alive'] = game.maxine.alive
     
-    save['maxine'] = save_actor_to_dict(maxine)
+    save['maxine'] = save_actor_to_dict(game.maxine)
     save['spiraling_monsters'] = [save_actor_to_dict(m) for m in spiraling_monsters]
     save['dead_monsters'] = [save_actor_to_dict(m) for m in dead_monsters]
     save['projectiles'] = [save_actor_to_dict(m) for m in projectiles]
@@ -562,13 +548,13 @@ def save_actor_to_dict(actor):
     return data
 
 def load_arena_from_dict(wrapper):
-    global maxine, spiraling_monsters, dead_monsters, projectiles
+    global game, spiraling_monsters, dead_monsters, projectiles
 
     assert(wrapper['type'] == 'maxine')
     save = wrapper['state']
     
-    maxine = load_actor_from_dict(save['maxine'])
-    maxine.alive = save['maxine_alive']
+    game.maxine = load_actor_from_dict(save['maxine'])
+    game.maxine.alive = save['maxine_alive']
     
     spiraling_monsters = set()
     for data in save['spiraling_monsters']:
@@ -603,6 +589,7 @@ def draw():
     global rotation, dev_control, sg, graph_type
     global challenger_score, console_score, challenger_image, console_image
     global cannon_in_level, ranged_monsters
+    global game
     draw_living_background()
 
     screen.draw.text('CHALLENGER SCORE: ' + str(challenger_score), (90, 40))
@@ -641,7 +628,7 @@ def draw():
             cannon.draw()
 
     # Draw Maxine or the boom
-    maxine.draw()
+    game.maxine.draw()
     
     for monster in spiraling_monsters:
         monster.draw()
@@ -714,7 +701,6 @@ space_pressed_before = False
 button_pressed_before = False
 def update():
     global i, step_count, d, space_pressed_before, button_pressed_before
-    global maxine_current_scale
     global new_controls
     global logger
     global playing_music
@@ -894,30 +880,30 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
             pressed_before.remove(switch_name)
     
 def update_for_maxine_player():
-    global maxine_current_scale, game_state, new_controls, switch_level_timeout
+    global game, game_state, new_controls, switch_level_timeout
     global cannon_shooting, spore, cannon_blast_timeout, cannon_blast_delay, spore_count
     global challenger_score, console_score
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     new_controls.update()
 
-    maxine.animate()
+    game.maxine.animate()
 
     # Move Maxine.
     # s is Maxine's speed per frame.
     s = 6
     
-    if maxine.alive and level != 6:
-        prev_pos = maxine.pos
+    if game.maxine.alive and level != 6:
+        prev_pos = game.maxine.pos
 
         # Allow the user to use either the keyboard or the joystick    
         if keyboard.left:
-            maxine.left -= s
+            game.maxine.left -= s
         elif keyboard.right:
-            maxine.left += s
+            game.maxine.left += s
         if keyboard.up:
-            maxine.top -= s
+            game.maxine.top -= s
         elif keyboard.down:
-            maxine.bottom += s
+            game.maxine.bottom += s
             
         # The old controls.
         #if keyboard.space:
@@ -926,34 +912,6 @@ def update_for_maxine_player():
         #        controls.check()
         #else:
         #    space_pressed_before = False
-
-        if LIVE:
-            pressed = d.pressed
-        elif DATADIR:
-            joystick_binary = d.get_one_frame_joystick()
-            pressed = util.process_joystick_data(joystick_binary)
-            #print(step_count, joystick_binary, pressed)
-        else:
-            # In standalone mode, we say no joystick buttons are pressed.
-            pressed = []
-                            
-        JOYSTICK_MOVES_MAXINE = False
-        if JOYSTICK_MOVES_MAXINE:
-            if 'js1_left' in pressed:
-                maxine.left -= s
-            elif 'js1_right' in pressed:
-                maxine.left += s
-            if 'js1_up' in pressed:
-                maxine.top -= s
-            elif 'js1_down' in pressed:
-                maxine.bottom += s
-            
-            if 'js1_b1' in pressed:
-                if not button_pressed_before:
-                    button_pressed_before = True
-                    controls.check()
-            else:
-                button_pressed_before = False
         
         # Now we have collide_pixel
         # Detect if Maxine gets too close to the pore. (She'll explode!)
@@ -961,33 +919,23 @@ def update_for_maxine_player():
         #if dist < 50:
         #    kill_maxine()
         if level != 6:
-            if (maxine.collide_pixel(pore) or 
-                (cannon_in_level and maxine.collide_pixel(cannon))):
+            if (game.maxine.collide_pixel(pore) or 
+                (cannon_in_level and game.maxine.collide_pixel(cannon))):
                 kill_maxine()
         
-        # This is not used now there is a signal ring.
-        # Stop Maxine at the edges of the screen.
-        #if maxine.left < 0 or maxine.right > WIDTH or maxine.top < 0 or maxine.bottom > HEIGHT:
-        #    maxine.pos = prev_pos
-        
-        # Obsolete code for a circular signal ring
-        #dist = util.distance_points(maxine.center, CENTER)
-        #if dist > RING_RADIUS:
-        #    maxine.pos = prev_pos
-        
-        if point_outside_signal_ring(maxine.center):
-            maxine.pos = prev_pos
+        if point_outside_signal_ring(game.maxine.center):
+            game.maxine.pos = prev_pos
 
     # Update Maxine's position onscreen after she moves on the maze.
     if level == 6:
-        maxine.gridnav.update()
-        maxine.center = maxine.gridnav.get_location()
+        game.maxine.gridnav.update()
+        game.maxine.center = game.maxine.gridnav.get_location()
 
     # Cannon Behavior
     if level in [3, 4, 5]:
         cannon.animate()
         cannon.spore_timeout -= 4
-        if cannon.spore_timeout <= 0 and cannon.distance_to(maxine) > 100:
+        if cannon.spore_timeout <= 0 and cannon.distance_to(game.maxine) > 100:
             cannon.spore_timeout = get_spore_timeout()
             if cannon_shooting:
                 spore_count += 1
@@ -1010,14 +958,14 @@ def update_for_maxine_player():
                 sm_to_blow_up.add(monster)
 
             # Blow up monsters that collide with Maxine
-            if maxine.collide_pixel(monster):
+            if game.maxine.collide_pixel(monster):
                 sm_to_blow_up.add(monster)
                 
                 reward_maxine()
                 
             # Spawn a spore if we are far enough from Maxine and time is up
             monster.spore_timeout -= 1
-            if monster.spore_timeout <= 0 and monster.distance_to(maxine) > 300:
+            if monster.spore_timeout <= 0 and monster.distance_to(game.maxine) > 300:
                 monster.spore_timeout = get_spore_timeout()
                 make_spore(monster)
                 spore_count += 1
@@ -1038,7 +986,7 @@ def update_for_maxine_player():
     for p in projectiles:
         p.animate()
         p.move_forward(p.speed)
-        if maxine.collide_pixel(p):
+        if game.maxine.collide_pixel(p):
             projectiles_to_delete.add(p)
             spore_count -= 1
             
@@ -1075,7 +1023,7 @@ def update_for_maxine_player():
                reward_maxine()
 
             # Make Maxine shrink if she collides with a bouncing monster
-            if maxine.collide_pixel(monster):
+            if game.maxine.collide_pixel(monster):
                 bm_to_blow_up.add(monster)
                 punish_maxine()
 
@@ -1106,7 +1054,7 @@ def update_for_maxine_player():
                 cannon_shooting = False
                 for spore in projectiles:
                     spore.speed = 10
-                    spore.point_towards(maxine)    
+                    spore.point_towards(game.maxine)    
              
             if spore_count == 0:
                 cannon_blast_timeout = cannon_blast_delay
@@ -1154,16 +1102,6 @@ def point_outside_signal_ring(point):
                      (point[1] - constants.CENTER[1]) * rx/ry)
     return np.linalg.norm(scaled_coords, 2) > rx
 
-def grow_maxine():
-    global maxine_current_scale, maxine
-    maxine_current_scale *= MAXINE_CHANGE_FACTOR
-    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
-    
-def shrink_maxine():
-    global maxine_current_scale, maxine, console_score
-    maxine_current_scale /= MAXINE_CHANGE_FACTOR
-    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
-
 def reward_maxine():
     global challenger_score
     sounds.good.play()
@@ -1175,7 +1113,7 @@ def punish_maxine():
     console_score = console_score + 100
 
 def on_key_down(key):
-    global graph_type, new_controls, serializer, playing_music
+    global graph_type, new_controls, serializer, playing_music, game
 
     # Switch between full screen and windowed
     if key == keys.F:
@@ -1221,8 +1159,8 @@ def on_key_down(key):
             load_arena_from_dict(data)
 
     # Move maxine around a grid (maze)
-    if hasattr(maxine, 'gridnav'):
-        maxine.gridnav.process_keypress(keyboard)
+    if hasattr(game.maxine, 'gridnav'):
+        game.maxine.gridnav.process_keypress(keyboard)
 
 # Development tool: when the mouse is clicked, print the mouse coordinates in the window
 def on_mouse_down(pos):
@@ -1241,6 +1179,7 @@ def finished_level():
     global game_state, level, switch_level_timeout, spiraling_monsters, dead_monsters, projectiles
     global ranged_monsters, cannon_in_level, spore_count
     global maze_monsters
+    global game
     game_state = 'won'
     level += 1
     switch_level_timeout = 120
@@ -1255,19 +1194,20 @@ def finished_level():
     cannon_in_level = False
     cannon_shooting = False 
     
-    if hasattr(maxine, 'gridnav'):
+    if hasattr(game.maxine, 'gridnav'):
         del maxine.gridnav
     
 def start_next_level():
-    global game_state, maxine_current_scale, maxine
+    global game_state
     global ranged_monsters, cannon_in_level, cannon_shooting, spore_count
     global challenger_score, console_score
     global level, maze
+    global game
     game_state = 'playing'
 
-    maxine_current_scale = 1
-    maxine.pos = MAXINE_START
-    maxine.scale = MAXINE_INITIAL_SCALE * maxine_current_scale
+    game.maxine_current_scale = 1
+    game.maxine.pos = game_object.MAXINE_START
+    game.maxine.scale = game_object.MAXINE_INITIAL_SCALE * game.maxine_current_scale
 
     challenger_score = 0
     console_score = 0
@@ -1293,10 +1233,10 @@ def start_next_level():
         maze.make_rooms()
         
         # Make Maxine small enough to fit in maze
-        maxine.scale = 0.125
+        game.maxine.scale = 0.125
         
         # Give Maxine a Grid Navigation component
-        maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0])
+        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0])
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -1309,11 +1249,11 @@ def start_next_level():
 def kill_maxine():
     '''Used when maxine crashes into an indestructible object such as the pore
     or the gurk cannon, and her position needs to be reset.'''
-    global console_score
+    global console_score, game
     sounds.eep.play()
-    maxine.images = boom_images()
-    maxine.fps = 30
-    maxine.alive = False
+    game.maxine.images = boom_images()
+    game.maxine.fps = 30
+    game.maxine.alive = False
     
     delay = 1.0
     clock.schedule_unique(reset_maxine, delay)
@@ -1321,9 +1261,9 @@ def kill_maxine():
     console_score += 100
 
 def reset_maxine():
-    maxine.pos = MAXINE_START
-    maxine.images = ['maxine']
-    maxine.alive = True
+    game.maxine.pos = game_object.MAXINE_START
+    game.maxine.images = ['maxine']
+    game.maxine.alive = True
 
 # Monster functions
 # Level 1
@@ -1334,7 +1274,7 @@ def make_spore(shroom):
     spore.images = ['spore1', 'spore2', 'spore3']
     spore.scale = 0.25
     spore.pos = shroom.pos
-    spore.point_towards(maxine)
+    spore.point_towards(game.maxine)
     spore.speed = 3
     projectiles.add(spore)
     return spore
@@ -1393,7 +1333,7 @@ def make_cannon_spore():
         spore.images = ['spore1', 'spore2', 'spore3']
         spore.scale = 0.25
         spore.pos = cannon.pos
-        spore.point_towards(maxine)
+        spore.point_towards(game.maxine)
         spore.speed = 3
         projectiles.add(spore)
         return spore
