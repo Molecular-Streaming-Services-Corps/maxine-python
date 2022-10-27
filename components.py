@@ -76,16 +76,34 @@ class BaseMazeAI(BaseComponent):
     def __init__(self, gridnav):
         self.gridnav = gridnav
 
+
 class RandomMazeAI(BaseMazeAI):
+    '''Takes a random step except it won't reverse its last
+    step unless it's in a deadend.'''
     def __init__(self, gridnav):
         super().__init__(gridnav)
+        self.move_timeout = 60
+        self.prev_cell = gridnav.in_cell
         
     def move(self):
         options = self.gridnav.get_linked_cells()
+        # Prefer not to move back to the previous cell.
+        best = [c for c in options if c is not self.prev_cell]
+        # If we're in a dead end, go to the previous cell after all.
+        if not best:
+            best = options
         
-        if not options:
+        if not best:
             return
         else:
-            cell = random.choice(options)
+            self.prev_cell = self.gridnav.in_cell
+            cell = random.choice(best)
             self.gridnav.move_to_cell(cell)
+    
+    def update(self):
+        if self.move_timeout > 0:
+            self.move_timeout -= 1
+        else:
+            self.move_timeout = 60
+            self.move()
 

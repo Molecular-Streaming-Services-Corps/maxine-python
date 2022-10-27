@@ -1113,7 +1113,7 @@ def update_for_maxine_player():
 
     # Level 6 code
     for monster in maze_monsters:
-        monster.ai.move()
+        monster.ai.update()
         monster.center = monster.gridnav.get_location()
 
     # All levels code
@@ -1238,6 +1238,7 @@ def on_mouse_move(pos):
 def finished_level():
     global game_state, level, switch_level_timeout, spiraling_monsters, dead_monsters, projectiles
     global ranged_monsters, cannon_in_level, spore_count
+    global maze_monsters
     game_state = 'won'
     level += 1
     switch_level_timeout = 120
@@ -1246,6 +1247,7 @@ def finished_level():
     dead_monsters.clear()
     bouncing_monsters.clear()
     projectiles.clear()
+    maze_monsters.clear()
     
     spore_count = 0
     cannon_in_level = False
