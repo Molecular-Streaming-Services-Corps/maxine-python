@@ -28,6 +28,8 @@ class Game:
         self.bouncing_monsters = set()
         self.dead_monsters = set()
         self.maze_monsters = set()
+        
+        self.projectiles = set()
 
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR

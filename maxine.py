@@ -505,7 +505,6 @@ class PotionHolder:
 new_controls = NewControls()
 
 ranged_monsters = [cannon]
-projectiles = set()
 
 challenger_score = 0
 console_score = 0
@@ -524,7 +523,7 @@ def save_arena_to_dict():
     save['maxine'] = save_actor_to_dict(game.maxine)
     save['spiraling_monsters'] = [save_actor_to_dict(m) for m in game.spiraling_monsters]
     save['dead_monsters'] = [save_actor_to_dict(m) for m in game.dead_monsters]
-    save['projectiles'] = [save_actor_to_dict(m) for m in projectiles]
+    save['projectiles'] = [save_actor_to_dict(m) for m in game.projectiles]
     
     return wrapper
 
@@ -540,7 +539,7 @@ def save_actor_to_dict(actor):
     return data
 
 def load_arena_from_dict(wrapper):
-    global game, projectiles
+    global game
 
     assert(wrapper['type'] == 'maxine')
     save = wrapper['state']
@@ -558,10 +557,10 @@ def load_arena_from_dict(wrapper):
         actor = load_actor_from_dict(data)
         game.dead_monsters.add(actor)
 
-    projectiles = set()
+    game.projectiles = set()
     for data in save['projectiles']:
         actor = load_actor_from_dict(data)
-        projectiles.add(actor)
+        game.projectiles.add(actor)
     
 def load_actor_from_dict(data):
     images = data['images']
@@ -631,7 +630,7 @@ def draw():
     for monster in game.maze_monsters:
         monster.draw()
         
-    for p in projectiles:
+    for p in game.projectiles:
         p.draw()
 
     # Draw the signal ring.
@@ -977,7 +976,7 @@ def update_for_maxine_player():
     # Handle projectiles (spores in the case of mushrooms)
     # Projectiles point toward Maxine when they're spawned. (Spored?)
     projectiles_to_delete = set()
-    for p in projectiles:
+    for p in game.projectiles:
         p.animate()
         p.move_forward(p.speed)
         if game.maxine.collide_pixel(p):
@@ -994,7 +993,7 @@ def update_for_maxine_player():
             spore_count -= 1
     
     for p in projectiles_to_delete:
-        projectiles.remove(p)
+        game.projectiles.remove(p)
 
     # Level 2, 4, 5 code
     # Process bouncing monsters
@@ -1037,7 +1036,7 @@ def update_for_maxine_player():
         cannon_blast_timeout -= 1
         cannon.spore_timeout -= 5
         if cannon_blast_timeout >= 0:
-            for spore in projectiles:
+            for spore in game.projectiles:
                 spore.speed = 3
                 ss = util.SpiralState(
                 0.5, rotation, constants.RING_HEIGHT - 10, 1, constants.CENTER, constants.RING_WIDTH / constants.RING_HEIGHT)
@@ -1046,7 +1045,7 @@ def update_for_maxine_player():
         else:
             if cannon_blast_timeout == -1:
                 cannon_shooting = False
-                for spore in projectiles:
+                for spore in game.projectiles:
                     spore.speed = 10
                     spore.point_towards(game.maxine)    
              
@@ -1170,7 +1169,7 @@ def on_mouse_move(pos):
 
 # Prepare to move on to the next level
 def finished_level():
-    global game_state, level, switch_level_timeout, projectiles
+    global game_state, level, switch_level_timeout
     global ranged_monsters, cannon_in_level, spore_count
     global game
     game_state = 'won'
@@ -1180,7 +1179,7 @@ def finished_level():
     game.spiraling_monsters.clear()
     game.dead_monsters.clear()
     game.bouncing_monsters.clear()
-    projectiles.clear()
+    game.projectiles.clear()
     game.maze_monsters.clear()
     
     spore_count = 0
@@ -1269,7 +1268,7 @@ def make_spore(shroom):
     spore.pos = shroom.pos
     spore.point_towards(game.maxine)
     spore.speed = 3
-    projectiles.add(spore)
+    game.projectiles.add(spore)
     return spore
 
 def get_spore_timeout():
@@ -1326,7 +1325,7 @@ def make_cannon_spore():
         spore.pos = cannon.pos
         spore.point_towards(game.maxine)
         spore.speed = 3
-        projectiles.add(spore)
+        game.projectiles.add(spore)
         return spore
 
 # Level 6
