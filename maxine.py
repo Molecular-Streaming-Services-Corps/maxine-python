@@ -37,7 +37,7 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
-game = game_object.Game(Actor, sounds, images)
+game = game_object.Game(Actor, sounds, images, clock)
 
 #graph_type = 'heatmap'
 graph_type = 'line_ring'
@@ -619,9 +619,6 @@ def draw_spiral(rotation, color):
         (x, y) = util.adjust_coords(x, y)
         screen.draw.filled_circle((x, y), 1, color)
 
-def boom_images():
-    return ['boom' + str(i) for i in range(1, 30 + 1)]
-
 step_count = 0
 space_pressed_before = False
 button_pressed_before = False
@@ -845,7 +842,7 @@ def update_for_maxine_player():
         if level != 6:
             if (game.maxine.collide_pixel(game.pore) or 
                 (cannon_in_level and game.maxine.collide_pixel(cannon))):
-                kill_maxine()
+                game.kill_maxine()
         
         if point_outside_signal_ring(game.maxine.center):
             game.maxine.pos = prev_pos
@@ -899,7 +896,7 @@ def update_for_maxine_player():
         for monster in sm_to_blow_up:
             game.spiraling_monsters.remove(monster)
             game.dead_monsters.add(monster)
-            #monster.images = boom_images()
+            #monster.images = game.boom_images()
             #monster.fps = 30
             #monster.scale = 0.25
             
@@ -956,7 +953,7 @@ def update_for_maxine_player():
         for monster in bm_to_blow_up:
             game.bouncing_monsters.remove(monster)
             game.dead_monsters.add(monster)
-            monster.images = boom_images()
+            monster.images = game.boom_images()
             monster.fps = 30
             monster.scale = 0.25
             
@@ -1158,27 +1155,6 @@ def start_next_level():
     if STANDALONE:
         delay = random.randrange(5, 8)
         clock.schedule_unique(add_cell, delay)
-
-# Maxine functions
-
-def kill_maxine():
-    '''Used when maxine crashes into an indestructible object such as the pore
-    or the gurk cannon, and her position needs to be reset.'''
-    global console_score, game
-    sounds.eep.play()
-    game.maxine.images = boom_images()
-    game.maxine.fps = 30
-    game.maxine.alive = False
-    
-    delay = 1.0
-    clock.schedule_unique(reset_maxine, delay)
-    
-    console_score += 100
-
-def reset_maxine():
-    game.maxine.pos = game_object.MAXINE_START
-    game.maxine.images = ['maxine']
-    game.maxine.alive = True
 
 # Monster functions
 # Level 1

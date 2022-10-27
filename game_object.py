@@ -11,10 +11,11 @@ MAXINE_WIN_SIZE = 4
 MAXINE_LOSE_SIZE = 0.25
 
 class Game:
-    def __init__(self, Actor, sounds, images):
+    def __init__(self, Actor, sounds, images, clock):
         self.Actor = Actor
         self.sounds = sounds
         self.images = images
+        self.clock = clock
 
         self.maxine_current_scale = 1
         
@@ -106,6 +107,7 @@ class Game:
 
         return actor
 
+    # Maxine methods
     def reward_maxine(self):
         self.sounds.good.play()
         self.challenger_score += 100
@@ -113,4 +115,25 @@ class Game:
     def punish_maxine(self):
         self.sounds.eep.play()
         self.console_score += 100
+
+    def kill_maxine(self):
+        '''Used when maxine crashes into an indestructible object such as the pore
+        or the gurk cannon, and her position needs to be reset.'''
+        self.sounds.eep.play()
+        self.maxine.images = self.boom_images()
+        self.maxine.fps = 30
+        self.maxine.alive = False
+        
+        delay = 1.0
+        self.clock.schedule_unique(self.reset_maxine, delay)
+        
+        self.console_score += 100
+
+    def reset_maxine(self):
+        self.maxine.pos = MAXINE_START
+        self.maxine.images = ['maxine']
+        self.maxine.alive = True
+        
+    def boom_images(self):
+        return ['boom' + str(i) for i in range(1, 30 + 1)]
 
