@@ -11,8 +11,10 @@ MAXINE_WIN_SIZE = 4
 MAXINE_LOSE_SIZE = 0.25
 
 class Game:
-    def __init__(self, Actor):
+    def __init__(self, Actor, sounds, images):
         self.Actor = Actor
+        self.sounds = sounds
+        self.images = images
 
         self.maxine_current_scale = 1
         
@@ -32,6 +34,9 @@ class Game:
         self.maze_monsters = set()
         
         self.projectiles = set()
+        
+        self.challenger_score = 0
+        self.console_score = 0
 
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR
@@ -100,4 +105,12 @@ class Game:
             actor.disappear_timer = data['disappear_timer']
 
         return actor
+
+    def reward_maxine(self):
+        self.sounds.good.play()
+        self.challenger_score += 100
+
+    def punish_maxine(self):
+        self.sounds.eep.play()
+        self.console_score += 100
 

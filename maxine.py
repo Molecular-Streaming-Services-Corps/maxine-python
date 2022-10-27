@@ -37,7 +37,7 @@ TITLE = 'Maxine\'s µMonsters'
 WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
-game = game_object.Game(Actor)
+game = game_object.Game(Actor, sounds, images)
 
 #graph_type = 'heatmap'
 graph_type = 'line_ring'
@@ -506,9 +506,6 @@ new_controls = NewControls()
 
 ranged_monsters = [cannon]
 
-challenger_score = 0
-console_score = 0
-
 # Represents data from a stored file.
 d = None
 
@@ -516,13 +513,13 @@ rotation = 0
 
 def draw():
     global rotation, dev_control, sg, graph_type
-    global challenger_score, console_score, challenger_image, console_image
+    global challenger_image, console_image
     global cannon_in_level, ranged_monsters
     global game
     draw_living_background()
 
-    screen.draw.text('CHALLENGER SCORE: ' + str(challenger_score), (90, 40))
-    screen.draw.text('CONSOLE SCORE: ' + str(console_score), (90, 100))
+    screen.draw.text('CHALLENGER SCORE: ' + str(game.challenger_score), (90, 40))
+    screen.draw.text('CONSOLE SCORE: ' + str(game.console_score), (90, 100))
 
     #Draw Player Images   
     challenger_image.draw()    
@@ -635,7 +632,6 @@ def update():
     global playing_music
     global sg
     global vlr
-    global challenger_score, console_score
     global started_chosen_level
     step_count += 1
     if step_count % 10 == 0:
@@ -811,7 +807,6 @@ def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
 def update_for_maxine_player():
     global game, game_state, new_controls, switch_level_timeout
     global cannon_shooting, spore, cannon_blast_timeout, cannon_blast_delay, spore_count
-    global challenger_score, console_score
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     new_controls.update()
 
@@ -892,7 +887,7 @@ def update_for_maxine_player():
             if game.maxine.collide_pixel(monster):
                 sm_to_blow_up.add(monster)
                 
-                reward_maxine()
+                game.reward_maxine()
                 
             # Spawn a spore if we are far enough from Maxine and time is up
             monster.spore_timeout -= 1
@@ -921,7 +916,7 @@ def update_for_maxine_player():
             projectiles_to_delete.add(p)
             spore_count -= 1
             
-            punish_maxine()
+            game.punish_maxine()
 
         # For a circular ring.
         #elif util.distance_points(p.center, CENTER) > RING_RADIUS:
@@ -951,12 +946,12 @@ def update_for_maxine_player():
             # Blow up the monster when it gets to the center and reward Maxine
             if util.distance_points(monster.center, constants.CENTER) < 45:
                bm_to_blow_up.add(monster)
-               reward_maxine()
+               game.reward_maxine()
 
-            # Make Maxine shrink if she collides with a bouncing monster
+            # Punish Maxine if she collides with a bouncing monster
             if game.maxine.collide_pixel(monster):
                 bm_to_blow_up.add(monster)
-                punish_maxine()
+                game.punish_maxine()
 
         for monster in bm_to_blow_up:
             game.bouncing_monsters.remove(monster)
@@ -1013,9 +1008,9 @@ def update_for_maxine_player():
 
     # Check if Maxine has won or lost (or is still going)
     if game_state == 'playing':
-        if console_score >= 1000:
+        if game.console_score >= 1000:
             game_state = 'lost'
-        elif challenger_score >= 1000:
+        elif game.challenger_score >= 1000:
             finished_level()
             
     # Code for the transition between levels
@@ -1032,16 +1027,6 @@ def point_outside_signal_ring(point):
     scaled_coords = (point[0] - constants.CENTER[0],
                      (point[1] - constants.CENTER[1]) * rx/ry)
     return np.linalg.norm(scaled_coords, 2) > rx
-
-def reward_maxine():
-    global challenger_score
-    sounds.good.play()
-    challenger_score = challenger_score + 100
-
-def punish_maxine():
-    global console_score
-    sounds.eep.play()
-    console_score = console_score + 100
 
 def on_key_down(key):
     global graph_type, new_controls, serializer, playing_music, game
