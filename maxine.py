@@ -514,68 +514,6 @@ d = None
 
 rotation = 0
 
-def save_arena_to_dict():
-    save = {}
-    wrapper = {'type': 'maxine', 'state': save}
-
-    save['maxine_alive'] = game.maxine.alive
-    
-    save['maxine'] = save_actor_to_dict(game.maxine)
-    save['spiraling_monsters'] = [save_actor_to_dict(m) for m in game.spiraling_monsters]
-    save['dead_monsters'] = [save_actor_to_dict(m) for m in game.dead_monsters]
-    save['projectiles'] = [save_actor_to_dict(m) for m in game.projectiles]
-    
-    return wrapper
-
-def save_actor_to_dict(actor):
-    data = {'pos': list(actor.pos),
-            'angle': actor.angle,
-            'scale': actor.scale,
-            'images': actor.images}
-    
-    if hasattr(actor, 'disappear_timer'):
-        data['disappear_timer'] = actor.disappear_timer
-    
-    return data
-
-def load_arena_from_dict(wrapper):
-    global game
-
-    assert(wrapper['type'] == 'maxine')
-    save = wrapper['state']
-    
-    game.maxine = load_actor_from_dict(save['maxine'])
-    game.maxine.alive = save['maxine_alive']
-    
-    game.spiraling_monsters = set()
-    for data in save['spiraling_monsters']:
-        actor = load_actor_from_dict(data)
-        game.spiraling_monsters.add(actor)
-
-    game.dead_monsters = set()
-    for data in save['dead_monsters']:
-        actor = load_actor_from_dict(data)
-        game.dead_monsters.add(actor)
-
-    game.projectiles = set()
-    for data in save['projectiles']:
-        actor = load_actor_from_dict(data)
-        game.projectiles.add(actor)
-    
-def load_actor_from_dict(data):
-    images = data['images']
-    actor = Actor(images[0])
-    actor.images = images
-    actor.pos = tuple(data['pos'])
-    actor.scale = data['scale']
-    actor.images = data['images']
-    actor.angle = data['angle']
-
-    if 'disappear_timer' in data:
-        actor.disappear_timer = data['disappear_timer']
-
-    return actor
-
 def draw():
     global rotation, dev_control, sg, graph_type
     global challenger_score, console_score, challenger_image, console_image
@@ -786,7 +724,7 @@ def update():
         
             # Send updates to the other player    
             if MULTIPLAYER:
-                wrapper = save_arena_to_dict()
+                wrapper = game.save_arena_to_dict()
                 json_string = serializer.save_dict_to_string(wrapper)
                 lilith_client.send_status(json_string)
     else:
@@ -806,7 +744,7 @@ def update():
             new_controls.load_from_dict(wrapper)
             logger.info('loaded controls state from the internet')
         elif ty == 'maxine' and PLAYER == 'console':
-            load_arena_from_dict(wrapper)
+            game.load_arena_from_dict(wrapper)
             logger.info('loaded arena state from the internet')
 
 pressed_before = set()
@@ -1136,7 +1074,7 @@ def on_key_down(key):
             data = new_controls.save_to_dict()
             serializer.save_dict_to_file(data, 'console.json')
         else:
-            data = save_arena_to_dict()
+            data = game.save_arena_to_dict()
             serializer.save_dict_to_file(data, 'maxine.json')
     elif key == key.L:
         # Load the Maxine information only for the console player, because
@@ -1149,7 +1087,7 @@ def on_key_down(key):
 
         if PLAYER == 'console':
             data = serializer.load_dict_from_file('maxine.json')
-            load_arena_from_dict(data)
+            game.load_arena_from_dict(data)
 
     # Move maxine around a grid (maze)
     if hasattr(game.maxine, 'gridnav'):
