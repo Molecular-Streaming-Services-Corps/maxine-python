@@ -980,6 +980,7 @@ def update_for_maxine_player():
 
     # Update Maxine's position onscreen after she moves on the maze.
     if level == 6:
+        maxine.gridnav.update()
         maxine.center = maxine.gridnav.get_location()
 
     # Cannon Behavior
@@ -1113,6 +1114,7 @@ def update_for_maxine_player():
 
     # Level 6 code
     for monster in maze_monsters:
+        monster.gridnav.update()
         monster.ai.update()
         monster.center = monster.gridnav.get_location()
 

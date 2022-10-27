@@ -1,4 +1,14 @@
 import random
+import logging
+
+# Set up logger for this module
+logger = logging.getLogger('components')
+logger.setLevel(logging.DEBUG)
+import sys
+handler = logging.StreamHandler(sys.stdout)
+handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
+logger.addHandler(handler)
+
 
 class BaseComponent:
     pass
@@ -6,8 +16,7 @@ class BaseComponent:
 # Grid navigation components
 
 class GridNavigation(BaseComponent):
-    '''Keeps track of the position of the Actor in the maze.
-    Position is a tuple of x and y.'''
+    '''Keeps track of the position of the Actor in the maze.'''
     def __init__(self, grid, in_cell):
         self.grid = grid
         self.in_cell = in_cell
@@ -16,32 +25,39 @@ class PolarGridNavigation(GridNavigation):
     '''Adds functions to navigate in a polar grid.'''
     def __init__(self, grid, in_cell):
         super().__init__(grid, in_cell)
+        self.next_cell = None
+        self.num_frames_for_move = 60
+        self.num_frames_moved = 0
         
     def move_inward(self):
         next_cell =  self.in_cell.inward
         if next_cell and self.in_cell.is_linked(next_cell):
-            self.in_cell = next_cell
+            self.next_cell = next_cell
     
     def move_ccw(self):
         next_cell = self.in_cell.ccw
         if next_cell and self.in_cell.is_linked(next_cell):
-            self.in_cell = next_cell
+            self.next_cell = next_cell
 
     def move_cw(self):
         next_cell = self.in_cell.cw
         if next_cell and self.in_cell.is_linked(next_cell):
-            self.in_cell = next_cell
+            self.next_cell = next_cell
 
     def move_outward(self, n):
         '''Moves to the nth outward neighbor. Every cell has at least the 0th outward neighbor
         (except edges). The middle cell has 6 outward neighbors. Some cells have 2 outward neighbors.'''
         outward = self.in_cell.outward
         if len(outward) > n  and self.in_cell.is_linked(outward[n]):
-            self.in_cell = outward[n]
+            self.next_cell = outward[n]
     
     def process_keypress(self, keyboard):
         '''Process a keypress by moving. Only relevant to Maxine.
         Uses the buttons 1-6 to move outward.'''
+        if not self.finished_moving():
+            logging.debug('Pressed a movement key while Maxine was still moving.') 
+            return
+        
         if keyboard.left:
             self.move_inward()
         elif keyboard.up:
@@ -58,10 +74,25 @@ class PolarGridNavigation(GridNavigation):
                     break
 
     def get_location(self):
-        return self.grid.get_center(self.in_cell)
+        if self.next_cell is None:
+            return self.grid.get_center(self.in_cell)
+        
+        # New version
+        proportion_moved = self.num_frames_moved / self.num_frames_for_move
+        cn = self.grid.get_center(self.next_cell)
+        ci = self.grid.get_center(self.in_cell)
+        dx_complete = cn[0] - ci[0]
+        dy_complete = cn[1] - ci[1]
+        
+        dx = dx_complete * proportion_moved
+        dy = dy_complete * proportion_moved
+        
+        coords = (ci[0] + dx, ci[1] + dy)
+        
+        return coords
 
     def move_to_cell(self, cell):
-        self.in_cell = cell
+        self.next_cell = cell
     
     def get_linked_cells(self):
         ret = []
@@ -70,6 +101,21 @@ class PolarGridNavigation(GridNavigation):
                 ret.append(c)
         return ret
 
+    def finished_moving(self):
+        return (self.next_cell is None or self.in_cell == self.next_cell)
+    
+    def update(self):
+        if self.num_frames_moved == self.num_frames_for_move:
+            self.in_cell = self.next_cell
+            self.next_cell = None
+            self.num_frames_moved = 0
+        elif self.next_cell is None:
+            return
+        else:
+            # Move the character.
+            self.num_frames_moved += 1
+            
+    
 # AI components
 
 class BaseMazeAI(BaseComponent):
@@ -82,7 +128,6 @@ class RandomMazeAI(BaseMazeAI):
     step unless it's in a deadend.'''
     def __init__(self, gridnav):
         super().__init__(gridnav)
-        self.move_timeout = 60
         self.prev_cell = gridnav.in_cell
         
     def move(self):
@@ -101,9 +146,6 @@ class RandomMazeAI(BaseMazeAI):
             self.gridnav.move_to_cell(cell)
     
     def update(self):
-        if self.move_timeout > 0:
-            self.move_timeout -= 1
-        else:
-            self.move_timeout = 60
+        if self.gridnav.finished_moving():
             self.move()
 
