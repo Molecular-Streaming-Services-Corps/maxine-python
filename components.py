@@ -56,7 +56,7 @@ class PolarGridNavigation(GridNavigation):
         '''Process a keypress by moving. Only relevant to Maxine.
         Uses the buttons 1-6 to move outward.'''
         if not self.finished_moving():
-            logging.debug('Pressed a movement key while Maxine was still moving.') 
+            logger.debug('Pressed a movement key while Maxine was still moving.') 
             return
         
         if keyboard.left:

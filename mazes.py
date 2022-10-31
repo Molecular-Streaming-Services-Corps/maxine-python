@@ -3,6 +3,7 @@ import math
 import pygame
 
 import constants
+import util
 
 # Grid classes
 
@@ -149,9 +150,9 @@ class PolarGrid(Grid):
             dx = int(outer_radius * math.cos(theta_cw))
             dy = int(outer_radius * math.sin(theta_cw))
             
-            ax, ay = self._adjust_coords(ax, ay)
-            cx, cy = self._adjust_coords(cx, cy)
-            dx, dy = self._adjust_coords(dx, dy)
+            ax, ay = util.adjust_coords(ax, ay)
+            cx, cy = util.adjust_coords(cx, cy)
+            dx, dy = util.adjust_coords(dx, dy)
             
             
             if not cell.is_linked(cell.inward):
@@ -165,12 +166,6 @@ class PolarGrid(Grid):
         #    (x + constants.TORUS_INNER_WIDTH // 2, y + constants.TORUS_INNER_HEIGHT // 2))
         #pygame.draw.ellipse(screen.surface, wall, bounds, width = 3)
         
-    def _adjust_coords(self, x, y):
-        WIDTH_TO_HEIGHT_RATIO = constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT
-        x, y = (WIDTH_TO_HEIGHT_RATIO * x, y)
-        x, y = (x + constants.CENTER[0], y + constants.CENTER[1])
-        return (x, y)
-
     def make_room_row(self, row, ccw_column, cw_column, connect_inward = False):
         for i in range(ccw_column, cw_column):
             cell1 = self[(row, i)]
@@ -211,12 +206,12 @@ class PolarGrid(Grid):
         ax = int(inner_radius * math.cos(theta_ccw))
         ay = int(inner_radius * math.sin(theta_ccw))
 
-        ax, ay = self._adjust_coords(ax, ay)
+        ax, ay = util.adjust_coords(ax, ay)
         
         x = int(center_radius * math.cos(theta_center))
         y = int(center_radius * math.sin(theta_center))
 
-        x, y = self._adjust_coords(x, y)
+        x, y = util.adjust_coords(x, y)
         
         return (x, y)
 

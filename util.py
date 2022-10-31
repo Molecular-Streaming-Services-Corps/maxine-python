@@ -67,7 +67,7 @@ class SpiralState:
 def adjust_coords(x, y):
     # Stretch in the x dimension to match the greater width of the ellipse,
     # and then add the center to the Cartesian coordinates
-    WIDTH_TO_HEIGHT_RATIO = constants.RING_WIDTH / constants.RING_HEIGHT
+    WIDTH_TO_HEIGHT_RATIO = constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT
 
     (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
     (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])
