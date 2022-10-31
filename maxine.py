@@ -44,7 +44,8 @@ game = game_object.Game(Actor, sounds, images, clock)
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
 
-DRAW_SPIRALS = False
+# This is required for the level with a gurk and rotating spores to work
+DRAW_SPIRALS = True
 
 game_state = 'playing' # becomes 'won' or 'lost'
 level = 1
