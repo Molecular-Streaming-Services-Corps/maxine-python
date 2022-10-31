@@ -430,6 +430,8 @@ class PrerecordedData(Data):
     def get_last_n_samples(self, n):
         '''Return the last n samples up to the present frame. Returns all the
         samples if there are less than n samples'''
+        before = time.perf_counter()
+        
         samples_per_frame = 1667
         
         start = samples_per_frame * (self.latest_frame + 1) - n
@@ -437,4 +439,9 @@ class PrerecordedData(Data):
         end = samples_per_frame * (self.latest_frame + 1)
         
         cd = self.sample_data[start : end]
+        
+        after = time.perf_counter()
+        logger.debug('get_last_n_samples took %s seconds', after - before)
+        
         return cd
+        

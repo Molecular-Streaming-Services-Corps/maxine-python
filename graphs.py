@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 import pygame
+import time
 
 import util
 import constants
@@ -40,6 +41,8 @@ class VerticalLineRing:
         if not len(samples):
             return
     
+        before = time.perf_counter()
+    
         #samples = samples.astype('int32')
         self.samples = samples
 
@@ -56,6 +59,9 @@ class VerticalLineRing:
         logger.debug('self.tops: %s', self.tops)
         logger.debug('self.bottoms: %s', self.bottoms)        
 
+        after = time.perf_counter()
+        logger.debug('give_samples took %s seconds', after - before)
+
     def advance_n_frames(self, n):
         # Remove the spikes from boxes that are being overwritten on the graph.
         for i in range(1, n + 1):
@@ -66,6 +72,7 @@ class VerticalLineRing:
         self.present_box = int(self.present_box + n) % constants.NUM_BOXES
 
     def draw(self):
+        before = time.perf_counter()
         # Draw the vertical lines
         num_lines = len(self.tops)
         data_start_box = (self.present_box - num_lines) % constants.NUM_BOXES
@@ -90,6 +97,9 @@ class VerticalLineRing:
         # Draw the red line at present_angle
         self.draw_line(self.present_box * 360 / constants.NUM_BOXES, -2*self.line_extent, 0, colors.MEDIUM_RED)
         
+        after = time.perf_counter()
+        logger.debug('Drawing VLR took %s seconds', after - before)
+        
     def draw_line(self, theta, top, bottom, color):
         # Calculate the coordinates for the inner end of the line
         r = constants.RING_RADIUS + top
@@ -102,7 +112,7 @@ class VerticalLineRing:
         outer_coords = util.adjust_coords(outer_x, outer_y)
         
         # Finally draw the line
-        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 10)
+        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 15)
 
     def add_spike(self):
         '''Sets the box represented by present_box to be a spike.'''
