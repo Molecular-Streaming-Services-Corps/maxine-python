@@ -763,10 +763,11 @@ def make_mushroom():
 
 # Level 2
 def make_bouncer():
-    monster_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
-        'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
-    bouncer = Actor(monster_type)
-    bouncer.images = [monster_type]
+#    monster_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
+#        'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
+    bouncer = Actor('boomshroom')
+    bouncer.images = ['boomshroom']
+
     bouncer.fps = 1
     
     # Give it an initial position on the signal ring
