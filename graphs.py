@@ -104,12 +104,12 @@ class VerticalLineRing:
         # Calculate the coordinates for the inner end of the line
         r = constants.RING_RADIUS + top
         (inner_x, inner_y) = util.pol2cart(r, theta)
-        inner_coords = util.adjust_coords(inner_x, inner_y)
+        inner_coords = util.adjust_coords_ring(inner_x, inner_y)
         
         # Calculate the coordinates for the outer end of the line
         r = constants.RING_RADIUS + bottom
         (outer_x, outer_y) = util.pol2cart(r, theta)
-        outer_coords = util.adjust_coords(outer_x, outer_y)
+        outer_coords = util.adjust_coords_ring(outer_x, outer_y)
         
         # Finally draw the line
         pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 15)

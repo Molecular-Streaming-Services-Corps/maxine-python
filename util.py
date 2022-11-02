@@ -65,9 +65,18 @@ class SpiralState:
         self.theta -= self.step_degrees
         
 def adjust_coords(x, y):
-    # Stretch in the x dimension to match the greater width of the ellipse,
+    # Stretch in the x dimension to match the greater width of the torus,
     # and then add the center to the Cartesian coordinates
     WIDTH_TO_HEIGHT_RATIO = constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT
+
+    (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
+    (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])
+    return (x, y)
+
+def adjust_coords_ring(x, y):
+    '''Used by the signal ring. It's based on the signal ring's size
+    rather than the torus's size.'''
+    WIDTH_TO_HEIGHT_RATIO = constants.RING_WIDTH / constants.RING_HEIGHT
 
     (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
     (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])
