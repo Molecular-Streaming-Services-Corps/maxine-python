@@ -101,7 +101,7 @@ helpbutton.scale = 0.26
 helpbutton.right = 1400
 helpbutton.top = 18
 
-data_number = 5
+data_number = 0
 data_text= 'Translocations'
 
 dataglobe = Actor('dataglobe')
@@ -279,6 +279,7 @@ def update():
     global vlr
     global started_chosen_level
     global controls
+    global data_number
     step_count += 1
     if step_count % 10 == 0:
         i += 1
@@ -318,6 +319,7 @@ def update():
         if spike_exists:
             sg.set_frame(frame)
             vlr.add_spike()
+            data_number += 1
 
         vlr.advance_n_frames(1)
         
@@ -351,6 +353,8 @@ def update():
                 
         last_n_samples = d.get_last_n_frames(constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
+        
+        data_number += spikes
         
         booleans = d.get_recent_frames_contain_spikes()
         for b in booleans:
