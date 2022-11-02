@@ -39,9 +39,7 @@ class Controls:
         self.zap_timeout = 0
         
         self.syringe = Actor('syringe')
-        #self.syringe.left = 1470
-        #self.syringe.top = 545
-        self.syringe.pos = (1477, 399)
+        #self.syringe.pos = (1477, 399)
         
         # This is an index into a list of speed settings. Can be negative.
         self.pump_speed_index = 0
@@ -198,7 +196,7 @@ class Controls:
 
         self.zap_lever.draw()
         
-        self.syringe.draw()
+        #self.syringe.draw()
         
         self.hydrowag_switch.draw()
         

@@ -67,10 +67,10 @@ maze = None
 controls = None
 
 challenger_image = Actor('challengeplayer')
-challenger_image.center = (40, 40)
+challenger_image.center = (40, 160)
 
 console_image = Actor('consoleplayer')
-console_image.center = (40, 100)
+console_image.center = (40, 220)
 
 # This is to call start_next_level in the first call to update() in case
 # a level has been chosen on the command-line.
@@ -81,19 +81,71 @@ d = None
 
 rotation = 0
 
+syringe_value = 0
+
+syringemeter = Actor('totallytubular')
+syringemeter.left = 1300
+syringemeter.top = 830
+
+tv = Actor('tv1')
+tv.images = ('tv1', 'tv2', 'tv3')
+tv.right = 1800
+tv.fps = 5
+
+helpbutton = Actor('helpbutton')
+helpbutton.images = ['helpbutton']
+helpbutton.scale = 0.26
+helpbutton.right = 1400
+helpbutton.top = 18
+
+data_number = 5
+data_text= 'Translocations'
+
+dataglobe = Actor('dataglobe')
+dataglobe.right = 1800
+dataglobe.top = 268
+
+databutton = Actor('databutton')
+databutton.right = 1785
+databutton.top = 410
+
+brainpod = Actor('brainpod1')
+brainpod.images = ('brainpod1','brainpod2','brainpod3','brainpod4')
+brainpod.scale = 1
+brainpod.bottom = 900
+brainpod.left = 0
+brainpod.fps = 4
+
+brainalert = Actor('brainalert')
+brainalert.scale = .75
+brainalert.top = 550
+brainalert.left = 160
+
+question_text = 'What size are these fungal spores?'
+
+chatwindow = Actor('chatwindow')
+chatwindow.bottom = 550
+chatwindow.left = 0
+
+peoplebutton = Actor('peoplebutton')
+peoplebutton.scale = 0.4
+peoplebutton.left = 10
+peoplebutton.top = 10
+
+audioselector = Actor('audioselector')
+audioselector.left = 100
+
+skirt = Actor('skirt')
+skirt.center = (WIDTH/2, HEIGHT-38)
+
 def draw():
     global rotation, dev_control, sg, graph_type
     global challenger_image, console_image
     global game
     draw_living_background()
 
-    screen.draw.text('CHALLENGER SCORE: ' + str(game.challenger_score), (90, 40))
-    screen.draw.text('CONSOLE SCORE: ' + str(game.console_score), (90, 100))
-
-    #Draw Player Images   
-    challenger_image.draw()    
-    console_image.draw()
-
+    skirt.draw()
+    
     # Draw the microscope video in front of the background and behind the signal ring
     video_ops.draw_video(screen)
     
@@ -110,12 +162,36 @@ def draw():
     # Dragon Tyrant level
     if level == 6 and maze:
         maze.draw(screen)
-    
+        
+    tv.draw()
+    helpbutton.draw()
+    dataglobe.draw()
+    databutton.draw()
+    brainpod.draw()
+    brainalert.draw()
+    chatwindow.draw()
+    peoplebutton.draw()
+    audioselector.draw()
+
     # Now we draw the controls for both players.
     controls.draw()
+
+    syringemeter.draw()    
     
     if dev_control:
         dev_control.draw()
+
+    #Draw Player Images   
+    challenger_image.draw()    
+    console_image.draw()
+
+    screen.draw.text('instantLife: ' + str(game.challenger_score), (90, 160))
+    screen.draw.text('kemmishTree: ' + str(game.console_score), (90, 220))
+
+    screen.draw.text(str(data_number), center = (1655, 320), fontname = "ds-digi.ttf", fontsize = 50, color = "red")
+    screen.draw.text(str(data_text), center = (1655, 400), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
+
+    screen.draw.text(str(question_text), center = (255, 835), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
 
     # Draw Cannon
     if game.cannon_in_level:
@@ -563,6 +639,9 @@ def update_for_maxine_player():
         monster.center = monster.gridnav.get_location()
 
     # All levels code
+    
+    brainpod.animate()
+    tv.animate()
     
     # Animate exploding monsters
     to_delete = set()
