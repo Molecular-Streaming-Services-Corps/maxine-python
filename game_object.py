@@ -39,15 +39,15 @@ class Game:
         self.challenger_score = 0
         self.console_score = 0
 
-        # Stuff for the gurk cannon
-        cannon = Actor('gurk1')
-        cannon.images = ('gurk1','gurk2')
+        # Stuff for the mushroom cannon
+        cannon = Actor('mush1')
+        cannon.images = ('mush1','mush2')
         cannon.center = (constants.WIDTH/2, constants.HEIGHT/2)
-        cannon.scale = 0.5
+        cannon.scale = 1
         cannon.spore_timeout = 60
         cannon.fps = 10
         self.cannon = cannon
-
+        
         self.cannon_in_level = False
         self.cannon_shooting = False
         self.cannon_blast_delay = 500

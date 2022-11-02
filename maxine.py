@@ -56,6 +56,7 @@ playing_music = True
 sg = None
 '''Vertical Line Ring'''
 vlr = None
+USE_SPIKE_GRAPH = False
 
 # Temporary development tool
 dev_control = None
@@ -81,6 +82,8 @@ d = None
 
 rotation = 0
 
+# TODO move this into Controls so the syringe can be selected
+# and so the value responds to joystick pressing
 syringe_value = 0
 
 syringemeter = Actor('totallytubular')
@@ -156,14 +159,15 @@ def draw():
     else:
         graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
     
-    if sg:
+    if sg and USE_SPIKE_GRAPH:
         sg.draw()
     
     # Dragon Tyrant level
     if level == 6 and maze:
         maze.draw(screen)
         
-    tv.draw()
+    if not USE_SPIKE_GRAPH:
+        tv.draw()
     helpbutton.draw()
     dataglobe.draw()
     databutton.draw()
