@@ -340,7 +340,7 @@ def update():
         spikes = d.load_received_samples_and_count_spikes()
     
         frame = d.get_frame()
-        if playing_music and not data is None:
+        if playing_music and not frame is None:
             music_ops.current_to_frequency(frame)    
             music_ops.current_to_volume(frame)
         
