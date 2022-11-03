@@ -14,6 +14,9 @@ def current_to_volume(current_data):
     sound.play()
 
 def current_to_frequency(current_data):
+    # TODO don't know why this happens for Zavier - Jade
+    if current_data is None:
+        return
     pos_values = current_data.astype('int32')
     pos_values += 32768
     pos_values = pos_values // 20 + 100
