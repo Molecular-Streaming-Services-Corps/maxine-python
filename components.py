@@ -116,6 +116,20 @@ class PolarGridNavigation(GridNavigation):
             # Move the character.
             self.num_frames_moved += 1
             
+    def bump(self, cell):
+        '''Detects any entities you would bump into if you moved to that cell.'''
+        entities = list(self.game.maze_monsters) + [self.game.maxine]
+        bumped_entities = []
+        for e in entities:
+            if e.gridnav.in_cell is cell or e.gridnav.next_cell is cell:
+                bumped_entities.append(e)
+        
+        if bumped_entities:
+            logger.debug('object at cell %s tried to bump into: %s',
+                repr(self.in_cell),
+                [e.gridnav.in_cell for e in bumped_entities])
+        
+        return bumped_entities
     
 # AI components
 
@@ -127,16 +141,18 @@ class BaseMazeAI(BaseComponent):
 
 class RandomMazeAI(BaseMazeAI):
     '''Takes a random step except it won't reverse its last
-    step unless it's in a deadend.'''
+    step unless it's in a deadend. And it doesn't allow collisions.'''
     def __init__(self, gridnav):
         super().__init__(gridnav)
         self.prev_cell = gridnav.in_cell
         
     def move(self):
         options = self.gridnav.get_linked_cells()
+        options = [c for c in options if not self.gridnav.bump(c)]
         # Prefer not to move back to the previous cell.
         best = [c for c in options if c is not self.prev_cell]
         # If we're in a dead end, go to the previous cell after all.
+        # But stay still if all the linked cells are collisions.
         if not best:
             best = options
         
