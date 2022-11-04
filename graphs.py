@@ -37,6 +37,9 @@ class VerticalLineRing:
     
         self.box_is_spike = [False] * constants.NUM_BOXES
         
+        self.amplifier_max = 20000
+        self.amplifier_min = -20000
+        
     def give_samples(self, samples):
         if not len(samples):
             return
@@ -48,8 +51,8 @@ class VerticalLineRing:
 
         maxes, mins = data.Data.calculate_maxes_and_mins(samples)
         
-        min_ = int(np.min(samples))
-        max_ = int(np.max(samples))
+        min_ = self.amplifier_min #int(np.min(samples))
+        max_ = self.amplifier_max #int(np.max(samples))
         range_ = max_ - min_ + 1
         
         h = 2*self.line_extent

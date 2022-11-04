@@ -3,7 +3,7 @@ HEIGHT = 900
 CENTER = (WIDTH / 2, HEIGHT / 2)
 
 # I don't know what to call this. The distance between the inside and outside of the torus.
-TORUS_SIZE = 186
+TORUS_SIZE = 75
 
 TORUS_OUTER_HEIGHT = 900
 TORUS_OUTER_WIDTH = 1280
