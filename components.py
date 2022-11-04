@@ -34,16 +34,28 @@ class PolarGridNavigation(GridNavigation):
         next_cell =  self.in_cell.inward
         if next_cell and self.in_cell.is_linked(next_cell):
             self.next_cell = next_cell
+            
+            bumped = self.bump(next_cell)
+            for monster in bumped:
+                self.game.kill_maze_monster(monster)
     
     def move_ccw(self):
         next_cell = self.in_cell.ccw
         if next_cell and self.in_cell.is_linked(next_cell):
             self.next_cell = next_cell
+            
+            bumped = self.bump(next_cell)
+            for monster in bumped:
+                self.game.kill_maze_monster(monster)
 
     def move_cw(self):
         next_cell = self.in_cell.cw
         if next_cell and self.in_cell.is_linked(next_cell):
             self.next_cell = next_cell
+            
+            bumped = self.bump(next_cell)
+            for monster in bumped:
+                self.game.kill_maze_monster(monster)
 
     def move_outward(self, n):
         '''Moves to the nth outward neighbor. Every cell has at least the 0th outward neighbor
@@ -51,6 +63,10 @@ class PolarGridNavigation(GridNavigation):
         outward = self.in_cell.outward
         if len(outward) > n  and self.in_cell.is_linked(outward[n]):
             self.next_cell = outward[n]
+            
+            bumped = self.bump(self.next_cell)
+            for monster in bumped:
+                self.game.kill_maze_monster(monster)
     
     def process_keypress(self, keyboard):
         '''Process a keypress by moving. Only relevant to Maxine.

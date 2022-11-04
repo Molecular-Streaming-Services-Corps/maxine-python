@@ -153,3 +153,16 @@ class Game:
     def boom_images(self):
         return ['boom' + str(i) for i in range(1, 30 + 1)]
 
+    def kill_maze_monster(self, monster):
+        if monster is self.maxine:
+            return
+    
+        self.maze_monsters.remove(monster)
+        self.dead_monsters.add(monster)
+        monster.images = self.boom_images()
+        monster.fps = 30
+        monster.scale = 0.25
+        
+        # Set a disappear timer in frames.
+        monster.disappear_timer = 31
+
