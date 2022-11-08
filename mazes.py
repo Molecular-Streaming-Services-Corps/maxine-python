@@ -4,6 +4,7 @@ import pygame
 
 import constants
 import util
+import colors
 
 # Grid classes
 
@@ -126,7 +127,7 @@ class PolarGrid(Grid):
             return self.grid[row][num_columns]
 
     def draw(self, screen):
-        wall = (0, 0, 0)
+        wall = colors.RED
 
         cell_size = constants.TORUS_INNER_RADIUS // self.rows        
         
@@ -164,13 +165,18 @@ class PolarGrid(Grid):
             # Draw the distance from Maxine if it's been calculated
             if (constants.DRAW_DISTANCES_FROM_MAXINE and
                 self.distances and self.distances[cell] is not None):
-                screen.draw.text(str(self.distances[cell]), (ax, ay))
+                pos = self.get_center(cell)
+                screen.draw.text(str(self.distances[cell]), pos,
+                    fontname = "ds-digi.ttf", color = "white")
 
         # skip the bounding ellipse because it draws in the wrong place (?!)        
         #bounds = pygame.Rect(
         #    (x - constants.TORUS_INNER_WIDTH // 2, y - constants.TORUS_INNER_HEIGHT // 2),
         #    (x + constants.TORUS_INNER_WIDTH // 2, y + constants.TORUS_INNER_HEIGHT // 2))
         #pygame.draw.ellipse(screen.surface, wall, bounds, width = 3)
+        
+    def draw_controls(self, maxine_cell):
+        pass
         
     def make_room_row(self, row, ccw_column, cw_column, connect_inward = False):
         for i in range(ccw_column, cw_column):
@@ -203,16 +209,9 @@ class PolarGrid(Grid):
         
         # Uses radians.
         theta        = 2 * math.pi / len(self.grid[cell.row])
-        inner_radius = cell.row * cell_size
-        theta_ccw    = cell.column * theta
         
         center_radius = (cell.row + 0.5) * cell_size
         theta_center = (cell.column + 0.5) * theta
-        
-        ax = int(inner_radius * math.cos(theta_ccw))
-        ay = int(inner_radius * math.sin(theta_ccw))
-
-        ax, ay = util.adjust_coords(ax, ay)
         
         x = int(center_radius * math.cos(theta_center))
         y = int(center_radius * math.sin(theta_center))
