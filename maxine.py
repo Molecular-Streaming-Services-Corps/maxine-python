@@ -497,8 +497,12 @@ def update_for_maxine_player():
     if level == 6:
         # This is necessary because of the moment that the level is 6 but it hasn't been initialized yet.
         if hasattr(game.maxine, 'gridnav'):
-            game.maxine.gridnav.update()
-            game.maxine.center = game.maxine.gridnav.get_location()
+            gn = game.maxine.gridnav
+            gn.update()
+            game.maxine.center = gn.get_location()
+            
+            if gn.just_moved:
+                maze.setup_distances_from_root(gn.in_cell)
 
     # Cannon Behavior
     if level in [3, 4, 5]:

@@ -82,6 +82,7 @@ class PolarGrid(Grid):
         self.rows = rows
         self.grid = self.prepare_grid()
         self.configure_cells()
+        self.distances = None
     
     def prepare_grid(self):
         # Uses radians.
@@ -160,6 +161,11 @@ class PolarGrid(Grid):
             if not cell.is_linked(cell.cw):
                 pygame.draw.line(screen.surface, wall, (cx, cy), (dx, dy), width = 3)
 
+            # Draw the distance from Maxine if it's been calculated
+            if (constants.DRAW_DISTANCES_FROM_MAXINE and
+                self.distances and self.distances[cell] is not None):
+                screen.draw.text(str(self.distances[cell]), (ax, ay))
+
         # skip the bounding ellipse because it draws in the wrong place (?!)        
         #bounds = pygame.Rect(
         #    (x - constants.TORUS_INNER_WIDTH // 2, y - constants.TORUS_INNER_HEIGHT // 2),
@@ -215,6 +221,9 @@ class PolarGrid(Grid):
         
         return (x, y)
 
+    def setup_distances_from_root(self, root):
+        self.distances = root.distances(self)
+
 # Cell classes
     
 class Cell:
@@ -242,9 +251,11 @@ class Cell:
         
     def is_linked(self, cell):
         return cell in self.links
-        
-    def distances(self):
-        distances = Distances()
+    
+    def distances_perfect(self):
+        '''This is the simplified version of Dijkstra's algorithm that only
+        works on perfect mazes (i.e. mazes with no loops).'''
+        distances = Distances(self)
         frontier = [ self ]
         
         while frontier:
@@ -252,11 +263,43 @@ class Cell:
             
             for cell in frontier:
                 for linked in cell.get_links():
-                    if distances[linked]:
+                    if distances[linked] is not None:
                         continue
                     distances[linked] = distances[cell] + 1
                     new_frontier.append(linked)
             frontier = new_frontier
+        
+        return distances
+    
+    def distances(self, grid):
+        '''This is the complex version of Dijkstra's algorithm based on
+        Wikipedia. It works for mazes with or without loops.'''
+        distances = Distances(self)
+        # Using a normal list because heapq doesn't support updating priorities
+        q = list(grid.get_cells())
+        
+        # Find cell in q with minimum distance
+        while len(q) != 0:
+            min_dist = float('+inf')
+            cell = None
+            for c in q:
+                dist = distances[c]
+                if dist is None:
+                    dist = float('+inf')
+                if dist < min_dist:
+                    min_dist = dist
+                    cell = c
+                   
+            q.remove(cell)
+            
+            for neighbor in cell.get_links():
+                if neighbor not in q:
+                    continue
+                
+                alt = distances[cell] + 1
+                dist_n = distances[neighbor]
+                if dist_n is None or alt < dist_n:
+                    distances[neighbor] = alt
         
         return distances
     
@@ -281,7 +324,52 @@ class PolarCell(Cell):
         ret = [n for n in [self.cw, self.ccw, self.inward] if n] + self.outward
         return ret
         
-# TODO implement Distances
+class Distances:
+    '''Records the distances of every cell in a grid from the "root" (you can
+    choose whatever root cell you want). Has helpful methods too.'''
+    def __init__(self, root):
+        self.root = root
+        # self.cells stores the distance from each cell to the root.
+        self.cells = {}
+        self.cells[root] = 0
+    
+    def __getitem__(self, cell):
+        if cell in self.cells:
+            return self.cells[cell]
+        else:
+            return None
+    
+    def __setitem__(self, cell, distance):
+        self.cells[cell] = distance
+        
+    def get_cells(self):
+        return list(self.cells.keys())
+    
+    def path_to(self, goal):
+        current = goal
+        
+        breadcrumbs = Distances(self.root)
+        breadcrumbs[current] = self.cells[current]
+        
+        while current != root:
+            for neighbor in current.get_links():
+                if self.cells[neighbor] < self.cells[current]:
+                    breadcrumbs[neighbor] = self.cells[neighbor]
+                    current = neighbor
+                    break
+                    
+        return breadcrumbs
+    
+    def max(self):
+        max_distance = 0
+        max_cell = self.root
+        
+        for cell, distance in self.cells.items():
+            if distance > max_distance:
+                max_cell = cell
+                max_distance = distance
+        
+        return (max_cell, max_distance)
 
 # Maze generating algorithm classes
 

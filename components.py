@@ -21,6 +21,7 @@ class GridNavigation(BaseComponent):
         self.grid = grid
         self.in_cell = in_cell
         self.game = game
+        self.just_moved = False
 
 class PolarGridNavigation(GridNavigation):
     '''Adds functions to navigate in a polar grid.'''
@@ -126,7 +127,10 @@ class PolarGridNavigation(GridNavigation):
             self.in_cell = self.next_cell
             self.next_cell = None
             self.num_frames_moved = 0
+            
+            self.just_moved = True
         elif self.next_cell is None:
+            self.just_moved = False
             return
         else:
             # Move the character.
