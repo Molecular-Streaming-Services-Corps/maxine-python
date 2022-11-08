@@ -38,7 +38,11 @@ class Controls:
         
         self.zap_timeout = 0
         
-        self.syringe_value = 0
+        # Between 0 and 1.
+        self.syringe_value = 0.5
+        # We have to callibrate this to the actual number of servomotor steps
+        # available in the syringe.
+        self.syringe_length = 50
 
         self.syringemeter = Actor('totallytubular')
         self.syringemeter.left = 1300
@@ -120,8 +124,10 @@ class Controls:
                 
                 if self.hydrowag_moving_forward:
                     lilith_client.move_pump(500, 1)
+                    self.update_syringe_position(1)
                 else:
                     lilith_client.move_pump(-500, 1)
+                    self.update_syringe_position(-1)
             else:
                 self.hydrowag_moving_forward = not self.hydrowag_moving_forward
                 self.hydrowag_timeout = 60
@@ -162,10 +168,14 @@ class Controls:
                 lilith_client.move_pump(0, 0)
             elif self.pump_speed_index > 0:
                 idx = self.pump_speed_index - 1
-                lilith_client.move_pump(500, self.pump_speed_delays[idx])
+                delay = self.pump_speed_delays[idx]
+                lilith_client.move_pump(500, delay)
+                self.update_syringe_position(1 / delay)
             else:
                 idx = abs(self.pump_speed_index) - 1
+                delay = self.pump_speed_delays[idx]
                 lilith_client.move_pump(-500, self.pump_speed_delays[idx])
+                self.update_syringe_position(-1 / delay)
         
         self.potion_holder.update()
 
@@ -177,6 +187,14 @@ class Controls:
             self.button_timeout -= 1
 
         self.drop_button.animate()
+
+    # TODO callibrate the number of steps the syringe pump actually moves.
+    def update_syringe_position(self, steps):
+        self.syringe_value += steps * 1 / self.syringe_length
+        if self.syringe_value < 0:
+            self.syringe_value = 0
+        if self.syringe_value > 1:
+            self.syringe_value = 1
 
     def draw_text(self, text, coords):
         surface = self.font.render(text, False, colors.RED)
@@ -215,7 +233,14 @@ class Controls:
         drops = ph.get_drops()
         self.draw_text(str(drops), (1470, 770))
         
+        # Draw the syringe
         self.syringemeter.draw()
+        syringe_width = 200
+        syringe_height = 50
+        left = self.syringemeter.left + int(syringe_width * self.syringe_value)
+        top = 830
+        rect = pygame.Rect((left - 5, top), (10, syringe_height))
+        self.screen.draw.filled_rect(rect, colors.BLACK)
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
