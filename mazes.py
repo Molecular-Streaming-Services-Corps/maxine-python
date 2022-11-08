@@ -175,8 +175,22 @@ class PolarGrid(Grid):
         #    (x + constants.TORUS_INNER_WIDTH // 2, y + constants.TORUS_INNER_HEIGHT // 2))
         #pygame.draw.ellipse(screen.surface, wall, bounds, width = 3)
         
-    def draw_controls(self, maxine_cell):
-        pass
+    def draw_keybindings(self, maxine_cell, screen):
+        self.draw_keybinding(maxine_cell, maxine_cell.cw, '⇣', screen)
+        self.draw_keybinding(maxine_cell, maxine_cell.ccw, '⇡', screen)
+        self.draw_keybinding(maxine_cell, maxine_cell.inward, '⇠', screen)
+        
+        for i, cell in enumerate(maxine_cell.outward):
+            self.draw_keybinding(maxine_cell, cell, str(i + 1), screen)
+    
+    def draw_keybinding(self, maxine_cell, neighbor, binding, screen):
+        if neighbor is None or not maxine_cell.is_linked(neighbor):
+            return
+        
+        pos = self.get_center(neighbor)
+        screen.draw.text(binding, pos,
+           fontname = 'segoeuisymbol.ttf', color = "red")
+
         
     def make_room_row(self, row, ccw_column, cw_column, connect_inward = False):
         for i in range(ccw_column, cw_column):

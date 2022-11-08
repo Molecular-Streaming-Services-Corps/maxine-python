@@ -158,6 +158,9 @@ def draw():
     if level == 6 and maze:
         maze.draw(screen)
         
+        if constants.DRAW_CONTROLS:
+            maze.draw_keybindings(game.maxine.gridnav.in_cell, screen)
+        
     if not USE_SPIKE_GRAPH:
         tv.draw()
     helpbutton.draw()
