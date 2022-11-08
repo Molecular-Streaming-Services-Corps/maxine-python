@@ -82,14 +82,6 @@ d = None
 
 rotation = 0
 
-# TODO move this into Controls so the syringe can be selected
-# and so the value responds to joystick pressing
-syringe_value = 0
-
-syringemeter = Actor('totallytubular')
-syringemeter.left = 1300
-syringemeter.top = 830
-
 tv = Actor('tv1')
 tv.images = ('tv1', 'tv2', 'tv3')
 tv.right = 1800
@@ -179,8 +171,6 @@ def draw():
 
     # Now we draw the controls for both players.
     controls.draw()
-
-    syringemeter.draw()    
     
     if dev_control:
         dev_control.draw()

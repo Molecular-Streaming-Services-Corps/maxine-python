@@ -38,8 +38,12 @@ class Controls:
         
         self.zap_timeout = 0
         
-        self.syringe = Actor('syringe')
-        #self.syringe.pos = (1477, 399)
+        self.syringe_value = 0
+
+        self.syringemeter = Actor('totallytubular')
+        self.syringemeter.left = 1300
+        self.syringemeter.top = 830
+
         
         # This is an index into a list of speed settings. Can be negative.
         self.pump_speed_index = 0
@@ -65,7 +69,7 @@ class Controls:
         self.drop_button.pos = (1483, 707)
         self.button_timeout = 0
         
-        self.controls = [self.voltage_knob, self.zap_lever, self.syringe,
+        self.controls = [self.voltage_knob, self.zap_lever, self.syringemeter,
                          self.hydrowag_switch, self.sawtooth_switch,
                          self.potion_holder, self.drop_button]
         # The index of the presently selected control
@@ -210,6 +214,8 @@ class Controls:
         ph = self.potion_holder
         drops = ph.get_drops()
         self.draw_text(str(drops), (1470, 770))
+        
+        self.syringemeter.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
