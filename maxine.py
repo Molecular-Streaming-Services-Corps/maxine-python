@@ -259,13 +259,22 @@ def draw_metal_background():
 i = 0
 
 def draw_spiral(rotation, color):
+    global lwm
+    
     GAP = 0.5
-    MAX_THETA = constants.TORUS_INNER_HEIGHT
+    
+    if lwm:
+        MAX_THETA = lwm.map_radius * 2
+    else:
+        MAX_THETA = constants.TORUS_INNER_HEIGHT
     STEP_DEGREES = 10
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
         (x, y) = util.spiral(GAP, rotation, theta)
-        (x, y) = util.adjust_coords(x, y)
+        if lwm:
+            (x, y) = lwm.convert_coords(x, y)
+        else:
+            (x, y) = util.adjust_coords(x, y)
         screen.draw.filled_circle((x, y), 1, color)
 
 step_count = 0

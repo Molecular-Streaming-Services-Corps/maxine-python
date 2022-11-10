@@ -15,6 +15,7 @@ class LogarithmicWorldMap(WorldMap):
         self.map_radius = 1000
 
     def convert_coords(self, map_x, map_y):
+        '''Converts from map coordinates to on-screen coordinates.'''
         map_r, map_theta = util.cart2pol(map_x, map_y)
         # Converts map radiuses between 0 and 1000 into nonlinear radiuses
         # between 0 and 1
