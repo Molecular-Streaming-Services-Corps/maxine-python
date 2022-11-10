@@ -25,6 +25,7 @@ import colors
 import components
 import game_object
 import controls_object
+import world_map
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -64,6 +65,9 @@ dev_control = None
 spore_count = 0
 
 maze = None
+
+# Logarithmic World Map
+lwm = None
 
 controls = None
 
@@ -136,7 +140,7 @@ skirt.center = (WIDTH/2, HEIGHT-38)
 def draw():
     global rotation, dev_control, sg, graph_type
     global challenger_image, console_image
-    global game
+    global game, lwm, maze
     draw_living_background()
 
     skirt.draw()
@@ -160,6 +164,9 @@ def draw():
         
         if constants.DRAW_CONTROLS:
             maze.draw_keybindings(game.maxine.gridnav.in_cell, screen)
+        
+    if level == 7 and lwm:
+        lwm.draw_grid(screen)
         
     if not USE_SPIKE_GRAPH:
         tv.draw()
@@ -462,7 +469,7 @@ def update_for_maxine_player():
     # s is Maxine's speed per frame.
     s = 6
     
-    if game.maxine.alive and level != 6:
+    if game.maxine.alive and level not in [6, 7]:
         prev_pos = game.maxine.pos
 
         # Allow the user to use either the keyboard or the joystick    
@@ -488,10 +495,9 @@ def update_for_maxine_player():
         #dist = maxine.distance_to(pore)
         #if dist < 50:
         #    kill_maxine()
-        if level != 6:
-            if (game.maxine.collide_pixel(game.pore) or 
-                (game.cannon_in_level and game.maxine.collide_pixel(game.cannon))):
-                game.kill_maxine()
+        if (game.maxine.collide_pixel(game.pore) or 
+            (game.cannon_in_level and game.maxine.collide_pixel(game.cannon))):
+            game.kill_maxine()
         
         if point_outside_signal_ring(game.maxine.center):
             game.maxine.pos = prev_pos
@@ -506,6 +512,20 @@ def update_for_maxine_player():
             
             if gn.just_moved:
                 maze.setup_distances_from_root(gn.in_cell)
+
+    # Move Maxine on the Logarithmic Map
+    if level == 7 and lwm:
+        if keyboard.left:
+            game.maxine.map_x -= s
+        elif keyboard.right:
+            game.maxine.map_x += s
+        if keyboard.up:
+            game.maxine.map_y -= s
+        elif keyboard.down:
+            game.maxine.map_y += s
+
+        game.maxine.center = lwm.convert_coords(game.maxine.map_x, game.maxine.map_y)
+        game.maxine.scale = lwm.convert_scale(game.maxine.map_x, game.maxine.map_y)
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -769,7 +789,7 @@ def finished_level():
 def start_next_level():
     global game_state
     global spore_count
-    global level, maze
+    global level, maze, lwm
     global game
     game_state = 'playing'
 
@@ -805,6 +825,13 @@ def start_next_level():
         
         # Give Maxine a Grid Navigation component
         game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game)
+
+    # Logarithmic Map Level
+    if level == 7:
+        game.maxine.map_x = 0
+        game.maxine.map_y = 0
+        
+        lwm = world_map.LogarithmicWorldMap()
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
