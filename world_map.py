@@ -83,6 +83,12 @@ class LogarithmicWorldMap(WorldMap):
             start_x, start_y = start
             end_x, end_y = end
             
+            # Don't draw the parts of the grid that are beyond the edge of the circle.
+            center = (0, 0)
+            if (util.distance_points(start, center) > 1000 or
+                util.distance_points(end, center) > 1000):
+                continue
+            
             screen_start = self.convert_coords(start_x, start_y)
             screen_end = self.convert_coords(end_x, end_y)
             screen_line = (screen_start, screen_end)
