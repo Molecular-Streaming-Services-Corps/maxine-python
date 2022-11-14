@@ -533,8 +533,10 @@ def update_for_maxine_player():
         elif keyboard.down:
             game.maxine.map_y += s
 
-        game.maxine.center = lwm.convert_coords(game.maxine.map_x, game.maxine.map_y)
-        game.maxine.scale = lwm.convert_scale(game.maxine.map_x, game.maxine.map_y)
+        game.maxine.center = constants.CENTER
+        # Code to move Maxine around on the screen according to the map
+        #game.maxine.center = lwm.convert_coords(game.maxine.map_x, game.maxine.map_y)
+        #game.maxine.scale = lwm.convert_scale(game.maxine.map_x, game.maxine.map_y)
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -840,7 +842,7 @@ def start_next_level():
         game.maxine.map_x = 0
         game.maxine.map_y = 0
         
-        lwm = world_map.LogarithmicWorldMap()
+        lwm = world_map.LogarithmicWorldMap(game)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again

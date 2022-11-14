@@ -11,15 +11,36 @@ class WorldMap:
         self.viewport_height = viewport_height
 
 class LogarithmicWorldMap(WorldMap):
-    def __init__(self):
+    '''Circular world map with a radius of 1000. On screen, objects shrink
+    and move slower as they get nearer the edge of the map. Specifically they
+    move onscreen the logarithm of the distance they move on the map.'''
+    def __init__(self, game):
         self.map_radius = 1000
+        self.game = game
 
     def convert_coords(self, map_x, map_y):
         '''Converts from map coordinates to on-screen coordinates.'''
+        # Move all objects so that Maxine is in the center of the screen.
+        # When Maxine moves to the right, the amount of map area that has
+        # to fit on the left side of the ellipse is increased. So first
+        # calculate that amount.
+        if self.game.maxine.map_x == 0:
+            map_side_width = self.map_radius
+        else:
+            map_side_width = self.map_radius + abs(self.game.maxine.map_x)
+
+        if self.game.maxine.map_y == 0:
+            map_side_height = self.map_radius
+        else:
+            map_side_height = self.map_radius + abs(self.game.maxine.map_y)
+        
+        map_x = (map_x - self.game.maxine.map_x) / map_side_width
+        map_y = (map_y - self.game.maxine.map_y) / map_side_height
+        
         map_r, map_theta = util.cart2pol(map_x, map_y)
         # Converts map radiuses between 0 and 1000 into nonlinear radiuses
         # between 0 and 1
-        viewport_r_log = math.log(map_r / self.map_radius * 32 + 1, 32)
+        viewport_r_log = math.log(map_r * 32 + 1, 32)
         viewport_r = viewport_r_log * constants.TORUS_INNER_RADIUS
         # The angle (theta) remains the same.
         # x and y are in screen coordinates
@@ -66,8 +87,6 @@ class LogarithmicWorldMap(WorldMap):
             screen_end = self.convert_coords(end_x, end_y)
             screen_line = (screen_start, screen_end)
             screen_lines.append(screen_line)
-
-        print(screen_lines)
 
         for start, end in screen_lines:
             screen.draw.line(start, end, color = 'red')
