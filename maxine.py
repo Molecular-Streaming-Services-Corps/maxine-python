@@ -685,13 +685,14 @@ def update_for_maxine_player():
         monster.center = monster.gridnav.get_location()
 
     # Level 7 code (maze with a world map)
-    for monster in game.maze_monsters:
-        monster.gridnav.update()
-        monster.ai.update()
-        monster.map_x, monster.map_y = monster.gridnav.get_location()
-        monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
-        monster.scale = 1 / 8 * lwm.convert_scale(monster, images)
-        logger.info('dragon: %s %s', monster.center, monster.scale)
+    if level == 7:
+        for monster in game.maze_monsters:
+            monster.gridnav.update()
+            monster.ai.update()
+            monster.map_x, monster.map_y = monster.gridnav.get_location()
+            monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
+            monster.scale = 1 / 8 * lwm.convert_scale(monster, images)
+            logger.info('dragon: %s %s', monster.center, monster.scale)
 
     # All levels code
     
