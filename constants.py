@@ -21,4 +21,4 @@ NUM_BOXES = 300
 # Maze options.
 DRAW_DISTANCES_FROM_MAXINE = False
 DRAW_CONTROLS = True
-
+DRAW_GRID = False

@@ -49,10 +49,30 @@ class LogarithmicWorldMap(WorldMap):
         
         return x, y
     
-    def convert_scale(self, map_x, map_y):
-        map_r, map_theta = util.cart2pol(map_x, map_y)
-        log = math.log(map_r / self.map_radius * 32 + 1, 32)
-        scale = 1 - log
+    def convert_scale(self, actor, images):
+        # Old approach, doesn't work with the map shrinking on one side
+        #map_r, map_theta = util.cart2pol(map_x, map_y)
+        #log = math.log(map_r / self.map_radius * 32 + 1, 32)
+        #scale = 1 - log
+        
+        # New approach: calculate the height of the object based on
+        # convert_coords.
+        mx, my = actor.map_x, actor.map_y
+        img = getattr(images, actor.images[0])
+        width, height = img.get_size()
+        
+        # Start with map coordinates.
+        top = my - height
+        bottom = my + height
+        diff = abs(top - bottom)
+        
+        # Then screen coordinates.
+        screen_top = self.convert_coords(mx, top)[1]
+        screen_bottom = self.convert_coords(mx, bottom)[1]
+        screen_diff = abs(screen_bottom - screen_top)
+        
+        scale = screen_diff / diff
+        
         return scale
     
     def calculate_grid_with_map_coords(self):

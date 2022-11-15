@@ -159,13 +159,13 @@ def draw():
         sg.draw()
     
     # Dragon Tyrant level
-    if level == 6 and maze:
+    if level in [6, 7] and maze:
         maze.draw(screen)
         
         if constants.DRAW_CONTROLS:
             maze.draw_keybindings(game.maxine.gridnav.in_cell, screen)
         
-    if level == 7 and lwm:
+    if level == 7 and lwm and constants.DRAW_GRID:
         lwm.draw_grid(screen)
         
     if not USE_SPIKE_GRAPH:
@@ -524,19 +524,29 @@ def update_for_maxine_player():
 
     # Move Maxine on the Logarithmic Map
     if level == 7 and lwm:
-        if keyboard.left:
-            game.maxine.map_x -= s
-        elif keyboard.right:
-            game.maxine.map_x += s
-        if keyboard.up:
-            game.maxine.map_y -= s
-        elif keyboard.down:
-            game.maxine.map_y += s
+        FREELY_MOVING = False
+        if FREELY_MOVING:
+            if keyboard.left:
+                game.maxine.map_x -= s
+            elif keyboard.right:
+                game.maxine.map_x += s
+            if keyboard.up:
+                game.maxine.map_y -= s
+            elif keyboard.down:
+                game.maxine.map_y += s
 
         game.maxine.center = constants.CENTER
         # Code to move Maxine around on the screen according to the map
         #game.maxine.center = lwm.convert_coords(game.maxine.map_x, game.maxine.map_y)
         #game.maxine.scale = lwm.convert_scale(game.maxine.map_x, game.maxine.map_y)
+
+        if hasattr(game.maxine, 'gridnav'):
+            gn = game.maxine.gridnav
+            gn.update()
+            game.maxine.map_x, game.maxine.map_y = gn.get_location()
+            
+            if gn.just_moved:
+                maze.setup_distances_from_root(gn.in_cell)
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -673,6 +683,15 @@ def update_for_maxine_player():
         monster.gridnav.update()
         monster.ai.update()
         monster.center = monster.gridnav.get_location()
+
+    # Level 7 code (maze with a world map)
+    for monster in game.maze_monsters:
+        monster.gridnav.update()
+        monster.ai.update()
+        monster.map_x, monster.map_y = monster.gridnav.get_location()
+        monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
+        monster.scale = 1 / 8 * lwm.convert_scale(monster, images)
+        logger.info('dragon: %s %s', monster.center, monster.scale)
 
     # All levels code
     
@@ -837,12 +856,20 @@ def start_next_level():
         # Give Maxine a Grid Navigation component
         game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game)
 
-    # Logarithmic Map Level
+    # Logarithmic Map Level with a maze
     if level == 7:
         game.maxine.map_x = 0
         game.maxine.map_y = 0
         
         lwm = world_map.LogarithmicWorldMap(game)
+
+        maze = mazes.PolarGrid(20, lwm)
+        mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
+        maze.braid()
+        maze.remove_walls(0.2)
+        
+        # Give Maxine a Grid Navigation component
+        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -971,7 +998,7 @@ def add_cell():
     elif level in [2, 4, 5]:
         bouncer = make_bouncer()
         game.bouncing_monsters.add(bouncer)
-    elif level == 6:
+    elif level in [6, 7]:
         dragon = make_dragon()
         game.maze_monsters.add(dragon)
 

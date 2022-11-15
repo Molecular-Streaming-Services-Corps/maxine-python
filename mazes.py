@@ -78,12 +78,14 @@ class Grid:
         return linked
     
 class PolarGrid(Grid):
-    def __init__(self, rows):
-        '''rows is the number of rows.'''
+    def __init__(self, rows, world_map = None):
+        '''rows is the number of rows. world_map is an optional world map to draw the
+        maze onto.'''
         self.rows = rows
         self.grid = self.prepare_grid()
         self.configure_cells()
         self.distances = None
+        self.world_map = world_map
     
     def prepare_grid(self):
         # Uses radians.
@@ -129,7 +131,10 @@ class PolarGrid(Grid):
     def draw(self, screen):
         wall = colors.RED
 
-        cell_size = constants.TORUS_INNER_RADIUS // self.rows        
+        if self.world_map:
+            cell_size = self.world_map.map_radius // self.rows
+        else:
+            cell_size = constants.TORUS_INNER_RADIUS // self.rows        
         
         for cell in self.get_cells():
             if cell.row == 0:
@@ -152,9 +157,14 @@ class PolarGrid(Grid):
             dx = int(outer_radius * math.cos(theta_cw))
             dy = int(outer_radius * math.sin(theta_cw))
             
-            ax, ay = util.adjust_coords(ax, ay)
-            cx, cy = util.adjust_coords(cx, cy)
-            dx, dy = util.adjust_coords(dx, dy)
+            if self.world_map:
+                ax, ay = self.world_map.convert_coords(ax, ay)
+                cx, cy = self.world_map.convert_coords(cx, cy)
+                dx, dy = self.world_map.convert_coords(dx, dy)
+            else:
+                ax, ay = util.adjust_coords(ax, ay)
+                cx, cy = util.adjust_coords(cx, cy)
+                dx, dy = util.adjust_coords(dx, dy)
             
             
             if not cell.is_linked(cell.inward):
@@ -188,6 +198,11 @@ class PolarGrid(Grid):
             return
         
         pos = self.get_center(neighbor)
+        
+        # Convert from map coordinates to screen coordinates if necessary.
+        if self.world_map:
+            pos = self.world_map.convert_coords(pos[0], pos[1])
+        
         screen.draw.text(binding, pos,
            fontname = 'segoeuisymbol.ttf', color = "red")
 
@@ -219,7 +234,10 @@ class PolarGrid(Grid):
         self.make_room(3, 20, 3, 4)
         
     def get_center(self, cell):
-        cell_size = constants.TORUS_INNER_RADIUS // self.rows        
+        if self.world_map:
+            cell_size = self.world_map.map_radius // self.rows
+        else:
+            cell_size = constants.TORUS_INNER_RADIUS // self.rows        
         
         # Uses radians.
         theta        = 2 * math.pi / len(self.grid[cell.row])
@@ -230,7 +248,8 @@ class PolarGrid(Grid):
         x = int(center_radius * math.cos(theta_center))
         y = int(center_radius * math.sin(theta_center))
 
-        x, y = util.adjust_coords(x, y)
+        if not self.world_map:
+            x, y = util.adjust_coords(x, y)
         
         return (x, y)
 
