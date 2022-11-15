@@ -869,7 +869,7 @@ def start_next_level():
         maze.remove_walls(0.2)
         
         # Give Maxine a Grid Navigation component
-        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game)
+        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game, 15)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again

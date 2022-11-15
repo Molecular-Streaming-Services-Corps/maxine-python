@@ -25,10 +25,10 @@ class GridNavigation(BaseComponent):
 
 class PolarGridNavigation(GridNavigation):
     '''Adds functions to navigate in a polar grid.'''
-    def __init__(self, grid, in_cell, game):
+    def __init__(self, grid, in_cell, game, num_frames_for_move = 60):
         super().__init__(grid, in_cell, game)
         self.next_cell = None
-        self.num_frames_for_move = 60
+        self.num_frames_for_move = num_frames_for_move
         self.num_frames_moved = 0
         
     def move_inward(self):
