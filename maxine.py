@@ -45,9 +45,6 @@ game = game_object.Game(Actor, sounds, images, clock)
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
 
-# This is required for the level with a gurk and rotating spores to work
-DRAW_SPIRALS = True
-
 game_state = 'playing' # becomes 'won' or 'lost'
 level = 1
 switch_level_timeout = 120
@@ -225,7 +222,7 @@ def draw():
                      (constants.RING_WIDTH, constants.RING_HEIGHT))
     pygame.draw.ellipse(screen.surface, RED, ring_rect, width = 1)
     
-    if DRAW_SPIRALS:
+    if game.draw_spirals:
         # Draw spirals to indicate where the monsters will move
         rotation += 1
         draw_spiral(rotation + 0, colors.WHITE)
@@ -694,7 +691,6 @@ def update_for_maxine_player():
             monster.map_x, monster.map_y = monster.gridnav.get_location()
             monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
             monster.scale = 1 / 8 * lwm.convert_scale(monster, images)
-            logger.info('dragon: %s %s', monster.center, monster.scale)
 
     # All levels code
     
@@ -833,6 +829,8 @@ def start_next_level():
     game.challenger_score = 0
     game.console_score = 0
 
+    game.draw_spirals = True
+
     # Zavier's levels
     if level in [3, 4, 5]:
         game.cannon_in_level = True
@@ -869,6 +867,8 @@ def start_next_level():
         maze.remove_walls(0.2)
 
     if level in [6, 7]:
+        game.draw_spirals = False
+    
         # Give Maxine a Grid Navigation component
         game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game, 15)
 

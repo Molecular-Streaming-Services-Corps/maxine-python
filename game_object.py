@@ -55,6 +55,9 @@ class Game:
         self.cannon_blast_timeout = self.cannon_blast_delay
         
         self.ranged_monsters = [cannon]
+        
+        # This is required for the level with a dancing shroom and rotating spores to work
+        self.draw_spirals = True
 
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR
