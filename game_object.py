@@ -153,6 +153,18 @@ class Game:
     def boom_images(self):
         return ['boom' + str(i) for i in range(1, 30 + 1)]
 
+    def hit_maze_monster(self, monster):
+        if monster is self.maxine:
+            return
+
+        hit = self.maxine.fighter.give_hit()
+        monster.fighter.take_hit(hit)
+        
+        if monster.fighter.is_dead():
+            self.kill_maze_monster(monster)
+        else:
+            self.sounds.good.play()
+
     def kill_maze_monster(self, monster):
         if monster is self.maxine:
             return
@@ -165,4 +177,6 @@ class Game:
         
         # Set a disappear timer in frames.
         monster.disappear_timer = 31
+        
+        self.reward_maxine()
 

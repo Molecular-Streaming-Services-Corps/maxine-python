@@ -162,7 +162,7 @@ def draw():
     if level in [6, 7] and maze:
         maze.draw(screen)
         
-        if constants.DRAW_CONTROLS:
+        if constants.DRAW_CONTROLS and hasattr(game.maxine, 'gridnav'):
             maze.draw_keybindings(game.maxine.gridnav.in_cell, screen)
         
     if level == 7 and lwm and constants.DRAW_GRID:
@@ -815,7 +815,7 @@ def finished_level():
     game.cannon_shooting = False 
     
     if hasattr(game.maxine, 'gridnav'):
-        del maxine.gridnav
+        del game.maxine.gridnav
     
 def start_next_level():
     global game_state
@@ -853,9 +853,6 @@ def start_next_level():
         
         # Make Maxine small enough to fit in maze
         game.maxine.scale = 0.125
-        
-        # Give Maxine a Grid Navigation component
-        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game)
 
     # Logarithmic Map Level with a maze
     if level == 7:
@@ -868,9 +865,12 @@ def start_next_level():
         mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
         maze.braid()
         maze.remove_walls(0.2)
-        
+
+    if level in [6, 7]:
         # Give Maxine a Grid Navigation component
         game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game, 15)
+
+        game.maxine.fighter = components.Fighter(1000, 1, 0)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -950,7 +950,7 @@ def make_cannon_spore():
         game.projectiles.add(spore)
         return spore
 
-# Level 6
+# Levels 6-7
 def make_dragon():
     '''Makes a dragon that moves around inside the maze. Randomly to start
     with.'''
@@ -963,6 +963,8 @@ def make_dragon():
     dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game)
     dragon.ai = components.RandomMazeAI(dragon.gridnav)
     dragon.center = dragon.gridnav.get_location()
+    
+    dragon.fighter = components.Fighter(2, 1, 0)
     
     return dragon
 

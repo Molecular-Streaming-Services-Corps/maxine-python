@@ -36,27 +36,35 @@ class PolarGridNavigation(GridNavigation):
         if next_cell and self.in_cell.is_linked(next_cell):
             self.next_cell = next_cell
             
-            bumped = self.bump(next_cell)
+            bumped = self.bump(self.next_cell, True)
+            # Don't move
+            if bumped: self.next_cell = None
             for monster in bumped:
-                self.game.kill_maze_monster(monster)
+                self.game.hit_maze_monster(monster)
     
     def move_ccw(self):
         next_cell = self.in_cell.ccw
         if next_cell and self.in_cell.is_linked(next_cell):
             self.next_cell = next_cell
             
-            bumped = self.bump(next_cell)
+            bumped = self.bump(self.next_cell, True)
+            # Don't move
+            if bumped: self.next_cell = None
             for monster in bumped:
-                self.game.kill_maze_monster(monster)
+                self.game.hit_maze_monster(monster)
+
 
     def move_cw(self):
         next_cell = self.in_cell.cw
         if next_cell and self.in_cell.is_linked(next_cell):
             self.next_cell = next_cell
             
-            bumped = self.bump(next_cell)
+            bumped = self.bump(self.next_cell, True)
+            # Don't move
+            if bumped: self.next_cell = None
             for monster in bumped:
-                self.game.kill_maze_monster(monster)
+                self.game.hit_maze_monster(monster)
+
 
     def move_outward(self, n):
         '''Moves to the nth outward neighbor. Every cell has at least the 0th outward neighbor
@@ -65,9 +73,11 @@ class PolarGridNavigation(GridNavigation):
         if len(outward) > n  and self.in_cell.is_linked(outward[n]):
             self.next_cell = outward[n]
             
-            bumped = self.bump(self.next_cell)
+            bumped = self.bump(self.next_cell, True)
+            # Don't move
+            if bumped: self.next_cell = None
             for monster in bumped:
-                self.game.kill_maze_monster(monster)
+                self.game.hit_maze_monster(monster)
     
     def process_keypress(self, keyboard):
         '''Process a keypress by moving. Only relevant to Maxine.
@@ -136,9 +146,12 @@ class PolarGridNavigation(GridNavigation):
             # Move the character.
             self.num_frames_moved += 1
             
-    def bump(self, cell):
+    def bump(self, cell, is_maxine = False):
         '''Detects any entities you would bump into if you moved to that cell.'''
-        entities = list(self.game.maze_monsters) + [self.game.maxine]
+        if is_maxine:
+            entities = list(self.game.maze_monsters)
+        else:
+            entities = list(self.game.maze_monsters) + [self.game.maxine]
         bumped_entities = []
         for e in entities:
             if e.gridnav.in_cell is cell or e.gridnav.next_cell is cell:
@@ -187,3 +200,75 @@ class RandomMazeAI(BaseMazeAI):
         if self.gridnav.finished_moving():
             self.move()
 
+# Fighter, Inventory, Weapon and Item
+
+class Fighter(BaseComponent):
+    def __init__(self, max_hp, strength, defense):
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.strength = strength
+        self.defense = defense
+        self.weapon = None
+    
+    def give_hit(self):
+        hit = self.strength
+        if self.weapon:
+            hit += self.weapon.strength_bonus
+        return hit
+        
+    def take_hit(self, damage):
+        damage = damage - self.defense
+        self.hp = max(0, self.hp - damage)
+        
+    def is_dead(self):
+        return self.hp == 0
+        
+    def equip_if_improvement(self, weapon):
+        if (self.weapon is None or
+           weapon.strength_bonus > self.weapon.strength_bonus):
+           
+           self.weapon = weapon
+        
+class Item(BaseComponent):
+    def __init__(self, name, game):
+        self.name = name
+        self.game = game
+    
+    def consume(self):
+        raise NotImplementedError()
+
+class HealingPotion(Item):
+    def __init__(self, game):
+        super().__init__('Healing potion', game)
+    
+    def consume(self):
+        self.game.console_score = max(0, self.game.console_score - 100)
+
+class Weapon(Item):
+    def __init__(self, name, strength_bonus, game):
+        super().__init__(name, game)
+        self.strength_bonus = strength_bonus
+
+class DullDagger(Weapon):
+    def __init__(self, game):
+        super().__init__('Dull dagger', 0, game)
+
+class ShinySword(Weapon):
+    def __init__(self, game):
+        super().__init__('Shiny sword', 1, game)
+        
+class Inventory(BaseComponent):
+    '''An inventory for the player (Maxine). This won't be used for now because
+    it requires a complex on-screen menu to access.'''
+    def __init__(self, game):
+        self.game = game
+        self.items = []
+        self.size = 26
+    
+    def add_item(self, item):
+        if len(self.items) < self.size:
+            self.items.append(item)
+            
+    def remove_item(self, index):
+        if index < len(self.items):
+            del self.items[index]
