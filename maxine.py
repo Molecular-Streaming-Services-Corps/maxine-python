@@ -213,6 +213,8 @@ def draw():
         monster.draw()
     for monster in game.maze_monsters:
         monster.draw()
+    for item in game.items:
+        item.draw()
         
     for p in game.projectiles:
         p.draw()
@@ -871,6 +873,10 @@ def start_next_level():
         game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game, 15)
 
         game.maxine.fighter = components.Fighter(1000, 1, 0)
+        
+        # Make a Shiny Sword
+        sword = make_sword()
+        game.items.add(sword)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -968,6 +974,21 @@ def make_dragon():
     
     return dragon
 
+def make_sword():
+    global maze, game
+    
+    sword = Actor('sword')
+    sword.images = ['sword']
+    sword.scale = 1 / 32
+
+    # Use gridnav to give the sword a location in the maze. It doesn't move.
+    sword.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game)
+    sword.center = sword.gridnav.get_location()
+
+    sword.weapon = components.ShinySword(game)
+
+    return sword
+    
 # Neither of these next two functions work any more due to Jade removing obsolete
 # code. They're just here for reference.
 def make_midjourney_monster():
