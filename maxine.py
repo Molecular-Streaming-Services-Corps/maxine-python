@@ -692,6 +692,24 @@ def update_for_maxine_player():
             monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
             monster.scale = 1 / 8 * lwm.convert_scale(monster, images)
 
+        for item in game.items:
+            item.map_x, item.map_y = item.gridnav.get_location()
+            item.center = lwm.convert_coords(item.map_x, item.map_y)
+            item.scale = 1 / 8 * lwm.convert_scale(item, images)            
+
+    # Level 6-7 code for collecting items
+    if hasattr(game.maxine, 'gridnav'):
+        items_collected = []
+        for item in game.items:
+            if game.maxine.gridnav.in_cell == item.gridnav.in_cell:
+                # Only handle the sword for now
+                if hasattr(item, 'weapon'):
+                    items_collected.append(item)
+                    game.maxine.fighter.equip_if_improvement(item.weapon)
+                    
+        for item in items_collected:
+            game.items.remove(item)                
+
     # All levels code
     
     brainpod.animate()
