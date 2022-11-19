@@ -398,10 +398,10 @@ def update():
         ty = wrapper['type']
         if ty == 'controls' and PLAYER == 'maxine':
             controls.load_from_dict(wrapper)
-            logger.info('loaded controls state from the internet')
+            logger.debug('loaded controls state from the internet')
         elif ty == 'maxine' and PLAYER == 'console':
             game.load_arena_from_dict(wrapper)
-            logger.info('loaded arena state from the internet')
+            logger.debug('loaded arena state from the internet')
 
 pressed_before = set()
 def update_for_console_player():
