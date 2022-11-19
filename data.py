@@ -136,7 +136,6 @@ class LiveData(Data):
         self.data_frames = {}
         self.pressed = []
         self.latest_spike_frame = None
-        self.caught_up = False
         self.num_frames_just_received = 0
         self.recent_frames_contain_spikes = []
         
@@ -260,30 +259,6 @@ class LiveData(Data):
     def get_latest_spike_frame(self):
         '''This is only called when there has been a spike'''
         return self.latest_spike_frame
-
-    def try_to_catch_up(self):
-        if self.caught_up:
-            return
-            
-        now = time.time()
-        md = lilith_client.metadata
-        if 'start_time' in md:
-            start_time = md['start_time']
-        
-            # This will be a float (or not)
-            time_difference = int(now) - start_time
-            samples_so_far = int(time_difference * 100000)
-            
-            # Make it a frame
-            # The theory behind this line is that a) the sample index is always
-            # a multiple of 1667 and b) we need to wait until that frame is finished
-            # before we can download it. A slight lag would be ok anyway
-            sample_index = samples_so_far // 1667 * 1667 - 1667
-            lilith_client.sample_index = sample_index
-            
-            self.caught_up = True
-            
-            logger.info('Updated sample_index to: %s', sample_index)
 
     def get_last_n_frames(self, n):
         '''Returns a Numpy array containing the samples from the last n frames.

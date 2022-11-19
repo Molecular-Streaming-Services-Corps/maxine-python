@@ -342,7 +342,6 @@ def update():
             add_cell()
     elif LIVE:
         MONSTERS_PER_SPIKE = 1
-        #d.try_to_catch_up()
         lilith_client.request_data(lilith_client.ws, 1)
     
         spikes = d.load_received_samples_and_count_spikes()
