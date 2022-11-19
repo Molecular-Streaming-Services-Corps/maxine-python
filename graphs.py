@@ -51,8 +51,10 @@ class VerticalLineRing:
 
         maxes, mins = data.Data.calculate_maxes_and_mins(samples)
         
-        min_ = self.amplifier_min #int(np.min(samples))
-        max_ = self.amplifier_max #int(np.max(samples))
+        #min_ = self.amplifier_min #int(np.min(samples))
+        #max_ = self.amplifier_max #int(np.max(samples))
+        min_ = int(np.min(samples))
+        max_ = int(np.max(samples))
         range_ = max_ - min_ + 1
         
         h = 2*self.line_extent
@@ -80,7 +82,8 @@ class VerticalLineRing:
         num_lines = len(self.tops)
         data_start_box = (self.present_box - num_lines) % constants.NUM_BOXES
         for i in range(0, num_lines):
-            color = (0, 0, int(255 * i / constants.NUM_BOXES))
+            brightness = int(255 * i / constants.NUM_BOXES)
+            color = (brightness, brightness, 0)
             
             index = (data_start_box + i) % constants.NUM_BOXES
             if self.box_is_spike[index]:
@@ -114,8 +117,13 @@ class VerticalLineRing:
         (outer_x, outer_y) = util.pol2cart(r, theta)
         outer_coords = util.adjust_coords_ring(outer_x, outer_y)
         
-        # Finally draw the line
-        pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 15)
+        # Finally draw the line. pygame.draw.line has a bug where it makes
+        # randomly horizontral or vertical lines.
+        #pygame.draw.line(self.screen.surface, color, inner_coords, outer_coords, width = 15)
+        self.screen.draw.line(inner_coords, outer_coords, color)
+        # For debugging
+        #pygame.draw.circle(self.screen.surface, 'white', inner_coords, 1)
+        #pygame.draw.circle(self.screen.surface, 'white', outer_coords, 1)
 
     def add_spike(self):
         '''Sets the box represented by present_box to be a spike.'''
