@@ -130,11 +130,10 @@ class VerticalLineRing:
         self.box_is_spike[self.present_box] = True
 
 class SpikeGraph:
-    def __init__(self, screen, Rect):
+    def __init__(self, screen):
         '''screen: the pgzero screen object.
         The frame will be the numpy array of current data containing the latest spike'''
         self.screen = screen
-        self.Rect = Rect
         self.frame = None
         self.top_left = (1464, 44)
         self.bottom_right = (1785, 251)
@@ -176,7 +175,7 @@ class SpikeGraph:
         #logger.info('bottoms: %s', self.bottoms)
     
     def draw(self):
-        BOX = self.Rect(self.top_left, (self.width, self.height))
+        BOX = pygame.Rect(self.top_left, (self.width, self.height))
         self.screen.draw.filled_rect(BOX, 'black')
         
         l = self.screen.draw.line
