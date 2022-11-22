@@ -186,14 +186,15 @@ class SpikeGraph:
             y1 = self.tops[i] + top
             y2 = self.bottoms[i] + top
             
-            l((x, y1), (x, y2), 'green')
+            l((x, y1), (x, y2), 'red')
 
 class ContinuousGraph:
     def __init__(self, screen):
         '''screen: the pgzero screen object.
-        The frame will be the numpy array of current data containing the latest spike'''
+        The frames will be the numpy arrays of current data containing the signal
+        that was recorded during each frame of animation.'''
         self.screen = screen
-        self.frame = None
+        self.last_six_frames = []
         self.top_left = (1464, 44)
         self.bottom_right = (1785, 251)
         self.width = self.bottom_right[0] - self.top_left[0]
@@ -205,9 +206,19 @@ class ContinuousGraph:
     
     def set_frame(self, frame):
         global logger
+        
+        # Add it to the end of last_six_frames
+        if len(self.last_six_frames) < 6:
+            self.last_six_frames.append(frame)
+            return
+        else:
+            self.last_six_frames = self.last_six_frames[1:] + [frame]
+        
+        all_data = np.concatenate(self.last_six_frames)
+        
         w = self.width
         self.frame = frame
-        box_width = 1667 // w
+        box_width = (1667 * 6) // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)
@@ -217,7 +228,7 @@ class ContinuousGraph:
         for i in range(0, num_boxes):
             box_start = box_width * i
             box_end = box_width * (i + 1)
-            values = frame[box_start : box_end]
+            values = all_data[box_start : box_end]
             
             maxes[i] = values.max()
             mins[i] = values.min()
@@ -234,6 +245,9 @@ class ContinuousGraph:
         #logger.info('bottoms: %s', self.bottoms)
     
     def draw(self):
+        if len(self.last_six_frames) < 6:
+            return
+    
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
         self.screen.draw.filled_rect(BOX, 'black')
         
@@ -245,7 +259,7 @@ class ContinuousGraph:
             y1 = self.tops[i] + top
             y2 = self.bottoms[i] + top
             
-            l((x, y1), (x, y2), 'red')
+            l((x, y1), (x, y2), 'green')
 
 def draw_graph(i, d, graph_type, screen, STANDALONE):
     # Draw a rectangle behind the graph
