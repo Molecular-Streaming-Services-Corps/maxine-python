@@ -52,10 +52,13 @@ playing_music = True
 
 '''Spike Graph'''
 sg = None
+'''Continuous Graph'''
+cg = None
 '''Vertical Line Ring'''
 vlr = None
-USE_SPIKE_GRAPH = True
-show_spike_graph_every_frame = True
+#corner_display = 'tv'
+#corner_display = 'spike_graph'
+corner_display = 'continuous_graph'
 
 # Temporary development tool
 dev_control = None
@@ -136,7 +139,7 @@ skirt = Actor('skirt')
 skirt.center = (WIDTH/2, HEIGHT-38)
 
 def draw():
-    global rotation, dev_control, sg, graph_type
+    global rotation, dev_control, sg, cg, corner_display
     global challenger_image, console_image
     global game, lwm, maze
     draw_living_background()
@@ -153,8 +156,11 @@ def draw():
     else:
         graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
     
-    if sg and USE_SPIKE_GRAPH:
+    if sg and corner_display == 'spike_graph':
         sg.draw()
+    
+    if cg and corner_display == 'continuous_graph':
+        cg.draw()
     
     # Dragon Tyrant level
     if level in [6, 7] and maze:
@@ -166,7 +172,7 @@ def draw():
     if level == 7 and lwm and constants.DRAW_GRID:
         lwm.draw_grid(screen)
         
-    if not USE_SPIKE_GRAPH:
+    if corner_display == 'tv':
         tv.draw()
     helpbutton.draw()
     dataglobe.draw()
@@ -284,8 +290,7 @@ def update():
     global i, step_count, d, space_pressed_before, button_pressed_before
     global logger
     global playing_music
-    global sg
-    global vlr
+    global sg, cg, vlr
     global started_chosen_level
     global controls
     global data_number
@@ -307,6 +312,9 @@ def update():
     if not sg:
         sg = graphs.SpikeGraph(screen, Rect)
     
+    if not cg:
+        cg = graphs.ContinuousGraph(screen)
+    
     if not vlr:
         vlr = graphs.VerticalLineRing(screen)
     
@@ -326,8 +334,11 @@ def update():
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
         spike_exists = data.Data.end_spike_exists(maxes_mins)
         
-        if (spike_exists or show_spike_graph_every_frame) and len(frame):
+        if spike_exists and corner_display == 'spike_graph':
             sg.set_frame(frame)
+        
+        if corner_display == 'continuous_graph' and len(frame):
+            cg.set_frame(frame)
             
         if spike_exists:
             vlr.add_spike()
@@ -355,8 +366,11 @@ def update():
             music_ops.current_to_frequency(frame)    
             music_ops.current_to_volume(frame)
         
-        if spikes > 0 or show_spike_graph_every_frame:
+        if spikes > 0 and corner_display == 'spike_graph':
             sg.set_frame(frame)
+    
+        if corner_display == 'continuous_graph' and len(frame):
+            cg.set_frame(frame)
     
         if PLAYER == 'maxine':
             for i in range(0, spikes * MONSTERS_PER_SPIKE):
@@ -753,7 +767,7 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def on_key_down(key):
-    global graph_type, controls, serializer, playing_music, game
+    global corner_display, controls, serializer, playing_music, game
 
     # Switch between full screen and windowed
     if key == keys.F:
@@ -763,10 +777,16 @@ def on_key_down(key):
 
     # Change graph type
     if key == keys.G:
-        if graph_type == 'heatmap':
-            graph_type = 'scatterplot'
+        # Obsolete graph types
+#        if graph_type == 'heatmap':
+#            graph_type = 'scatterplot'
+#        else:
+#            graph_type = 'heatmap'
+
+        if corner_display == 'spike_graph':
+            corner_display = 'continuous_graph'
         else:
-            graph_type = 'heatmap'
+            corner_display = 'spike_graph'
     
     # Turn music on and off
     if key == keys.M:
