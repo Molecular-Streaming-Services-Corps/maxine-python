@@ -334,7 +334,7 @@ def update():
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
         spike_exists = data.Data.end_spike_exists(maxes_mins)
         
-        if spike_exists and corner_display == 'spike_graph':
+        if spike_exists:
             sg.set_frame(frame)
         
         if corner_display == 'continuous_graph' and len(frame):
@@ -366,7 +366,7 @@ def update():
             music_ops.current_to_frequency(frame)    
             music_ops.current_to_volume(frame)
         
-        if spikes > 0 and corner_display == 'spike_graph':
+        if spikes > 0:
             sg.set_frame(frame)
     
         if corner_display == 'continuous_graph' and len(frame):
