@@ -54,7 +54,8 @@ playing_music = True
 sg = None
 '''Vertical Line Ring'''
 vlr = None
-USE_SPIKE_GRAPH = False
+USE_SPIKE_GRAPH = True
+show_spike_graph_every_frame = True
 
 # Temporary development tool
 dev_control = None
@@ -324,8 +325,11 @@ def update():
 
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
         spike_exists = data.Data.end_spike_exists(maxes_mins)
-        if spike_exists:
+        
+        if (spike_exists or show_spike_graph_every_frame) and len(frame):
             sg.set_frame(frame)
+            
+        if spike_exists:
             vlr.add_spike()
             data_number += 1
 
@@ -351,7 +355,7 @@ def update():
             music_ops.current_to_frequency(frame)    
             music_ops.current_to_volume(frame)
         
-        if spikes > 0:
+        if spikes > 0 or show_spike_graph_every_frame:
             sg.set_frame(frame)
     
         if PLAYER == 'maxine':
