@@ -1,0 +1,101 @@
+This is Jade's outline of every Python file in the Maxine game.
+
+*General
+Most files set up a logger for that module first. This allows the log output to be separated by module and allows you to set the loglevel separately for each module (so you can get detailed debugging output from the module you're concerned about and not the other ones).
+
+*colors.py
+This is a central place to put constants for colors. Since it turns out Pygame allows you to use color names instead of specifying the RGB values [i.e. 'red' instead of (255, 0, 0)], some of them aren't really necessary anymore.
+
+*components.py
+A "component" in gaming is an object that can be attached to an Actor. (The Actor class is in PyGameZero.) It provides specific functionality for an actor in the game.
+* The PolarGridNavigation component allows an Actor to move around in a circular grid (i.e. the maze levels). It has methods for responding to the keyboard so Maxine can be moved around, and it also enables enemies to move around. To do this it provides a list of grid cells that are accessible to the enemy. Actors using this component don't move around in pixels; normal Actors in other levels do.
+* RandomMazeAI is for the dragons in the maze. It moves the dragon around in the maze at random. It stores a reference to the dragon's PolarGridNavigation component so it can choose a cell to move to instead of having to move in pixels.
+* The Fighter component allows an Actor to participate in fights, by doing and receiving damage. It can equip a weapon (only used for Maxine; the dragons don't have weapons).
+* The Item component is an abstract class for components that can be given to an Actor to give it the functionality of an item. There are both consumable items and weapons. An Item is an Actor with an appropriate sprite, an appropriate item or weapon component, and code in maxine.py to use the item when it is collected.
+* The HealingPotion (not used in game yet) will decrease the score of the console player.
+* The DullDagger is the default weapon that has no strength bonus.
+* The ShinySword does extra damage so dragons can be killed faster, once it's picked up. It spawns in a random cell of the maze.
+* The Inventory component allows Maxine (or a monster even) to carry items. It's not used right now because it would require a complex menu. Items are used immediately instead.
+
+*constants.py
+This file stores constants, usually ones that are used in multiple other files. Some of them will become variables in the future.
+* NUM_BOXES refers to the number of lines on the signal ring.
+
+*controls_object.py
+Contains the Controls and PotionHolder objects. The Controls object contains code for all the other on-screen controls on the pink panel. Maybe some of them should become separate classes. The joystick or keyboard of the console player can move these controls.
+* update() and draw() are called by those functions in maxine.py.
+* push() is called when the joystick button or spacebar is pressed. Button controls respond to this.
+* push_left() and push_right() are used when the joystick is pushed left or right while the button is held down. Some controls respond to this. It is only called once for each time the joystick is moved.
+* save_to_dict() and load_from_dict() are used for sharing the state of controls with the Maxine player.
+
+*data.py
+Has objects for processing either prerecorded data or live data.
+
+*game_object.py
+The Game object stores variables related to the state of the game, and references to Actors that operate in the game. Variables should be put here to reduce the size of maxine.py and so they can be accessed in other classes. If a method uses only variables that have already been moved here, then that method can be moved here as well.
+* load_arena_from_dict()/save_arena_to_dict() store the state of the game from the perspective of the Maxine player. So it can be displayed for the console player.
+
+*graphs.py
+Various functions and classes for displaying different types of graphs.
+* The VerticalLineRing is presently used for the Signal Ring. It displays a simplified candlestick chart wrapped around the torus.
+* The SpikeGraph displays a graph of the current signal surrounding a single spike.
+* The ContinuousGraph displays the current signal continuously moving. These are both in the TV in the top right corner, and you can switch between them with the 'G' key.
+* draw_graph() displays some now-obsolete graphs in the top left corner. A moving heatmap, a scatter graph or also the previous colored signal ring.
+* draw_torus() just draws an image of the torus, it doesn't render it with OpenGL yet.
+
+*image_ops.py
+Numpy-based functions for processing images (these will be frames of video from the microscope). It can extract an elliptical section from a rectangular video and tint it purple.
+
+*lilith_client.py
+Communicates with the original Lilith server using the "websocket-client" library. I tried the "websockets" library which uses asyncio but it didn't work with threads. Lilith has two ways of getting data: request_data (obsolete) which asks for specific samples, and subscription which gives the latest data regardless of when the game is started. We still have to use request_data because Lilith's support for subscription is broken and only gives 100 samples per second or so. request_data starts at sample 0 regardless of when you start the game.
+
+If you run the file, it starts a demo program which runs two threads. One thread runs the websocket peer, and the other thread pulls data off a queue. When playing Maxine, the other thread is the PGZero game loop.
+
+There are two text files describing Lilith that I made while I was learning to understand Lilith.
+
+*maxine.py
+Main file for the game. Run it to play the game. Note that you should never import maxine.py in another module because you're not allowed circular imports.
+
+* README.txt explains the command line arguments to the game.
+
+* update() and draw() are called by the PyGameZero game loop. the other update methods are only used for one player. The console game process is responsible for updating the console and sending updates to the maxine game process which passively applies them with little processing. The maxine process is similar.
+* finished_level()  is called when the level is finished, but before you move on to the next level.
+* start_next_level() is used to setup the level at the moment it starts.
+* The make*() functions add various kinds of Actor to the game.
+* add_cell() uses one of those functions to create a monster appropriate to the level. In LIVE mode it is used each time there is a spike.
+
+*mazes.py
+It contains classes based on the Ruby code in the book "Mazes for Programmers". There was another Python implementation online, but I wanted to implement them myself so we'd have copyright. There are abstract base classes but only the polar grid (elliptical/circular grid) is implemented. There are classes for maze generation. The Distances class keeps track of how long it would take to get to each cell from a given starting point. Dijkstra's algorithm is implemented to calculate that. It is slow so don't use it too often. The distances can be used to make dragons move toward or away from Maxine.
+
+*music_ops.py
+Has functions to convert the current signal into "music." Currently, I mean presently, the function stats_to_frequency() is used because it sounds the best. It makes tones based on the recent range of values. So the highs and lows sound very different.
+
+*parse_arguments.py
+Uses the Python built-in argparse library to understand command-line arguments.
+
+*pgzhelper.py
+This file belongs to the PyGameZeroHelper github library. It has to be included in projects that use it and it defines a better version of the Actor class that allows scaling and rotation, as well as other features. Just read the documentation online; you're not supposed to read or edit this file.
+
+*serialization.py
+Just functions to convert Python dictionaries to/from JSON. Used in the obsolete load/save feature as well as Challenge Mode.
+
+*struct_definitions.py
+A struct.Struct is an object that stores a binary format used in a message to/from Lilith. We could store all of the Structs used in lilith_client.py here instead of recreating them each time a function is called. That would be more efficient, but it doesn't seem to matter.
+
+*test_lilith_client.py
+Only has one test for lilith_client.
+
+*test_util.py
+Has one test (for util.process_joystick_string).
+
+*util.py
+* process_joystick_data(): Lilith gives you a uint16 containing the state of the two joysticks. This function (which only works with joystick 1) gives you a list of strings representing specific directions or buttons on the joystick being pressed.
+* cart2pol and pol2cart convert between Cartesian and Polar coordinates.
+* adjust_coords: you can do calculations on a circle and then adjust them to the ellipse by stretching the x coordinates.
+
+*video_ops.py
+Uses image_ops.py to draw a video inside the ellipse. It is currently a prerecorded video but it could be a live video streamed on some streaming service.
+
+*world_map.py
+I (Jade) apparently invented the logarithmic world map. It allows an object to move on screen a distance proportional to the logarithm of how far it moves on the map. You set an Actor's map_x and map_y attributes and then feed them to convert_coords() to get the on-screen coordinates. It's also used for the maze. The grid squashes up when Maxine moves; she always stays in the center.
+
