@@ -148,7 +148,7 @@ class SpikeGraph:
         global logger
         w = self.width
         self.frame = frame
-        box_width = 1667 // w
+        box_width = 5120 // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)
@@ -218,7 +218,7 @@ class ContinuousGraph:
         
         w = self.width
         self.frame = frame
-        box_width = (1667 * 6) // w
+        box_width = (5120 * 6) // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)

@@ -68,7 +68,7 @@ class Data:
         
     @staticmethod
     def calculate_maxes_and_mins(samples):
-        samples_to_show = 1667*constants.NUM_BOXES
+        samples_to_show = 5120*constants.NUM_BOXES
     
         if not len(samples):
             return ([], [])
@@ -148,7 +148,7 @@ class LiveData(Data):
         
         for data in d_list:
             if isinstance(data, lilith_client.SampleData):
-                sd_frame_index = data.start // 1667
+                sd_frame_index = data.start // 5120
                 self.data_frames[sd_frame_index] = data
                 
                 # Update the latest frame index. There may be missing frames in
@@ -206,7 +206,7 @@ class LiveData(Data):
         any empty frames.'''
         # latest_frame + 1 == the number of frames so far
         n = min(n, self.latest_frame + 1)
-        frame_size = 1667
+        frame_size = 5120
         num_samples = n * frame_size
         
         end_frame = self.latest_frame
