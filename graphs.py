@@ -130,7 +130,7 @@ class VerticalLineRing:
         self.box_is_spike[self.present_box] = True
 
 class SpikeGraph:
-    def __init__(self, screen):
+    def __init__(self, screen, live):
         '''screen: the pgzero screen object.
         The frame will be the numpy array of current data containing the latest spike'''
         self.screen = screen
@@ -144,11 +144,16 @@ class SpikeGraph:
         self.tops = np.zeros(self.width) + 10
         self.bottoms = np.ones(self.width) + 15
     
+        if live:
+            self.frame_size = 5120
+        else:
+            self.frame_size = 1667
+
     def set_frame(self, frame):
         global logger
         w = self.width
         self.frame = frame
-        box_width = 5120 // w
+        box_width = self.frame_size // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)
@@ -189,7 +194,7 @@ class SpikeGraph:
             l((x, y1), (x, y2), 'red')
 
 class ContinuousGraph:
-    def __init__(self, screen):
+    def __init__(self, screen, live):
         '''screen: the pgzero screen object.
         The frames will be the numpy arrays of current data containing the signal
         that was recorded during each frame of animation.'''
@@ -203,6 +208,11 @@ class ContinuousGraph:
         # These are in the range from 0 to height, with 0 representing the top
         self.tops = np.zeros(self.width) + 10
         self.bottoms = np.ones(self.width) + 15
+        
+        if live:
+            self.frame_size = 5120
+        else:
+            self.frame_size = 1667
     
     def set_frame(self, frame):
         global logger
@@ -218,7 +228,7 @@ class ContinuousGraph:
         
         w = self.width
         self.frame = frame
-        box_width = (5120 * 6) // w
+        box_width = (self.frame_size * 6) // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)

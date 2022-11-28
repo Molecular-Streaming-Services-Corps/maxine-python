@@ -310,10 +310,10 @@ def update():
     video_ops.update_video()
 
     if not sg:
-        sg = graphs.SpikeGraph(screen)
+        sg = graphs.SpikeGraph(screen, LIVE)
     
     if not cg:
-        cg = graphs.ContinuousGraph(screen)
+        cg = graphs.ContinuousGraph(screen, LIVE)
     
     if not vlr:
         vlr = graphs.VerticalLineRing(screen)
