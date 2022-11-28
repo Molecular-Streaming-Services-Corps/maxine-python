@@ -69,6 +69,8 @@ samples_per_packet = int(SAMPLES_PER_SECOND / 60) + 1
 WAIT_FOR_SAMPLES = False
 waiting = True
 
+time_last_samples_received = time.perf_counter()
+
 def on_open(ws):
     global ws_connected, logger
     logger.info('Connected succesfully')
@@ -83,8 +85,8 @@ def on_open(ws):
     ping(ws)
     logger.debug('Started ping')
     
-    request_data(ws, 1)
-    logger.debug('Requested data')
+    #request_data(ws, 1)
+    #logger.debug('Requested data')
     
     ws_connected = True
 
@@ -132,22 +134,27 @@ def get_typecode(message):
     
 def process_message(code, message):
     global pressed, channel, q, state_q, logger, waiting, WAIT_FOR_SAMPLES
+    global time_last_samples_received
 
     # typecode 0: update
     if code == 0:
         logger.debug('[0] Current data update received')
-        if len(message) < 3000:
-            logger.debug('Empty current data message.')
-        else:
-            data = SampleData(message)
-            logger.debug('process_message: sample count: %s', data.sample_count)
-            # Maybe the empty current data message gives you a false channel
-            #print('process_message: found out channel:', data.channel)
-            #channel = data.channel
-            
-            q.put(data)
-            if WAIT_FOR_SAMPLES:
-                waiting = False
+        #if len(message) < 3000:
+        #    logger.debug('Empty current data message.')
+        #else:
+        data = SampleData(message)
+        logger.debug('process_message: sample count: %s', data.sample_count)
+        # Maybe the empty current data message gives you a false channel
+        #print('process_message: found out channel:', data.channel)
+        #channel = data.channel
+        
+        logger.debug('process_message: %s since last sample packet received.',
+            time.perf_counter() - time_last_samples_received)
+        time_last_samples_received = time.perf_counter()
+        
+        q.put(data)
+        if WAIT_FOR_SAMPLES:
+            waiting = False
          
     # typecode 1: WEBSOCK_JSON_DATA
     elif code == 1:
@@ -201,7 +208,7 @@ class SampleData:
         dt = dt.newbyteorder('<')
         self.samples = np.frombuffer(message, dtype=dt, offset=16)
         
-        logger.debug('samples: %s %s', len(self.samples), self.samples[0 : 10])
+        logger.debug('samples: %s %s %s %s', len(self.samples), self.samples[0 : 10], self.start, self.end)
         
         #print('SampleData self.websock_type, self.channel, self.stride, self.start, self.end:',
         #      self.websock_type, self.channel, self.stride, self.start, self.end) 
@@ -288,7 +295,11 @@ def ping(ws):
     
 # Subscribing to games
 def set_game_subscription(ws):
-    subscribe_data(ws, 2, UUID, 0, 2048, 0)
+    # setting copied from Spyke Hunter which doesn't need to detect spikes
+    # or display comprehensive statistics
+    # stride = 2048
+    stride = 1
+    subscribe_data(ws, 2, UUID, 0, stride, 0)
 
 def subscribe_data(ws, id, mac, file_id, stride, filter):
     # Subscribe code = 102
