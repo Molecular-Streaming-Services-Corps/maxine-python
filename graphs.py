@@ -321,27 +321,7 @@ def draw_graph(i, d, graph_type, screen, STANDALONE):
             # y coord is between 100 and 180
             y_coord = int(140 + 40 * -y)
             rect = Rect((10 + 300.0 / constants.NUM_BOXES * x, y_coord), (3, 1))
-            screen.draw.filled_rect(rect, color)        
-        elif graph_type == 'boxes_ring':
-            # Draw lines around an ellipse using polar coordinates
-            LINE_LENGTH = 50
-            
-            # Calculate the offset, used to display absolute values.
-            offset = abs_y * LINE_LENGTH / 2
-            
-            # Calculate the coordinates for the inner end of the line
-            r = constants.RING_RADIUS - LINE_LENGTH / 2 + offset
-            theta = x / constants.NUM_BOXES * 360
-            (inner_x, inner_y) = util.pol2cart(r, theta)
-            inner_coords = util.adjust_coords(inner_x, inner_y)
-            
-            # Calculate the coordinates for the outer end of the line
-            r = constants.RING_RADIUS + LINE_LENGTH / 2 + offset
-            (outer_x, outer_y) = util.pol2cart(r, theta)
-            outer_coords = util.adjust_coords(outer_x, outer_y)
-            
-            # Finally draw the line
-            pygame.draw.line(screen.surface, color, inner_coords, outer_coords, width = 10)
+            screen.draw.filled_rect(rect, color)
 
 torus_image = None
 def draw_torus(screen, images):
