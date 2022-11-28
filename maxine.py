@@ -337,7 +337,7 @@ def update():
         if spike_exists:
             sg.set_frame(frame)
         
-        if corner_display == 'continuous_graph' and frame:
+        if corner_display == 'continuous_graph' and frame is not None and len(frame):
             cg.set_frame(frame)
             
         if spike_exists:
@@ -369,7 +369,7 @@ def update():
         if spikes > 0:
             sg.set_frame(frame)
     
-        if corner_display == 'continuous_graph' and frame:
+        if corner_display == 'continuous_graph' and frame is not None and len(frame):
             cg.set_frame(frame)
     
         if PLAYER == 'maxine':
