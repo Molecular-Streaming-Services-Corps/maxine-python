@@ -362,9 +362,6 @@ def update():
         spikes = d.load_received_samples_and_count_spikes()
     
         frame = d.get_frame()
-        if playing_music and not frame is None:
-            music_ops.current_to_frequency(frame)    
-            music_ops.current_to_volume(frame)
         
         if spikes > 0:
             sg.set_frame(frame)
@@ -387,6 +384,12 @@ def update():
             if b:
                 vlr.add_spike()
         
+        if playing_music:
+            maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
+            #music_ops.current_to_frequency(frame)
+            #music_ops.current_to_volume(frame)
+            music_ops.stats_to_frequency(maxes_mins)
+
         #num_frames_just_received = d.get_num_frames_just_received()
         #vlr.advance_n_frames(num_frames_just_received)
     elif STANDALONE:
