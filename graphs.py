@@ -199,8 +199,12 @@ class ContinuousGraph:
         The frames will be the numpy arrays of current data containing the signal
         that was recorded during each frame of animation.'''
         self.screen = screen
-        self.n_frames = 1000
-        self.last_n_frames = []
+        lilith_fps = 20
+        self.n_frames = 1 * lilith_fps
+        # The number of frames to keep. This has to be the maximum
+        # ever shown at once.
+        self.frames_to_keep = 100 * lilith_fps 
+        self.last_frames = []
         self.top_left = (1464, 44)
         self.bottom_right = (1785, 251)
         self.width = self.bottom_right[0] - self.top_left[0]
@@ -219,16 +223,18 @@ class ContinuousGraph:
         global logger
         
         # Add it to the end of last_six_frames
-        if len(self.last_n_frames) < self.n_frames:
-            self.last_n_frames.append(frame)
+        if len(self.last_frames) < self.frames_to_keep:
+            self.last_frames.append(frame)
         else:
-            self.last_n_frames = self.last_n_frames[1:] + [frame]
+            self.last_frames = self.last_frames[1:] + [frame]
         
-        all_data = np.concatenate(self.last_n_frames)
+        last_n_frames = self.last_frames[-self.n_frames:]
+        
+        all_data = np.concatenate(last_n_frames)
         
         w = self.width
         self.frame = frame
-        box_width = (self.frame_size * len(self.last_n_frames)) // w
+        box_width = (self.frame_size * len(last_n_frames)) // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)
