@@ -73,24 +73,7 @@ class Controls:
         self.drop_button.images = ['button_off']
         self.drop_button.pos = (1483, 707)
         self.button_timeout = 0
-        
-        self.controls = [self.voltage_knob, self.zap_lever, self.syringemeter,
-                         self.hydrowag_switch, self.sawtooth_switch,
-                         self.potion_holder, self.drop_button]
-        # The index of the presently selected control
-        self.control_index = 0
-        self.voltage_index = 0
-        self.zap_index = 1
-        self.syringe_index = 2
-        self.hydrowag_index = 3
-        self.sawtooth_index = 4
-        self.potion_index = 5
-        self.drop_index = 6
-        
-        self.old_voltage = 0
-        self.voltage = 0
-        self.old_angle = 0
-        
+
         self.sg = graphs.SpikeGraph(screen, LIVE)
         self.cg = graphs.ContinuousGraph(screen, LIVE)
         
@@ -103,6 +86,24 @@ class Controls:
         tv.right = 1800
         tv.fps = 5
         self.tv = tv
+        
+        self.controls = [self.voltage_knob, self.zap_lever, self.syringemeter,
+                         self.hydrowag_switch, self.sawtooth_switch,
+                         self.potion_holder, self.drop_button, self.tv]
+        # The index of the presently selected control
+        self.control_index = 0
+        self.voltage_index = 0
+        self.zap_index = 1
+        self.syringe_index = 2
+        self.hydrowag_index = 3
+        self.sawtooth_index = 4
+        self.potion_index = 5
+        self.drop_index = 6
+        self.tv_index = 7
+        
+        self.old_voltage = 0
+        self.voltage = 0
+        self.old_angle = 0
 
     def update(self):
         # Zapper stuff
@@ -318,6 +319,8 @@ class Controls:
                                         self.pump_speed_index + 1)
         elif self.control_index == self.potion_index:
             self.potion_holder.push_left()
+        elif self.control_index == self.tv_index:
+            self.cg.change_time_setting(self.cg.time_settings_index + 1)
         
     def push_right(self):
         if self.control_index == self.voltage_index:
@@ -333,6 +336,8 @@ class Controls:
                                         self.pump_speed_index - 1)
         elif self.control_index == self.potion_index:
             self.potion_holder.push_right()
+        elif self.control_index == self.tv_index:
+            self.cg.change_time_setting(self.cg.time_settings_index - 1)
 
     def find_voltage_from_angle(self, angle):
         if angle in [360, 0]:
