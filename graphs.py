@@ -199,7 +199,8 @@ class ContinuousGraph:
         The frames will be the numpy arrays of current data containing the signal
         that was recorded during each frame of animation.'''
         self.screen = screen
-        self.last_six_frames = []
+        self.n_frames = 1000
+        self.last_n_frames = []
         self.top_left = (1464, 44)
         self.bottom_right = (1785, 251)
         self.width = self.bottom_right[0] - self.top_left[0]
@@ -218,17 +219,17 @@ class ContinuousGraph:
         global logger
         
         # Add it to the end of last_six_frames
-        if len(self.last_six_frames) < 6:
-            self.last_six_frames.append(frame)
+        if len(self.last_n_frames) < self.n_frames:
+            self.last_n_frames.append(frame)
             return
         else:
-            self.last_six_frames = self.last_six_frames[1:] + [frame]
+            self.last_n_frames = self.last_n_frames[1:] + [frame]
         
-        all_data = np.concatenate(self.last_six_frames)
+        all_data = np.concatenate(self.last_n_frames)
         
         w = self.width
         self.frame = frame
-        box_width = (self.frame_size * 6) // w
+        box_width = (self.frame_size * self.n_frames) // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)
@@ -255,7 +256,7 @@ class ContinuousGraph:
         #logger.info('bottoms: %s', self.bottoms)
     
     def draw(self):
-        if len(self.last_six_frames) < 6:
+        if len(self.last_n_frames) < self.n_frames:
             return
     
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
