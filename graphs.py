@@ -221,7 +221,6 @@ class ContinuousGraph:
         # Add it to the end of last_six_frames
         if len(self.last_n_frames) < self.n_frames:
             self.last_n_frames.append(frame)
-            return
         else:
             self.last_n_frames = self.last_n_frames[1:] + [frame]
         
@@ -229,7 +228,7 @@ class ContinuousGraph:
         
         w = self.width
         self.frame = frame
-        box_width = (self.frame_size * self.n_frames) // w
+        box_width = (self.frame_size * len(self.last_n_frames)) // w
         num_boxes = w
         
         maxes = np.zeros(num_boxes)
@@ -256,9 +255,6 @@ class ContinuousGraph:
         #logger.info('bottoms: %s', self.bottoms)
     
     def draw(self):
-        if len(self.last_n_frames) < self.n_frames:
-            return
-    
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
         self.screen.draw.filled_rect(BOX, 'black')
         
