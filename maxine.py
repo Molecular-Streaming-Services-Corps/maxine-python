@@ -50,15 +50,8 @@ level = 1
 switch_level_timeout = 120
 playing_music = True
 
-'''Spike Graph'''
-sg = None
-'''Continuous Graph'''
-cg = None
 '''Vertical Line Ring'''
 vlr = None
-#corner_display = 'tv'
-#corner_display = 'spike_graph'
-corner_display = 'continuous_graph'
 
 # Temporary development tool
 dev_control = None
@@ -86,11 +79,6 @@ started_chosen_level = False
 d = None
 
 rotation = 0
-
-tv = Actor('tv1')
-tv.images = ('tv1', 'tv2', 'tv3')
-tv.right = 1800
-tv.fps = 5
 
 helpbutton = Actor('helpbutton')
 helpbutton.images = ['helpbutton']
@@ -139,7 +127,7 @@ skirt = Actor('skirt')
 skirt.center = (WIDTH/2, HEIGHT-38)
 
 def draw():
-    global rotation, dev_control, sg, cg, corner_display
+    global rotation, dev_control
     global challenger_image, console_image
     global game, lwm, maze
     draw_living_background()
@@ -155,13 +143,7 @@ def draw():
         vlr.draw()
     else:
         graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
-    
-    if sg and corner_display == 'spike_graph':
-        sg.draw()
-    
-    if cg and corner_display == 'continuous_graph':
-        cg.draw()
-    
+        
     # Dragon Tyrant level
     if level in [6, 7] and maze:
         maze.draw(screen)
@@ -172,8 +154,6 @@ def draw():
     if level == 7 and lwm and constants.DRAW_GRID:
         lwm.draw_grid(screen)
         
-    if corner_display == 'tv':
-        tv.draw()
     helpbutton.draw()
     dataglobe.draw()
     databutton.draw()
@@ -309,17 +289,13 @@ def update():
     # Update the microscope video
     video_ops.update_video()
 
-    if not sg:
-        sg = graphs.SpikeGraph(screen, LIVE)
-    
-    if not cg:
-        cg = graphs.ContinuousGraph(screen, LIVE)
-    
     if not vlr:
         vlr = graphs.VerticalLineRing(screen)
     
     if not controls:
         controls = controls_object.Controls(Actor, serializer, LIVE, PLAYER, screen)
+    
+    brainpod.animate()
     
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
@@ -335,10 +311,10 @@ def update():
         spike_exists = data.Data.end_spike_exists(maxes_mins)
         
         if spike_exists:
-            sg.set_frame(frame)
+            controls.sg.set_frame(frame)
         
-        if corner_display == 'continuous_graph' and frame is not None and len(frame):
-            cg.set_frame(frame)
+        if controls.corner_display == 'continuous_graph' and frame is not None and len(frame):
+            controls.cg.set_frame(frame)
             
         if spike_exists:
             vlr.add_spike()
@@ -364,10 +340,10 @@ def update():
         frame = d.get_frame()
         
         if spikes > 0:
-            sg.set_frame(frame)
+            controls.sg.set_frame(frame)
     
-        if corner_display == 'continuous_graph' and frame is not None and len(frame):
-            cg.set_frame(frame)
+        if controls.corner_display == 'continuous_graph' and frame is not None and len(frame):
+            controls.cg.set_frame(frame)
     
         if PLAYER == 'maxine':
             for i in range(0, spikes * MONSTERS_PER_SPIKE):
@@ -732,9 +708,6 @@ def update_for_maxine_player():
 
     # All levels code
     
-    brainpod.animate()
-    tv.animate()
-    
     # Animate exploding monsters
     to_delete = set()
     for monster in game.dead_monsters:
@@ -770,7 +743,7 @@ def point_outside_signal_ring(point):
     return np.linalg.norm(scaled_coords, 2) > rx
 
 def on_key_down(key):
-    global corner_display, controls, serializer, playing_music, game
+    global controls, serializer, playing_music, game
 
     # Switch between full screen and windowed
     if key == keys.F:
@@ -786,10 +759,10 @@ def on_key_down(key):
 #        else:
 #            graph_type = 'heatmap'
 
-        if corner_display == 'spike_graph':
-            corner_display = 'continuous_graph'
+        if controls.corner_display == 'spike_graph':
+            controls.corner_display = 'continuous_graph'
         else:
-            corner_display = 'spike_graph'
+            controls.corner_display = 'spike_graph'
     
     # Turn music on and off
     if key == keys.M:

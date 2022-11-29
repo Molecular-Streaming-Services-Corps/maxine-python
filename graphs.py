@@ -199,12 +199,16 @@ class ContinuousGraph:
         The frames will be the numpy arrays of current data containing the signal
         that was recorded during each frame of animation.'''
         self.screen = screen
-        lilith_fps = 20
-        self.n_frames = 1 * lilith_fps
+
+        # Time axis zoom settings, measured in seconds
+        self.time_settings = [1, 10, 20, 50, 100]
+        self.lilith_fps = 20
+        self.change_time_setting(0)
         # The number of frames to keep. This has to be the maximum
         # ever shown at once.
-        self.frames_to_keep = 100 * lilith_fps 
+        self.frames_to_keep = 100 * self.lilith_fps 
         self.last_frames = []
+
         self.top_left = (1464, 44)
         self.bottom_right = (1785, 251)
         self.width = self.bottom_right[0] - self.top_left[0]
@@ -218,6 +222,13 @@ class ContinuousGraph:
             self.frame_size = 5120
         else:
             self.frame_size = 1667
+    
+    def change_time_setting(self, index):
+        lilith_fps = 20
+        
+        if index >= 0 and index < len(self.time_settings) - 1:
+            self.time_settings_index = index
+            self.n_frames = self.time_settings[index] * self.lilith_fps
     
     def set_frame(self, frame):
         global logger

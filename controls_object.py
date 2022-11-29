@@ -1,9 +1,10 @@
 import pygame
+import time
 
 import colors
 import lilith_client
 import constants
-import time
+import graphs
 
 class Controls:
     def __init__(self, Actor, serializer, LIVE, PLAYER, screen):
@@ -89,7 +90,20 @@ class Controls:
         self.old_voltage = 0
         self.voltage = 0
         self.old_angle = 0
-          
+        
+        self.sg = graphs.SpikeGraph(screen, LIVE)
+        self.cg = graphs.ContinuousGraph(screen, LIVE)
+        
+        #corner_display = 'tv'
+        #corner_display = 'spike_graph'
+        self.corner_display = 'continuous_graph'
+
+        tv = Actor('tv1')
+        tv.images = ('tv1', 'tv2', 'tv3')
+        tv.right = 1800
+        tv.fps = 5
+        self.tv = tv
+
     def update(self):
         # Zapper stuff
         if self.PLAYER == 'console':
@@ -187,6 +201,9 @@ class Controls:
             self.button_timeout -= 1
 
         self.drop_button.animate()
+        
+        # TV
+        self.tv.animate()
 
     # TODO callibrate the number of steps the syringe pump actually moves.
     def update_syringe_position(self, steps):
@@ -241,6 +258,15 @@ class Controls:
         top = 830
         rect = pygame.Rect((left - 5, top), (10, syringe_height))
         self.screen.draw.filled_rect(rect, colors.BLACK)
+        
+        if self.corner_display == 'spike_graph':
+            self.sg.draw()
+    
+        if self.corner_display == 'continuous_graph':
+            self.cg.draw()
+
+        if self.corner_display == 'tv':
+            self.tv.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
