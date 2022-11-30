@@ -215,6 +215,8 @@ class ContinuousGraph:
         self.bottom_right = (1785, 251)
         self.width = self.bottom_right[0] - self.top_left[0]
         self.height = self.bottom_right[1] - self.top_left[1]
+
+        self.zoom_current_axis(1)
         
         # These are in the range from 0 to height, with 0 representing the top
         self.tops = np.zeros(self.width) + 10
@@ -230,6 +232,10 @@ class ContinuousGraph:
         if seconds > 0 and seconds <= 100:
             self.time_setting = seconds
             self.n_frames = int(seconds * self.lilith_fps)
+   
+    def zoom_current_axis(self, scale):
+        if scale > 0 and scale < self.height:
+            self.zoom_scale = scale
    
     def change_time_setting(self, index):
         '''Obsolete discrete zoom function'''

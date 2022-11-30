@@ -435,10 +435,11 @@ def update_for_console_player():
         check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now)
 
     # Finally respond to the switches/keys that have been turned on this frame.
-    if 'up' in pressed_just_now:
-        controls.select_up()
-    elif 'down' in pressed_just_now:
-        controls.select_down()
+    if not on['button']:
+        if 'up' in pressed_just_now:
+            controls.select_up()
+        elif 'down' in pressed_just_now:
+            controls.select_down()
     
     # Some controls only respond the moment the button is pressed.
     if 'button' in pressed_just_now:
@@ -458,6 +459,10 @@ def update_for_console_player():
             controls.hold_left()
         elif on['right']:
             controls.hold_right()
+        elif on['up']:
+            controls.hold_up()
+        elif on['down']:
+            controls.hold_down()
 
 def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
     if on[switch_name]:

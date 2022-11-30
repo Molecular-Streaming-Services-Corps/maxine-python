@@ -342,9 +342,21 @@ class Controls:
             self.cg.change_time_setting_continuous(self.cg.time_setting + 0.05)
         
     def hold_right(self):
-        # Zoom into the screen when the console player presses right
+        # Zoom into the time axis when the console player presses right
         if self.control_index == self.tv_index:
             self.cg.change_time_setting_continuous(self.cg.time_setting - 0.05)    
+
+    def hold_down(self):
+        '''Called continuously every frame that the joystick is in the "down"
+        position.'''
+        # Zoom in to the y axis
+        if self.control_index == self.tv_index:
+            self.cg.zoom_current_axis(self.cg.zoom_scale * 1.01)
+    
+    def hold_up(self):
+        # Zoom out of the y axis
+        if self.control_index == self.tv_index:
+            self.cg.zoom_current_axis(self.cg.zoom_scale * 0.99)
 
     def find_voltage_from_angle(self, angle):
         if angle in [360, 0]:
