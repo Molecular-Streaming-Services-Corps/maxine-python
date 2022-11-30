@@ -280,11 +280,15 @@ class ContinuousGraph:
         max_ = maxes.max()
         min_ = mins.min()
         range_ = max_ - min_
-        
+
         h = self.height
-        self.tops = np.array([h - int((v - min_) / range_ * h) for v in maxes])
-        self.bottoms = np.array([h - int((v - min_) / range_ * h) for v in mins])
-        self.middles = np.array([h - int((v - min_) / range_ * h) for v in medians])
+        
+        mean_ = np.mean(all_data)
+        vertical_center = h / 2
+        
+        self.tops = np.array([vertical_center - int((v - mean_) / range_ * vertical_center) for v in maxes])
+        self.bottoms = np.array([vertical_center - int((v - mean_) / range_ * vertical_center) for v in mins])
+        self.middles = np.array([vertical_center - int((v - mean_) / range_ * vertical_center) for v in medians])
     
     def draw(self):
         BOX = pygame.Rect(self.top_left, (self.width, self.height))

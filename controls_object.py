@@ -351,12 +351,12 @@ class Controls:
         position.'''
         # Zoom in to the y axis
         if self.control_index == self.tv_index:
-            self.cg.zoom_current_axis(self.cg.zoom_scale * 1.01)
+            self.cg.zoom_current_axis(self.cg.zoom_scale * 1.02)
     
     def hold_up(self):
         # Zoom out of the y axis
         if self.control_index == self.tv_index:
-            self.cg.zoom_current_axis(self.cg.zoom_scale * 0.99)
+            self.cg.zoom_current_axis(self.cg.zoom_scale * 0.98)
 
     def find_voltage_from_angle(self, angle):
         if angle in [360, 0]:
