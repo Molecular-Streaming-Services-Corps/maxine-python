@@ -286,9 +286,14 @@ class ContinuousGraph:
         mean_ = np.mean(all_data)
         vertical_center = h / 2
         
-        self.tops = np.array([vertical_center - int((v - mean_) / range_ * vertical_center) for v in maxes])
-        self.bottoms = np.array([vertical_center - int((v - mean_) / range_ * vertical_center) for v in mins])
-        self.middles = np.array([vertical_center - int((v - mean_) / range_ * vertical_center) for v in medians])
+        self.tops = np.array([vertical_center - int((v - mean_) / range_ * vertical_center * self.zoom_scale) for v in maxes])
+        self.bottoms = np.array([vertical_center - int((v - mean_) / range_ * vertical_center * self.zoom_scale) for v in mins])
+        self.middles = np.array([vertical_center - int((v - mean_) / range_ * vertical_center * self.zoom_scale) for v in medians])
+        
+        # Handle zooming while making sure that lines don't go off the edge of the TV
+        self.tops = np.maximum(0, np.minimum(h,  self.tops))
+        self.bottoms = np.maximum(0, np.minimum(h, self.bottoms))
+        self.middles = np.maximum(0, np.minimum(h, self.middles))        
     
     def draw(self):
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
