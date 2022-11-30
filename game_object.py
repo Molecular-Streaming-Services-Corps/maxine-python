@@ -58,6 +58,28 @@ class Game:
         
         # This is required for the level with a dancing shroom and rotating spores to work
         self.draw_spirals = True
+        
+        self.question_text = 'What size are these fungal spores? Do we have a large enough pore?'
+        self.shown_question_length = 34
+        self.shown_question_start = 0
+        self.frames_per_character = 2
+
+        self.step_count = 0
+
+    def draw(self, screen):
+        #screen.draw.text(self.get_question_section(), center = (255, 835), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
+        screen.draw.text(self.get_question_section(), (100, 825), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
+
+    def update(self):
+        self.step_count += 1
+        if self.step_count % self.frames_per_character == 0:
+            self.shown_question_start += 1
+            if self.shown_question_start >= len(self.question_text):
+                self.shown_question_start = 0
+
+    def get_question_section(self):
+        ret = self.question_text[self.shown_question_start : self.shown_question_start + self.shown_question_length]
+        return ret
 
     def grow_maxine(self):
         self.maxine_current_scale *= MAXINE_CHANGE_FACTOR

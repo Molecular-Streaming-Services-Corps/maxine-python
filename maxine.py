@@ -109,8 +109,6 @@ brainalert.scale = .75
 brainalert.top = 550
 brainalert.left = 160
 
-question_text = 'What size are these fungal spores?'
-
 chatwindow = Actor('chatwindow')
 chatwindow.bottom = 550
 chatwindow.left = 0
@@ -179,7 +177,7 @@ def draw():
     screen.draw.text(str(data_number), center = (1655, 320), fontname = "ds-digi.ttf", fontsize = 50, color = "red")
     screen.draw.text(str(data_text), center = (1655, 400), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
 
-    screen.draw.text(str(question_text), center = (255, 835), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
+    game.draw(screen)
 
     # Draw Cannon
     if game.cannon_in_level:
@@ -296,6 +294,8 @@ def update():
         controls = controls_object.Controls(Actor, serializer, LIVE, PLAYER, screen)
     
     brainpod.animate()
+    
+    game.update()
     
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
