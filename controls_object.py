@@ -306,6 +306,7 @@ class Controls:
             self.button_timeout = 6
         
     def push_left(self):
+        '''Called for a single push of the joystick to the left.'''
         if self.control_index == self.voltage_index:
             if self.voltage_knob.angle != 170: # +17 * 10
                 self.voltage_knob.angle = (self.voltage_knob.angle + 17) % 360
@@ -319,8 +320,6 @@ class Controls:
                                         self.pump_speed_index + 1)
         elif self.control_index == self.potion_index:
             self.potion_holder.push_left()
-        elif self.control_index == self.tv_index:
-            self.cg.change_time_setting(self.cg.time_settings_index + 1)
         
     def push_right(self):
         if self.control_index == self.voltage_index:
@@ -336,8 +335,16 @@ class Controls:
                                         self.pump_speed_index - 1)
         elif self.control_index == self.potion_index:
             self.potion_holder.push_right()
-        elif self.control_index == self.tv_index:
-            self.cg.change_time_setting(self.cg.time_settings_index - 1)
+
+    def hold_left(self):
+        '''Called continuously every frame that the joystick is held left.'''
+        if self.control_index == self.tv_index:
+            self.cg.change_time_setting_continuous(self.cg.time_setting + 0.05)
+        
+    def hold_right(self):
+        # Zoom into the screen when the console player presses right
+        if self.control_index == self.tv_index:
+            self.cg.change_time_setting_continuous(self.cg.time_setting - 0.05)    
 
     def find_voltage_from_angle(self, angle):
         if angle in [360, 0]:

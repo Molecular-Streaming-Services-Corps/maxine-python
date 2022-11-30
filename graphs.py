@@ -200,12 +200,14 @@ class ContinuousGraph:
         that was recorded during each frame of animation.'''
         self.screen = screen
 
-        # Time axis zoom settings, measured in seconds
-        self.time_settings = [1, 10, 20, 50, 100]
+        # Obsolete discrete zoom settings
+        ## Time axis zoom settings, measured in seconds
+        #self.time_settings = [1, 10, 20, 50, 100]
         self.lilith_fps = 20
-        self.change_time_setting(0)
+        #self.change_time_setting(0)
         # The number of frames to keep. This has to be the maximum
         # ever shown at once.
+        self.change_time_setting_continuous(1.0)
         self.frames_to_keep = 100 * self.lilith_fps 
         self.last_frames = []
 
@@ -224,7 +226,13 @@ class ContinuousGraph:
         else:
             self.frame_size = 1667
     
+    def change_time_setting_continuous(self, seconds):
+        if seconds > 0 and seconds <= 100:
+            self.time_setting = seconds
+            self.n_frames = int(seconds * self.lilith_fps)
+   
     def change_time_setting(self, index):
+        '''Obsolete discrete zoom function'''
         lilith_fps = 20
         
         if index >= 0 and index < len(self.time_settings) - 1:

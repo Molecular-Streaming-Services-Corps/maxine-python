@@ -452,6 +452,13 @@ def update_for_console_player():
         elif 'right' in pressed_just_now:
             controls.push_right()
 
+    # Some of the controls respond continuously while left or right is pressed.
+    if on['button']:
+        if on['left']:
+            controls.hold_left()
+        elif on['right']:
+            controls.hold_right()
+
 def check_pressed_just_now(switch_name, on, pressed_before, pressed_just_now):
     if on[switch_name]:
         if not switch_name in pressed_before:
