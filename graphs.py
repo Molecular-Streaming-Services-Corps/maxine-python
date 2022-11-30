@@ -217,6 +217,7 @@ class ContinuousGraph:
         # These are in the range from 0 to height, with 0 representing the top
         self.tops = np.zeros(self.width) + 10
         self.bottoms = np.ones(self.width) + 15
+        self.middles = np.zeros(self.width) + 13
         
         if live:
             self.frame_size = 5120
@@ -250,6 +251,7 @@ class ContinuousGraph:
         
         maxes = np.zeros(num_boxes)
         mins = np.zeros(num_boxes)
+        medians = np.zeros(num_boxes)
         
         #for i in range(0, box_width):
         for i in range(0, num_boxes):
@@ -259,6 +261,7 @@ class ContinuousGraph:
             
             maxes[i] = values.max()
             mins[i] = values.min()
+            medians[i] = np.median(values)
             
         max_ = maxes.max()
         min_ = mins.min()
@@ -267,9 +270,7 @@ class ContinuousGraph:
         h = self.height
         self.tops = np.array([h - int((v - min_) / range_ * h) for v in maxes])
         self.bottoms = np.array([h - int((v - min_) / range_ * h) for v in mins])
-        
-        #logger.info('tops: %s', self.tops)
-        #logger.info('bottoms: %s', self.bottoms)
+        self.middles = np.array([h - int((v - min_) / range_ * h) for v in medians])
     
     def draw(self):
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
@@ -279,11 +280,21 @@ class ContinuousGraph:
         # Draw the lines
         for i in range(0, self.width):
             (left, top) = self.top_left
+            
+            # Draw the main vertical line
             x = left + i
             y1 = self.tops[i] + top
             y2 = self.bottoms[i] + top
             
             l((x, y1), (x, y2), 'green')
+            
+            # Draw the median line in the middle of it
+            my1 = self.middles[i] + 2 + top
+            my2 = self.middles[i] - 2 + top
+            
+            l((x, my1), (x, my2), 'white')
+            
+            #print(y1, y2, my1, my2)
 
 def draw_graph(i, d, graph_type, screen, STANDALONE):
     # Draw a rectangle behind the graph
