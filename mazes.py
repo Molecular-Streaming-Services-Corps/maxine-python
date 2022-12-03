@@ -157,29 +157,24 @@ class PolarGrid(Grid):
             cy = int(inner_radius * math.sin(theta_cw))
             dx = int(outer_radius * math.cos(theta_cw))
             dy = int(outer_radius * math.sin(theta_cw))
+                                    
+            if self.world_map:
+                ax, ay = self.world_map.convert_coords(ax, ay)
+                cx, cy = self.world_map.convert_coords(cx, cy)
+                dx, dy = self.world_map.convert_coords(dx, dy)
+            else:
+                ax, ay = util.adjust_coords(ax, ay)
+                cx, cy = util.adjust_coords(cx, cy)
+                dx, dy = util.adjust_coords(dx, dy)
             
-            # Calculate the center of each line.
+            # Calculate the center of each line. This has to be done after the
+            # coordinates are converted so you don't get gaps between the walls.
             acx = (ax + cx) / 2
             acy = (ay + cy) / 2
             
             cdx = (cx + dx) / 2
             cdy = (cy + dy) / 2
-                        
-            if self.world_map:
-                ax, ay = self.world_map.convert_coords(ax, ay)
-                cx, cy = self.world_map.convert_coords(cx, cy)
-                dx, dy = self.world_map.convert_coords(dx, dy)
-                
-                acx, acy = self.world_map.convert_coords(acx, acy)
-                cdx, cdy = self.world_map.convert_coords(cdx, cdy)
-            else:
-                ax, ay = util.adjust_coords(ax, ay)
-                cx, cy = util.adjust_coords(cx, cy)
-                dx, dy = util.adjust_coords(dx, dy)
-                
-                acx, acy = util.adjust_coords(acx, acy)
-                cdx, cdy = util.adjust_coords(cdx, cdy)
-            
+
             ac_delta_x = (cx - ax)
             ac_delta_y = (cy - ay)
             ac_bricks_angle = (180 - math.degrees(math.atan(ac_delta_y / ac_delta_x))) % 360
