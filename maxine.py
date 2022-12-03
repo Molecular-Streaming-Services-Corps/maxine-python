@@ -144,7 +144,7 @@ def draw():
         
     # Dragon Tyrant level
     if level in [6, 7] and maze:
-        maze.draw(screen)
+        maze.draw(screen, Actor)
         
         if constants.DRAW_CONTROLS and hasattr(game.maxine, 'gridnav'):
             maze.draw_keybindings(game.maxine.gridnav.in_cell, screen)

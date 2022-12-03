@@ -128,8 +128,9 @@ class PolarGrid(Grid):
             num_columns = column % len(self.grid[row])
             return self.grid[row][num_columns]
 
-    def draw(self, screen):
+    def draw(self, screen, Actor):
         wall = colors.RED
+        DRAW_BRICKS = True
 
         if self.world_map:
             cell_size = self.world_map.map_radius // self.rows
@@ -157,20 +158,67 @@ class PolarGrid(Grid):
             dx = int(outer_radius * math.cos(theta_cw))
             dy = int(outer_radius * math.sin(theta_cw))
             
+            # Calculate the center of each line.
+            acx = (ax + cx) / 2
+            acy = (ay + cy) / 2
+            
+            cdx = (cx + dx) / 2
+            cdy = (cy + dy) / 2
+                        
             if self.world_map:
                 ax, ay = self.world_map.convert_coords(ax, ay)
                 cx, cy = self.world_map.convert_coords(cx, cy)
                 dx, dy = self.world_map.convert_coords(dx, dy)
+                
+                acx, acy = self.world_map.convert_coords(acx, acy)
+                cdx, cdy = self.world_map.convert_coords(cdx, cdy)
             else:
                 ax, ay = util.adjust_coords(ax, ay)
                 cx, cy = util.adjust_coords(cx, cy)
                 dx, dy = util.adjust_coords(dx, dy)
+                
+                acx, acy = util.adjust_coords(acx, acy)
+                cdx, cdy = util.adjust_coords(cdx, cdy)
             
+            ac_delta_x = (cx - ax)
+            ac_delta_y = (cy - ay)
+            ac_bricks_angle = (180 - math.degrees(math.atan(ac_delta_y / ac_delta_x))) % 360
+            
+            cd_delta_x = (dx - cx)
+            cd_delta_y = (dy - cy)
+            if cd_delta_x == 0:
+                cd_bricks_angle = 90
+            else:
+                cd_bricks_angle = (180 - math.degrees(math.atan(cd_delta_y / cd_delta_x))) % 360
+            
+            ac_length = util.distance_points((ax, ay), (cx, cy))
+            cd_length = util.distance_points((cx, cy), (dx, dy))
             
             if not cell.is_linked(cell.inward):
-                pygame.draw.line(screen.surface, wall, (ax, ay), (cx, cy), width = 3)
+                if DRAW_BRICKS:
+                    bricks = Actor('bricks')
+                    size = bricks.size
+                    bricks.scale = ac_length / size[0]
+                    bricks.center =  (acx, acy)
+                    bricks.angle = ac_bricks_angle
+                    bricks.draw()
+                else:
+                    pygame.draw.line(screen.surface, wall, (ax, ay), (cx, cy), width = 3)
+                
+                # Draw a white point in the center of the line to check the math
+                #pygame.draw.circle(screen.surface, 'white', (acx, acy), 1)
             if not cell.is_linked(cell.cw):
-                pygame.draw.line(screen.surface, wall, (cx, cy), (dx, dy), width = 3)
+                if DRAW_BRICKS:
+                    bricks = Actor('bricks')
+                    size = bricks.size
+                    bricks.scale = cd_length / size[0]
+                    bricks.center =  (cdx, cdy)
+                    bricks.angle = cd_bricks_angle
+                    bricks.draw()
+                else:
+                    pygame.draw.line(screen.surface, wall, (cx, cy), (dx, dy), width = 3)
+
+                #pygame.draw.circle(screen.surface, 'white', (cdx, cdy), 1)
 
             # Draw the distance from Maxine if it's been calculated
             if (constants.DRAW_DISTANCES_FROM_MAXINE and
