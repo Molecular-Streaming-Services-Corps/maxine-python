@@ -308,7 +308,8 @@ def update():
         vlr.give_samples(last_n_samples)
 
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
-        spike_exists = data.Data.end_spike_exists(maxes_mins)
+        #spike_exists = data.Data.end_spike_exists(maxes_mins)
+        spike_exists = data.Data.statistical_end_spike_exists(last_n_samples, constants.NUM_BOXES)
         
         if spike_exists:
             controls.sg.set_frame(frame)
@@ -349,7 +350,8 @@ def update():
             for i in range(0, spikes * MONSTERS_PER_SPIKE):
                 add_cell() 
                 
-        last_n_samples = d.get_last_n_frames(constants.NUM_BOXES)
+        # 5 seconds at 20 FPS
+        last_n_samples = d.get_last_n_frames(20 * 5)
         vlr.give_samples(last_n_samples)
         
         data_number += spikes

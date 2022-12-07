@@ -107,7 +107,8 @@ class Data:
 
     @staticmethod
     def end_spike_exists(maxes_mins):
-        '''Detects whether the final box is a spike (positive or negative).'''
+        '''Detects whether the final box is a spike (positive or negative)
+        based on a threshold.'''
         # The required difference between a box and the previous box to count
         # as a spike
         SPIKE_THRESHOLD = 500
@@ -126,6 +127,38 @@ class Data:
         if diff_mins > SPIKE_THRESHOLD:
             return True
         
+        return False
+
+    @staticmethod
+    def statistical_end_spike_exists(last_samples, num_boxes):
+        '''Uses the mean and standard deviation of the recent samples to
+        calculate whether the last 'box' contains a spike. The last box is
+        the last len(last_samples)/num_boxes worth of samples.'''
+        # Need several seconds
+        if len(last_samples) < 20000:
+            return False
+        
+        SDS_FOR_SPIKE = 3
+                
+        index = - len(last_samples) // num_boxes
+        last_box = last_samples[index:]
+        earlier_samples = last_samples[:index]
+        
+        mean = np.mean(earlier_samples)
+        sd = np.std(earlier_samples)
+        
+        logger.info('mean, sd: %s %s', mean, sd)
+        
+        # Check for a positive spike
+        possible_spike = np.max(last_box)
+        if possible_spike > mean + sd * SDS_FOR_SPIKE:
+            return True
+        
+        # Check for a negative spike
+        possible_spike = np.min(last_box)
+        if possible_spike < mean - sd * SDS_FOR_SPIKE:
+            return True
+            
         return False
 
 class LiveData(Data):
@@ -169,9 +202,10 @@ class LiveData(Data):
                 #if self.middle_spike_exists():
                 #    spikes += 1
                 #    self.latest_spike_frame = data.samples
-                last_n_frames = self.get_last_n_frames(constants.NUM_BOXES)
-                maxes_mins = Data.calculate_maxes_and_mins(last_n_frames)
-                if Data.end_spike_exists(maxes_mins):
+                last_n_frames = self.get_last_n_frames(20 * 5)
+                #maxes_mins = Data.calculate_maxes_and_mins(last_n_frames)
+                #if Data.end_spike_exists(maxes_mins):
+                if Data.statistical_end_spike_exists(last_n_frames, 20 * 5):
                     spikes += 1
                     self.latest_spike_frame = data.samples
                     self.recent_frames_contain_spikes.append(True)
