@@ -288,7 +288,10 @@ def update():
     video_ops.update_video()
 
     if not vlr:
-        vlr = graphs.VerticalLineRing(screen)
+        if LIVE:
+            vlr = graphs.VerticalLineRing(screen, LIVE, 20 * 5)
+        else:
+            vlr = graphs.VerticalLineRing(screen, LIVE, constants.NUM_BOXES)
     
     if not controls:
         controls = controls_object.Controls(Actor, serializer, LIVE, PLAYER, screen)
@@ -307,7 +310,7 @@ def update():
         last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
         vlr.give_samples(last_n_samples)
 
-        maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
+        maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, 1667)
         #spike_exists = data.Data.end_spike_exists(maxes_mins)
         spike_exists = data.Data.statistical_end_spike_exists(last_n_samples, constants.NUM_BOXES)
         
@@ -363,7 +366,7 @@ def update():
                 vlr.add_spike()
         
         if playing_music:
-            maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples)
+            maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, 5120)
             #music_ops.current_to_frequency(frame)
             #music_ops.current_to_volume(frame)
             music_ops.stats_to_frequency(maxes_mins)

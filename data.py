@@ -67,8 +67,8 @@ class Data:
         return count
         
     @staticmethod
-    def calculate_maxes_and_mins(samples):
-        samples_to_show = 5120*constants.NUM_BOXES
+    def calculate_maxes_and_mins(samples, frame_size):
+        samples_to_show = frame_size * constants.NUM_BOXES
     
         if not len(samples):
             return ([], [])
@@ -147,7 +147,7 @@ class Data:
         mean = np.mean(earlier_samples)
         sd = np.std(earlier_samples)
         
-        logger.info('mean, sd: %s %s', mean, sd)
+        logger.debug('mean, sd: %s %s', mean, sd)
         
         # Check for a positive spike
         possible_spike = np.max(last_box)

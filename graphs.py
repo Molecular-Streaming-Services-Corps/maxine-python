@@ -19,13 +19,18 @@ logger.addHandler(handler)
 class VerticalLineRing:
     '''Draws a vertical-line based signal ring using sample data. It uses
     constants.NUM_BOXES to choose the number of vertical lines on the ring.'''
-    def __init__(self, screen):
+    def __init__(self, screen, live, num_frames):
         self.screen = screen
         self.samples = []
         self.present_box = 0
         self.line_extent = 25
         
-        self.samples_to_show = constants.NUM_BOXES * 1667
+        if live:
+            self.frame_size = 5120
+        else:
+            self.frame_size = 1667
+
+        self.samples_to_show = num_frames * self.frame_size
 
         # These are in the range from -line_extent to +line_extent.
         # They only go up to the point where data has been provided.
@@ -49,7 +54,7 @@ class VerticalLineRing:
         #samples = samples.astype('int32')
         self.samples = samples
 
-        maxes, mins = data.Data.calculate_maxes_and_mins(samples)
+        maxes, mins = data.Data.calculate_maxes_and_mins(samples, self.frame_size)
         
         #min_ = self.amplifier_min #int(np.min(samples))
         #max_ = self.amplifier_max #int(np.max(samples))
@@ -61,6 +66,7 @@ class VerticalLineRing:
         self.tops = np.array([- int((v - min_) / range_ * h) for v in maxes])
         self.bottoms = np.array([- int((v - min_) / range_ * h) for v in mins])
 
+        logger.debug('len(self.tops): %s', len(self.tops))
         logger.debug('self.tops: %s', self.tops)
         logger.debug('self.bottoms: %s', self.bottoms)        
 
