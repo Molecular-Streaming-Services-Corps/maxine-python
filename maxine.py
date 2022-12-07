@@ -311,8 +311,10 @@ def update():
         vlr.give_samples(last_n_samples)
 
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, 1667)
-        #spike_exists = data.Data.end_spike_exists(maxes_mins)
-        spike_exists = data.Data.statistical_end_spike_exists(last_n_samples, constants.NUM_BOXES)
+        sudden_change = data.Data.end_spike_exists(maxes_mins)
+        deviation_from_mean = data.Data.statistical_end_spike_exists(last_n_samples, constants.NUM_BOXES)
+        
+        spike_exists = sudden_change and deviation_from_mean
         
         if spike_exists:
             controls.sg.set_frame(frame)

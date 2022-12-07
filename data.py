@@ -133,7 +133,12 @@ class Data:
     def statistical_end_spike_exists(last_samples, num_boxes):
         '''Uses the mean and standard deviation of the recent samples to
         calculate whether the last 'box' contains a spike. The last box is
-        the last len(last_samples)/num_boxes worth of samples.'''
+        the last len(last_samples)/num_boxes worth of samples.
+        
+        WARNING: This method also counts bias changes as hundreds of spikes,
+        so Jade added a requirement for the change between two frames to be
+        large enough as well (the code that calls this will also call
+        end_spike_exists()).'''
         # Need several seconds
         if len(last_samples) < 20000:
             return False
@@ -203,9 +208,11 @@ class LiveData(Data):
                 #    spikes += 1
                 #    self.latest_spike_frame = data.samples
                 last_n_frames = self.get_last_n_frames(20 * 5)
-                #maxes_mins = Data.calculate_maxes_and_mins(last_n_frames)
-                #if Data.end_spike_exists(maxes_mins):
-                if Data.statistical_end_spike_exists(last_n_frames, 20 * 5):
+                maxes_mins = Data.calculate_maxes_and_mins(last_n_frames)
+                big_change = Data.end_spike_exists(maxes_mins)
+                deviation = Data.statistical_end_spike_exists(last_n_frames, 20 * 5)
+                spike_exists = big_change and deviation
+                if spike_exists:
                     spikes += 1
                     self.latest_spike_frame = data.samples
                     self.recent_frames_contain_spikes.append(True)
