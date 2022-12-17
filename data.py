@@ -208,7 +208,7 @@ class LiveData(Data):
                 #    spikes += 1
                 #    self.latest_spike_frame = data.samples
                 last_n_frames = self.get_last_n_frames(20 * 5)
-                maxes_mins = Data.calculate_maxes_and_mins(last_n_frames)
+                maxes_mins = Data.calculate_maxes_and_mins(last_n_frames, 5120)
                 big_change = Data.end_spike_exists(maxes_mins)
                 deviation = Data.statistical_end_spike_exists(last_n_frames, 20 * 5)
                 spike_exists = big_change and deviation

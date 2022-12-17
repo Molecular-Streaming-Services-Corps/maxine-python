@@ -319,7 +319,7 @@ def update():
         if spike_exists:
             controls.sg.set_frame(frame)
         
-        if controls.corner_display == 'continuous_graph' and frame is not None and len(frame):
+        if controls.corner_display == 'continuous_graph' and frame is not None and len(frame) == 1667:
             controls.cg.set_frame(frame)
             
         if spike_exists:
@@ -490,7 +490,7 @@ def update_for_maxine_player():
 
     # Move Maxine.
     # s is Maxine's speed per frame.
-    s = 6
+    s = 6 * constants.SPEED
     
     if game.maxine.alive and level not in [6, 7]:
         prev_pos = game.maxine.pos
@@ -637,7 +637,7 @@ def update_for_maxine_player():
     # Level 2, 4, 5 code
     # Process bouncing monsters
     if level in [2, 4, 5]:
-        bm_speed = 5
+        bm_speed = 5 * constants.SPEED
         bm_to_blow_up = set()
         for monster in game.bouncing_monsters:
             monster.animate()
@@ -906,7 +906,8 @@ def start_next_level():
         game.draw_spirals = False
     
         # Give Maxine a Grid Navigation component
-        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game, 15)
+        game.maxine.gridnav = components.PolarGridNavigation(maze, maze[0, 0], game,
+         15 // constants.SPEED)
 
         game.maxine.fighter = components.Fighter(1000, 1, 0)
         
@@ -930,7 +931,7 @@ def make_spore(shroom):
     spore.scale = 0.25
     spore.pos = shroom.pos
     spore.point_towards(game.maxine)
-    spore.speed = 3
+    spore.speed = 3 * constants.SPEED
     game.projectiles.add(spore)
     return spore
 
@@ -946,7 +947,7 @@ def make_mushroom():
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(
-        0.5, rotation, constants.TORUS_INNER_HEIGHT, 1, constants.CENTER, constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT)
+        0.5, rotation, constants.TORUS_INNER_HEIGHT, 1 * constants.SPEED, constants.CENTER, constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT)
     
     # Set the mushroom up to spawn a spore
     mush.spore_timeout = get_spore_timeout()
@@ -1002,7 +1003,8 @@ def make_dragon():
     dragon.images = ['dragon_tyrant_a']
     dragon.scale = 1 / 32
     # TODO don't spawn on top of another dragon or Maxine
-    dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game)
+    dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game,
+     60 // constants.SPEED)
     dragon.ai = components.RandomMazeAI(dragon.gridnav)
     dragon.center = dragon.gridnav.get_location()
     

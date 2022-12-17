@@ -191,7 +191,7 @@ class PolarGrid(Grid):
             
             if not cell.is_linked(cell.inward):
                 if DRAW_BRICKS:
-                    bricks = Actor('bricks')
+                    bricks = Actor('stonewall')
                     size = bricks.size
                     bricks.scale = ac_length / size[0]
                     bricks.center =  (acx, acy)
@@ -204,7 +204,7 @@ class PolarGrid(Grid):
                 #pygame.draw.circle(screen.surface, 'white', (acx, acy), 1)
             if not cell.is_linked(cell.cw):
                 if DRAW_BRICKS:
-                    bricks = Actor('bricks')
+                    bricks = Actor('stonewall')
                     size = bricks.size
                     bricks.scale = cd_length / size[0]
                     bricks.center =  (cdx, cdy)
