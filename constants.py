@@ -23,4 +23,4 @@ DRAW_CONTROLS = True
 DRAW_GRID = False
 
 # Multiplier for the speed of Maxine and all enemies. 1 is normal speed.
-SPEED = 2
+SPEED = 1
