@@ -19,8 +19,8 @@ class Game:
 
         self.maxine_current_scale = 1
         
-        maxine = Actor('maxine')
-        maxine.images = ['maxine']
+        maxine = Actor('maxine_neutral')
+        maxine.images = ['maxine_neutral']
         maxine.pos = MAXINE_START
         maxine.alive = True
         maxine.scale = MAXINE_INITIAL_SCALE * self.maxine_current_scale
@@ -173,7 +173,7 @@ class Game:
 
     def reset_maxine(self):
         self.maxine.pos = MAXINE_START
-        self.maxine.images = ['maxine']
+        self.maxine.images = ['maxine_neutral']
         self.maxine.alive = True
         
     def boom_images(self):
