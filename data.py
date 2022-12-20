@@ -308,7 +308,7 @@ class PrerecordedData(Data):
             self.joystick_data = settings['joystick']
             
     def get_one_frame_current(self):
-        samples_per_frame = self.sample_rate // 60
+        samples_per_frame = 1667
         
         start = samples_per_frame * self.latest_frame
         end = samples_per_frame * (self.latest_frame + 1)
@@ -331,7 +331,7 @@ class PrerecordedData(Data):
     
         # First find the sample index, then use it to look up the most recent
         # joystick update before that index.
-        samples_per_frame = self.sample_rate // 60        
+        samples_per_frame = 1667        
         current_sample_index = samples_per_frame * self.latest_frame
         
         #indexes = [update[0] for update in self.joystick_data]
@@ -353,7 +353,7 @@ class PrerecordedData(Data):
         self.latest_frame += 1
     
     def get_frame(self):
-        samples_per_frame = self.sample_rate // 60
+        samples_per_frame = 1667
         
         start = samples_per_frame * self.latest_frame
         end = samples_per_frame * (self.latest_frame + 1)
