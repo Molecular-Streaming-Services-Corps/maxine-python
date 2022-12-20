@@ -498,12 +498,16 @@ def update_for_maxine_player():
         # Allow the user to use either the keyboard or the joystick    
         if keyboard.left:
             game.maxine.left -= s
+            game.maxine.images = ['maxine_left']
         elif keyboard.right:
             game.maxine.left += s
+            game.maxine.images = ['maxine_right']
         if keyboard.up:
             game.maxine.top -= s
+            game.maxine.images = ['maxine_up']
         elif keyboard.down:
             game.maxine.bottom += s
+            game.maxine.images = ['maxine_down']
             
         # The old controls.
         #if keyboard.space:

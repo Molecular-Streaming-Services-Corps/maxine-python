@@ -175,7 +175,7 @@ class Game:
         self.maxine.pos = MAXINE_START
         self.maxine.images = ['maxine_neutral']
         self.maxine.alive = True
-        
+    
     def boom_images(self):
         return ['boom' + str(i) for i in range(1, 30 + 1)]
 
