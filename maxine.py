@@ -319,6 +319,8 @@ def update():
         if spike_exists:
             controls.sg.set_frame(frame)
         
+        # The length of the frame must be 1667. At the end of the data it will
+        # be less, so we skip the last partial frame.
         if controls.corner_display == 'continuous_graph' and frame is not None and len(frame) == 1667:
             controls.cg.set_frame(frame)
             
