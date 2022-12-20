@@ -85,6 +85,10 @@ def on_open(ws):
     ping(ws)
     logger.debug('Started ping')
     
+    # This might cause bugs when multiple copies of the game are run.
+    #start_button()
+    #logger.debug('Pressed start button')
+    
     #request_data(ws, 1)
     #logger.debug('Requested data')
     
@@ -410,6 +414,15 @@ def set_metadata(key, json_string):
         
         packed_data = packed_data + bytes(key, 'ascii') + bytes(json_string, 'ascii')
         
+        ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
+
+def start_button():
+	# Start code = 10
+	# Device id (0 now)
+	# sample rate (double float)
+        s = struct.Struct('!HHf')
+        data = [10, 0, 100000]
+        packed_data = s.pack(*data)
         ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
 if __name__ == '__main__':
