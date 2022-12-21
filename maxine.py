@@ -497,6 +497,9 @@ def update_for_maxine_player():
     if game.maxine.alive and level not in [6, 7]:
         prev_pos = game.maxine.pos
 
+        # Put Maxine back into neutral position when she's not moving.
+        game.maxine.images = ['maxine_neutral']
+
         # Allow the user to use either the keyboard or the joystick    
         if keyboard.left:
             game.maxine.left -= s
