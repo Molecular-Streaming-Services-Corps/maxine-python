@@ -41,8 +41,9 @@ class Game:
         self.console_score = 0
 
         # Stuff for the mushroom cannon
-        cannon = Actor('mush1')
-        cannon.images = ('mush1','mush2')
+        cannon = Actor('mushromancer1')
+        cannon.images = ('mushromancer1','mushromancer2', 'mushromancer3',
+            'mushromancer4')
         cannon.center = (constants.WIDTH/2, constants.HEIGHT/2)
         cannon.scale = 1
         cannon.spore_timeout = 60
