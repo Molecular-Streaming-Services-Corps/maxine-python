@@ -967,8 +967,8 @@ def make_mushroom():
 def make_bouncer():
 #    monster_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
 #        'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
-    bouncer = Actor('boomshroom')
-    bouncer.images = ['boomshroom']
+    bouncer = Actor('purple_mushroom')
+    bouncer.images = ['purple_mushroom']
 
     bouncer.fps = 1
     
