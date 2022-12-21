@@ -71,6 +71,10 @@ class Game:
         #screen.draw.text(self.get_question_section(), center = (255, 835), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
         screen.draw.text(self.get_question_section(), (100, 825), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
 
+    def draw_title_screen(self, screen):
+        screen.draw.text('Press space to begin.', center = (900, 450),
+            fontname = "ds-digi.ttf", fontsize = 60, color = "red")
+
     def update(self):
         self.step_count += 1
         if self.step_count % self.frames_per_character == 0:

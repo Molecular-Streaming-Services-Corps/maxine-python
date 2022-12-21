@@ -45,7 +45,7 @@ game = game_object.Game(Actor, sounds, images, clock)
 graph_type = 'line_ring'
 #graph_type = 'boxes_ring'
 
-game_state = 'playing' # becomes 'won' or 'lost'
+game_state = 'title' # becomes 'playing', 'won' or 'lost'
 level = 1
 switch_level_timeout = 120
 playing_music = True
@@ -70,10 +70,6 @@ challenger_image.center = (40, 160)
 
 console_image = Actor('consoleplayer')
 console_image.center = (40, 220)
-
-# This is to call start_next_level in the first call to update() in case
-# a level has been chosen on the command-line.
-started_chosen_level = False
 
 # Represents data from a stored file.
 d = None
@@ -128,6 +124,12 @@ def draw():
     global rotation, dev_control
     global challenger_image, console_image
     global game, lwm, maze
+    global game_state
+    
+    if game_state == 'title':
+        game.draw_title_screen(screen)
+        return
+    
     draw_living_background()
 
     skirt.draw()
@@ -269,21 +271,24 @@ def update():
     global logger
     global playing_music
     global sg, cg, vlr
-    global started_chosen_level
     global controls
     global data_number
+
+    if keyboard.q:
+        import sys; sys.exit(0)
+        
+    if game_state == 'title':
+        if keyboard.space:
+            start_next_level()
+            update()
+        
+        return
+
     step_count += 1
     if step_count % 10 == 0:
         i += 1
         #print('update(): i:', i)
 
-    if keyboard.q:
-        import sys; sys.exit(0)
-    
-    if not started_chosen_level:
-        start_next_level()
-        started_chosen_level = True
-    
     # Update the microscope video
     video_ops.update_video()
 
