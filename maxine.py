@@ -935,7 +935,7 @@ def start_next_level():
 def make_spore(shroom):
     '''Makes a spore starting at the center of the shroom and heading toward
     Maxine.'''
-    spore = Actor('spore')
+    spore = Actor('spore1')
     spore.images = ['spore1', 'spore2', 'spore3']
     spore.scale = 0.25
     spore.pos = shroom.pos
@@ -948,9 +948,9 @@ def get_spore_timeout():
     return random.randrange(60 * 2.5, 60 * 5)
 
 def make_mushroom():
-    mush = Actor('mushdance1')
-    mush.images = ['mushdance1', 'mushdance2', 'mushdance3']
-    mush.fps = 3
+    mush = Actor('pink_oyster1')
+    mush.images = ['pink_oyster1', 'pink_oyster2']
+    mush.fps = 2
     mush.scale = 0.5
     
     # Set up the spiraling behavior with a component
@@ -993,7 +993,7 @@ def make_cannon_spore():
     '''Makes a spore starting at the center of the cannon and heading toward
     Maxine.'''
     if game.cannon_in_level:
-        spore = Actor('spore')
+        spore = Actor('spore1')
         spore.images = ['spore1', 'spore2', 'spore3']
         spore.scale = 0.25
         spore.pos = game.cannon.pos
