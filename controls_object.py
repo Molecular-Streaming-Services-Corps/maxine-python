@@ -81,10 +81,11 @@ class Controls:
         #corner_display = 'spike_graph'
         self.corner_display = 'continuous_graph'
 
-        tv = Actor('tv1')
-        tv.images = ('tv1', 'tv2', 'tv3')
-        tv.right = 1800
-        tv.fps = 5
+        # Place a TV frame over the corner display.
+        tv = Actor('tv')
+        tv.images = ['tv']
+        tv.center = (1467 + 158, 20 + 100)
+        tv.fps = 1
         self.tv = tv
         
         self.controls = [self.voltage_knob, self.zap_lever, self.syringemeter,
@@ -266,8 +267,8 @@ class Controls:
         if self.corner_display == 'continuous_graph':
             self.cg.draw()
 
-        if self.corner_display == 'tv':
-            self.tv.draw()
+        # Draw the TV frame after the graph so it is on top of the graph.
+        self.tv.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
