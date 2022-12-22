@@ -24,3 +24,7 @@ DRAW_GRID = False
 
 # Multiplier for the speed of Maxine and all enemies. 1 is normal speed.
 SPEED = 1
+
+# Should this be determined dynamically?
+MIN_RMS = 800
+MAX_RMS = 4000

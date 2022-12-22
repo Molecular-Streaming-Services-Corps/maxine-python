@@ -166,6 +166,12 @@ class Data:
             
         return False
 
+    @staticmethod
+    def rms(samples):
+        samples = samples.astype('float32')
+        ret = np.sqrt(np.mean(samples ** 2))
+        return ret
+
 class LiveData(Data):
     def __init__(self, num_boxes):
         super().__init__()

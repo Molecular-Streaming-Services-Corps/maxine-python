@@ -1,3 +1,5 @@
+import math
+
 import constants
 
 MAXINE_START = (constants.CENTER[0] + 200, constants.CENTER[1]) #(200, 600)
@@ -67,6 +69,8 @@ class Game:
         self.frames_per_character = 2
 
         self.step_count = 0
+        
+        self.rms_last_second = None
 
     def draw(self, screen):
         #screen.draw.text(self.get_question_section(), center = (255, 835), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
@@ -211,4 +215,21 @@ class Game:
         monster.disappear_timer = 31
         
         self.reward_maxine()
+
+    def cannon_dance(self):
+        if self.rms_last_second is None or math.isnan(self.rms_last_second):
+            self.cannon.fps = 1
+            return
+        
+        rms_range = constants.MAX_RMS - constants.MIN_RMS
+        if self.rms_last_second > constants.MAX_RMS:
+            rms = constants.MAX_RMS
+        elif self.rms_last_second < constants.MIN_RMS:
+            rms = constants.MIN_RMS
+        else:
+            rms = self.rms_last_second
+
+        ratio = (rms - constants.MIN_RMS) / rms_range
+        # It's more fun if his minimum speed is 1 fps instead of 0 fps
+        self.cannon.fps = int(10 * ratio) + 1
 

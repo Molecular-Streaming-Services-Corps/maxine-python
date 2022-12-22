@@ -275,6 +275,7 @@ def update():
     global sg, cg, vlr
     global controls
     global data_number
+    global game
 
     if keyboard.q:
         import sys; sys.exit(0)
@@ -311,6 +312,10 @@ def update():
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
         d.get_one_frame_current()
+
+        last_second = d.get_last_n_samples(100000)
+        game.rms_last_second = data.Data.rms(last_second)
+        logger.debug('RMS of last second: %s', game.rms_last_second)
 
         frame = d.get_frame()
                 
@@ -802,6 +807,10 @@ def update_for_maxine_player():
             switch_level_timeout -=1
         else:
             start_next_level()
+    
+    # Make the mushroom boss vibrate at a different speed depending on RMS
+    if game.cannon_in_level:
+        game.cannon_dance()
 
 def point_outside_signal_ring(point):
     '''Calculate if a position is colliding with the torus. From Math StackExchange.'''
