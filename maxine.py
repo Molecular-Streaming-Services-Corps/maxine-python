@@ -315,7 +315,6 @@ def update():
 
         last_second = d.get_last_n_samples(100000)
         game.rms_last_second = data.Data.rms(last_second)
-        logger.debug('RMS of last second: %s', game.rms_last_second)
 
         frame = d.get_frame()
                 
@@ -357,6 +356,9 @@ def update():
     
         spikes = d.load_received_samples_and_count_spikes()
     
+        last_second = d.get_last_n_frames(100000 // 5120)
+        game.rms_last_second = data.Data.rms(last_second)
+
         frame = d.get_frame()
         
         if spikes > 0:
