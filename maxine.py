@@ -193,6 +193,8 @@ def draw():
         monster.draw()
     for monster in game.bouncing_monsters:
         monster.draw()
+    for monster in game.walking_monsters:
+        monster.draw()
     for monster in game.dead_monsters:
         monster.draw()
     for monster in game.maze_monsters:
@@ -683,6 +685,31 @@ def update_for_maxine_player():
             # Set a disappear timer in frames.
             monster.disappear_timer = 31
 
+    wm_to_blow_up = set()
+    # Process spinning monsters that go to the other side
+    for monster in game.walking_monsters:
+        monster.animate()
+    
+        monster.x += monster.delta_x
+        
+        if point_outside_signal_ring(monster.pos):
+            wm_to_blow_up.add(monster)
+        
+        # Punish Maxine if she collides with a walking monster
+        if game.maxine.collide_pixel(monster):
+            wm_to_blow_up.add(monster)
+            game.punish_maxine()
+    
+    for monster in wm_to_blow_up:
+        game.walking_monsters.remove(monster)
+        game.dead_monsters.add(monster)
+        monster.images = game.boom_images()
+        monster.fps = 30
+        monster.scale = 0.25
+        
+        # Set a disappear timer in frames.
+        monster.disappear_timer = 31            
+
     # Level 5 Code
     # Get the gurk cannon to make a ring of spores and throw them at Maxine
     if level == 5:
@@ -855,6 +882,7 @@ def finished_level():
     game.spiraling_monsters.clear()
     game.dead_monsters.clear()
     game.bouncing_monsters.clear()
+    game.walking_monsters.clear()
     game.projectiles.clear()
     game.maze_monsters.clear()
     
@@ -989,6 +1017,28 @@ def make_bouncer():
     
     return bouncer
 
+# Levels 1-5
+def make_spinner():
+    spinner = Actor('spinshroom1')
+    spinner.images = ['spinshroom'+str(i) for i in range(1, 9)]
+    spinner.fps = 10
+    spinner.scale = 0.2
+    
+    # Randomly start on the left or right side of the signal ring
+    side = random.choice(['left', 'right'])
+    
+    r = constants.TORUS_INNER_RADIUS
+    theta = 0 if side == 'right' else 180
+    (x, y) = util.pol2cart(r, theta)
+    coords = util.adjust_coords(x, y)
+
+    spinner.pos = coords
+
+    speed = 3
+    spinner.delta_x = -speed if side == 'right' else speed
+    
+    return spinner
+    
 def bounce_off_wall(monster):
     new_direction = random.randrange(0, 360)
     monster.angle = new_direction
@@ -1068,15 +1118,24 @@ def add_cell():
     if game_state != 'playing':
         return
         
-    if level in [1, 3]:
-        mush = make_mushroom()
-        game.spiraling_monsters.add(mush)
-    elif level in [2, 4, 5]:
-        bouncer = make_bouncer()
-        game.bouncing_monsters.add(bouncer)
-    elif level in [6, 7]:
-        dragon = make_dragon()
-        game.maze_monsters.add(dragon)
+    make_normal_monster = True
+    # Sometimes add spinning mushrooms instead of the normal kind.
+    if level in [1, 2, 3, 4, 5]:
+        if random.randrange(0, 3) == 0:
+            spinner = make_spinner()
+            game.walking_monsters.add(spinner)
+            make_normal_monster = False
+    
+    if make_normal_monster:
+        if level in [1, 3]:
+            mush = make_mushroom()
+            game.spiraling_monsters.add(mush)
+        elif level in [2, 4, 5]:
+            bouncer = make_bouncer()
+            game.bouncing_monsters.add(bouncer)
+        elif level in [6, 7]:
+            dragon = make_dragon()
+            game.maze_monsters.add(dragon)
 
     if STANDALONE:
         delay = random.randrange(5, 8)

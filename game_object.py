@@ -31,6 +31,7 @@ class Game:
 
         self.spiraling_monsters = set()
         self.bouncing_monsters = set()
+        self.walking_monsters = set()
         self.dead_monsters = set()
         self.maze_monsters = set()
         self.items = set()
