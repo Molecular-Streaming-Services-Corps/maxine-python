@@ -602,8 +602,12 @@ def update_for_maxine_player():
             monster.angle = (ss.angle + 90) % 360
             
             # Blow up the monster when it gets to the center for now
-            if util.distance_points(monster.center, constants.CENTER) < 20:
-                sm_to_blow_up.add(monster)
+            if game.cannon_in_level:
+                if monster.collide_pixel(game.cannon):
+                    sm_to_blow_up.add(monster)
+            else:
+                if util.distance_points(monster.center, constants.CENTER) < 20:
+                    sm_to_blow_up.add(monster)
 
             # Blow up monsters that collide with Maxine
             if game.maxine.collide_pixel(monster):
@@ -666,9 +670,14 @@ def update_for_maxine_player():
                 bounce_off_wall(monster)
 
             # Blow up the monster when it gets to the center and reward Maxine
-            if util.distance_points(monster.center, constants.CENTER) < 45:
-               bm_to_blow_up.add(monster)
-               game.reward_maxine()
+            if game.cannon_in_level:
+                if monster.collide_pixel(game.cannon):
+                    bm_to_blow_up.add(monster)
+                    game.reward_maxine()
+            else:
+                if util.distance_points(monster.center, constants.CENTER) < 45:
+                   bm_to_blow_up.add(monster)
+                   game.reward_maxine()
 
             # Punish Maxine if she collides with a bouncing monster
             if game.maxine.collide_pixel(monster):
