@@ -18,6 +18,9 @@ class Grid:
         
         return ret
 
+    def get_row_size(self, row):
+        return len(self.grid[row])
+
     def get_rows(self):
         return self.grid
         
@@ -142,7 +145,7 @@ class PolarGrid(Grid):
                 continue
                 
             # Uses radians.
-            theta        = 2 * math.pi / len(self.grid[cell.row])
+            theta        = 2 * math.pi / self.get_row_size(cell.row)
             inner_radius = cell.row * cell_size
             outer_radius = (cell.row + 1) * cell_size
             theta_ccw    = cell.column * theta
@@ -248,7 +251,6 @@ class PolarGrid(Grid):
         
         screen.draw.text(binding, pos,
            fontname = 'segoeuisymbol.ttf', color = "red")
-
         
     def make_room_row(self, row, ccw_column, cw_column, connect_inward = False):
         for i in range(ccw_column, cw_column):
@@ -298,6 +300,12 @@ class PolarGrid(Grid):
 
     def setup_distances_from_root(self, root):
         self.distances = root.distances(self)
+
+    def get_angle(self, cell):
+        '''Get the angle of cell. Uses degrees.'''
+        theta        = 360 / self.get_row_size(cell.row)
+        ret = (cell.column + 0.5) * theta
+        return ret
 
 # Cell classes
     
