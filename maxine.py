@@ -993,6 +993,9 @@ def start_next_level():
         game.maxine.map_x = 0
         game.maxine.map_y = 0
         
+        game.draw_panels = False
+        game.set_torus_outer_size(WIDTH, HEIGHT)
+        
         lwm = world_map.LogarithmicWorldMap(game, 3000)
 
         maze = mazes.PolarGrid(60, lwm)
@@ -1004,8 +1007,6 @@ def start_next_level():
         for m in other_maxines:
             m.gridnav = components.PolarGridNavigation(maze,
                 maze.get_random_cell(), game, 15 // constants.SPEED)
-
-        game.draw_panels = False
 
     if level in [6, 7, 8]:
         game.draw_spirals = False

@@ -82,8 +82,11 @@ class Game:
         self.draw_panels = True
         
         # Size of the play ring
-        self.torus_outer_height = 900
-        self.torus_outer_width = 1280
+        self.set_torus_outer_size(1280, 900)
+
+    def set_torus_outer_size(self, width, height):
+        self.torus_outer_height = height
+        self.torus_outer_width = width
 
         self.torus_inner_height = self.torus_outer_height - constants.TORUS_THICKNESS  * 2
         self.torus_inner_width = self.torus_outer_width - constants.TORUS_THICKNESS * 2
@@ -92,7 +95,6 @@ class Game:
         self.ring_height = self.torus_outer_height - 66
         self.ring_width = self.torus_outer_width - 66
         self.ring_radius = min(self.ring_height, self.ring_width) // 2
-
 
     def make_other_maxines(self):
         '''Make all of the 8 other Maxines.'''
