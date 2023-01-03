@@ -30,6 +30,7 @@ class PolarGridNavigation(GridNavigation):
         self.next_cell = None
         self.num_frames_for_move = num_frames_for_move
         self.num_frames_moved = 0
+        self.sprite_direction = 'neutral'
         
     def move_inward(self):
         next_cell =  self.in_cell.inward
@@ -41,6 +42,17 @@ class PolarGridNavigation(GridNavigation):
             if bumped: self.next_cell = None
             for monster in bumped:
                 self.game.hit_maze_monster(monster)
+            
+            # Change Maxine's sprite
+            angle = self.grid.get_angle(self.in_cell)
+            if angle < 45 or angle > 315:
+                self.sprite_direction = 'down'
+            elif angle >= 45 and angle < 135:
+                self.sprite_direction = 'left'
+            elif angle >= 135 and angle < 225:
+                self.sprite_direction = 'up'
+            else:
+                self.sprite_direction = 'right'
     
     def move_ccw(self):
         next_cell = self.in_cell.ccw
@@ -53,6 +65,15 @@ class PolarGridNavigation(GridNavigation):
             for monster in bumped:
                 self.game.hit_maze_monster(monster)
 
+            angle = self.grid.get_angle(self.in_cell)
+            if angle < 45 or angle > 315:
+                self.sprite_direction = 'left'
+            elif angle >= 45 and angle < 135:
+                self.sprite_direction = 'up'
+            elif angle >= 135 and angle < 225:
+                self.sprite_direction = 'right'
+            else:
+                self.sprite_direction = 'down'
 
     def move_cw(self):
         next_cell = self.in_cell.cw
@@ -65,6 +86,15 @@ class PolarGridNavigation(GridNavigation):
             for monster in bumped:
                 self.game.hit_maze_monster(monster)
 
+            angle = self.grid.get_angle(self.in_cell)
+            if angle < 45 or angle > 315:
+                self.sprite_direction = 'right'
+            elif angle >= 45 and angle < 135:
+                self.sprite_direction = 'down'
+            elif angle >= 135 and angle < 225:
+                self.sprite_direction = 'left'
+            else:
+                self.sprite_direction = 'up'
 
     def move_outward(self, n):
         '''Moves to the nth outward neighbor. Every cell has at least the 0th outward neighbor
@@ -78,6 +108,16 @@ class PolarGridNavigation(GridNavigation):
             if bumped: self.next_cell = None
             for monster in bumped:
                 self.game.hit_maze_monster(monster)
+    
+            angle = self.grid.get_angle(self.in_cell)
+            if angle < 45 or angle > 315:
+                self.sprite_direction = 'up'
+            elif angle >= 45 and angle < 135:
+                self.sprite_direction = 'right'
+            elif angle >= 135 and angle < 225:
+                self.sprite_direction = 'down'
+            else:
+                self.sprite_direction = 'left'
     
     def process_keypress(self, keyboard):
         '''Process a keypress by moving. Only relevant to Maxine.
@@ -134,6 +174,8 @@ class PolarGridNavigation(GridNavigation):
     
     def update(self):
         if self.num_frames_moved == self.num_frames_for_move:
+            self.sprite_direction = 'neutral'
+        
             self.in_cell = self.next_cell
             self.next_cell = None
             self.num_frames_moved = 0

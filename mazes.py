@@ -302,9 +302,10 @@ class PolarGrid(Grid):
         self.distances = root.distances(self)
 
     def get_angle(self, cell):
-        '''Get the angle of cell. Uses degrees.'''
+        '''Get the angle of cell. Uses degrees. Starts at the top and goes clockwise.'''
         theta        = 360 / self.get_row_size(cell.row)
-        ret = (cell.column + 0.5) * theta
+        ret = (cell.column) * theta + 90
+        ret = ret % 360
         return ret
 
 # Cell classes

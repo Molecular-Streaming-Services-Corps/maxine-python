@@ -559,6 +559,9 @@ def update_for_maxine_player():
             if gn.just_moved:
                 maze.setup_distances_from_root(gn.in_cell)
 
+            # Update sprite
+            game.maxine.images = ['maxine_' + gn.sprite_direction]
+            
     # Move Maxine on the Logarithmic Map
     if level == 7 and lwm:
         FREELY_MOVING = False
@@ -584,6 +587,9 @@ def update_for_maxine_player():
             
             if gn.just_moved:
                 maze.setup_distances_from_root(gn.in_cell)
+                
+            # Update sprite
+            game.maxine.images = ['maxine_' + gn.sprite_direction]
 
     # Cannon Behavior
     if level in [3, 4, 5]:
