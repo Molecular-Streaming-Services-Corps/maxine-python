@@ -1122,7 +1122,7 @@ def make_cannon_spore():
         return spore
 
 # Levels 6-8
-def make_dragon():
+def make_dragon(near_center = False):
     '''Makes a dragon that moves around inside the maze. Randomly to start
     with.'''
     global maze
@@ -1131,7 +1131,11 @@ def make_dragon():
     dragon.images = ['dragon_tyrant_a']
     dragon.scale = 1 / 32
     # TODO don't spawn on top of another dragon or Maxine
-    dragon.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game,
+    if not near_center:
+        loc = maze.get_random_cell()
+    else:
+        loc = maze.get_random_cell_near_center(5)
+    dragon.gridnav = components.PolarGridNavigation(maze, loc , game,
      60 // constants.SPEED)
     dragon.ai = components.RandomMazeAI(dragon.gridnav)
     dragon.center = dragon.gridnav.get_location()
@@ -1197,12 +1201,19 @@ def add_cell():
         elif level in [2, 4, 5]:
             bouncer = make_bouncer()
             game.bouncing_monsters.add(bouncer)
-        elif level in [6, 7, 8]:
+        elif level in [6, 7]:
             dragon = make_dragon()
             game.maze_monsters.add(dragon)
+        elif level == 8:
+            dragon = make_dragon(True)
+            game.maze_monsters.add(dragon)            
 
     if STANDALONE:
-        delay = random.randrange(5, 8)
+        # Monsters come faster in Battle Royale
+        if level == 8:
+            delay = random.uniform(1, 2)
+        else:
+            delay = random.uniform(5, 8)
         clock.schedule_unique(add_cell, delay)
 
 import parse_arguments
