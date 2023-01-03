@@ -12,6 +12,9 @@ lose when she is a quarter of the size.'''
 MAXINE_WIN_SIZE = 4
 MAXINE_LOSE_SIZE = 0.25
 
+# Singleton
+game = None
+
 class Game:
     def __init__(self, Actor, sounds, images, clock):
         self.Actor = Actor
@@ -75,7 +78,21 @@ class Game:
         
         self.rms_last_second = None
 
+        # These are changed in the Battle Royale level
         self.draw_panels = True
+        
+        # Size of the play ring
+        self.torus_outer_height = 900
+        self.torus_outer_width = 1280
+
+        self.torus_inner_height = self.torus_outer_height - constants.TORUS_THICKNESS  * 2
+        self.torus_inner_width = self.torus_outer_width - constants.TORUS_THICKNESS * 2
+        self.torus_inner_radius = min(self.torus_inner_height, self.torus_inner_width) // 2
+
+        self.ring_height = self.torus_outer_height - 66
+        self.ring_width = self.torus_outer_width - 66
+        self.ring_radius = min(self.ring_height, self.ring_width) // 2
+
 
     def make_other_maxines(self):
         '''Make all of the 8 other Maxines.'''

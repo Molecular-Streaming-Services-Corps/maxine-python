@@ -41,7 +41,7 @@ class LogarithmicWorldMap(WorldMap):
         # Converts map radiuses between 0 and 1000 into nonlinear radiuses
         # between 0 and 1
         viewport_r_log = math.log(map_r * 32 + 1, 32)
-        viewport_r = viewport_r_log * constants.TORUS_INNER_RADIUS
+        viewport_r = viewport_r_log * self.game.torus_inner_radius
         # The angle (theta) remains the same.
         # x and y are in screen coordinates
         x, y = util.pol2cart(viewport_r, map_theta)

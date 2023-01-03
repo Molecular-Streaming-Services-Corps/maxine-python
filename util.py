@@ -2,6 +2,7 @@ import numpy as np
 import math
 
 import constants
+import game_object
 
 def process_joystick_data(joystick_data):
     binary_string = bin(joystick_data)[2:]
@@ -67,7 +68,8 @@ class SpiralState:
 def adjust_coords(x, y):
     # Stretch in the x dimension to match the greater width of the torus,
     # and then add the center to the Cartesian coordinates
-    WIDTH_TO_HEIGHT_RATIO = constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT
+    ga = game_object.game
+    WIDTH_TO_HEIGHT_RATIO = ga.torus_inner_width / ga.torus_inner_height
 
     (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
     (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])
@@ -76,7 +78,8 @@ def adjust_coords(x, y):
 def adjust_coords_ring(x, y):
     '''Used by the signal ring. It's based on the signal ring's size
     rather than the torus's size.'''
-    WIDTH_TO_HEIGHT_RATIO = constants.RING_WIDTH / constants.RING_HEIGHT
+    ga = game_object.game
+    WIDTH_TO_HEIGHT_RATIO = ga.ring_width / ga.ring_height
 
     (x, y) = (WIDTH_TO_HEIGHT_RATIO * x, y)
     (x, y) = (x + constants.CENTER[0], y + constants.CENTER[1])

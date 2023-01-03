@@ -7,6 +7,7 @@ import util
 import constants
 import data
 import colors
+import game_object
 
 # Set up logger for this module
 logger = logging.getLogger('graphs')
@@ -19,8 +20,9 @@ logger.addHandler(handler)
 class VerticalLineRing:
     '''Draws a vertical-line based signal ring using sample data. It uses
     constants.NUM_BOXES to choose the number of vertical lines on the ring.'''
-    def __init__(self, screen, live, num_frames):
+    def __init__(self, screen, game, live, num_frames):
         self.screen = screen
+        self.game = game
         self.samples = []
         self.present_box = 0
         self.line_extent = 25
@@ -114,12 +116,12 @@ class VerticalLineRing:
         
     def draw_line(self, theta, top, bottom, color):
         # Calculate the coordinates for the inner end of the line
-        r = constants.RING_RADIUS + top
+        r = self.game.ring_radius + top
         (inner_x, inner_y) = util.pol2cart(r, theta)
         inner_coords = util.adjust_coords_ring(inner_x, inner_y)
         
         # Calculate the coordinates for the outer end of the line
-        r = constants.RING_RADIUS + bottom
+        r = self.game.ring_radius + bottom
         (outer_x, outer_y) = util.pol2cart(r, theta)
         outer_coords = util.adjust_coords_ring(outer_x, outer_y)
         
@@ -393,15 +395,16 @@ def draw_graph(i, d, graph_type, screen, STANDALONE):
 torus_image = None
 def draw_torus(screen, images):
     global torus_image
+    ga = game_object.game
     if not torus_image:
         #image_width = 629
         #image_height = 470
-        scale = (constants.TORUS_OUTER_WIDTH, constants.TORUS_OUTER_HEIGHT)
+        scale = (ga.torus_outer_width, ga.torus_outer_height)
         
         surf = images.torus
         torus_image = pygame.transform.scale(surf, scale)
         
-    left = constants.CENTER[0] - constants.TORUS_OUTER_WIDTH // 2
-    top = constants.CENTER[1] - constants.TORUS_OUTER_HEIGHT // 2
+    left = constants.CENTER[0] - ga.torus_outer_width // 2
+    top = constants.CENTER[1] - ga.torus_outer_height // 2
     screen.blit(torus_image, (left, top))
 

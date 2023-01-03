@@ -5,6 +5,7 @@ import pygame
 import constants
 import util
 import colors
+import game_object
 
 # Grid classes
 
@@ -138,7 +139,7 @@ class PolarGrid(Grid):
         if self.world_map:
             cell_size = self.world_map.map_radius // self.rows
         else:
-            cell_size = constants.TORUS_INNER_RADIUS // self.rows        
+            cell_size = game_object.game.torus_inner_radius // self.rows        
         
         for cell in self.get_cells():
             if cell.row == 0:
@@ -282,7 +283,7 @@ class PolarGrid(Grid):
         if self.world_map:
             cell_size = self.world_map.map_radius // self.rows
         else:
-            cell_size = constants.TORUS_INNER_RADIUS // self.rows        
+            cell_size = game_object.game.torus_inner_radius // self.rows        
         
         # Uses radians.
         theta        = 2 * math.pi / len(self.grid[cell.row])

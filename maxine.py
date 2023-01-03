@@ -40,6 +40,7 @@ WIDTH = constants.WIDTH
 HEIGHT = constants.HEIGHT
 
 game = game_object.Game(Actor, sounds, images, clock)
+game_object.game = game
 
 #graph_type = 'heatmap'
 graph_type = 'line_ring'
@@ -214,8 +215,8 @@ def draw():
 
     # Draw the signal ring.
     RED = (200, 0, 0)
-    ring_rect = Rect((constants.CENTER[0] - constants.RING_WIDTH / 2, constants.CENTER[1] - constants.RING_HEIGHT / 2), 
-                     (constants.RING_WIDTH, constants.RING_HEIGHT))
+    ring_rect = Rect((constants.CENTER[0] - game.ring_width / 2, constants.CENTER[1] - game.ring_height / 2), 
+                     (game.ring_width, game.ring_height))
     pygame.draw.ellipse(screen.surface, RED, ring_rect, width = 1)
     
     if game.draw_spirals:
@@ -254,14 +255,14 @@ def draw_metal_background():
 i = 0
 
 def draw_spiral(rotation, color):
-    global lwm
+    global lwm, game
     
     GAP = 0.5
     
     if lwm:
         MAX_THETA = lwm.map_radius * 2
     else:
-        MAX_THETA = constants.TORUS_INNER_HEIGHT
+        MAX_THETA = game.torus_inner_height
     STEP_DEGREES = 10
     
     for theta in range(0, MAX_THETA, STEP_DEGREES):
@@ -304,9 +305,9 @@ def update():
 
     if not vlr:
         if LIVE:
-            vlr = graphs.VerticalLineRing(screen, LIVE, 20 * 5)
+            vlr = graphs.VerticalLineRing(screen, game, LIVE, 20 * 5)
         else:
-            vlr = graphs.VerticalLineRing(screen, LIVE, constants.NUM_BOXES)
+            vlr = graphs.VerticalLineRing(screen, game, LIVE, constants.NUM_BOXES)
     
     if not controls:
         controls = controls_object.Controls(Actor, serializer, LIVE, PLAYER, screen)
@@ -759,7 +760,7 @@ def update_for_maxine_player():
             for spore in game.projectiles:
                 spore.speed = 3
                 ss = util.SpiralState(
-                0.5, rotation, constants.RING_HEIGHT - 10, 1, constants.CENTER, constants.RING_WIDTH / constants.RING_HEIGHT)
+                0.5, rotation, game.ring_height - 10, 1, constants.CENTER, game.ring_width / game.ring_height)
                 ss.update()
                 spore.angle = (ss.angle + 90) % 360
         else:
@@ -840,8 +841,8 @@ def update_for_maxine_player():
 
 def point_outside_signal_ring(point):
     '''Calculate if a position is colliding with the torus. From Math StackExchange.'''
-    rx = constants.TORUS_INNER_WIDTH / 2
-    ry = constants.TORUS_INNER_HEIGHT / 2
+    rx = game.torus_inner_width / 2
+    ry = game.torus_inner_height / 2
     scaled_coords = (point[0] - constants.CENTER[0],
                      (point[1] - constants.CENTER[1]) * rx/ry)
     return np.linalg.norm(scaled_coords, 2) > rx
@@ -1051,7 +1052,7 @@ def make_mushroom():
     # Set up the spiraling behavior with a component
     rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(
-        0.5, rotation, constants.TORUS_INNER_HEIGHT, 1 * constants.SPEED, constants.CENTER, constants.TORUS_INNER_WIDTH / constants.TORUS_INNER_HEIGHT)
+        0.5, rotation, game.torus_inner_height, 1 * constants.SPEED, constants.CENTER, game.torus_inner_width / game.torus_inner_height)
     
     # Set the mushroom up to spawn a spore
     mush.spore_timeout = get_spore_timeout()
@@ -1068,7 +1069,7 @@ def make_bouncer():
     bouncer.fps = 1
     
     # Give it an initial position on the signal ring
-    r = constants.TORUS_INNER_RADIUS
+    r = game.torus_inner_radius
     theta = random.randrange(0, 360)
     (x, y) = util.pol2cart(r, theta)
     coords = util.adjust_coords(x, y)
@@ -1089,7 +1090,7 @@ def make_spinner():
     # Randomly start on the left or right side of the signal ring
     side = random.choice(['left', 'right'])
     
-    r = constants.TORUS_INNER_RADIUS
+    r = game.torus_inner_radius
     theta = 0 if side == 'right' else 180
     (x, y) = util.pol2cart(r, theta)
     coords = util.adjust_coords(x, y)
