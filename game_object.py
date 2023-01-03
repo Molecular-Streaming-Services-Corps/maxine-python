@@ -75,6 +75,8 @@ class Game:
         
         self.rms_last_second = None
 
+        self.draw_panels = True
+
     def make_other_maxines(self):
         '''Make all of the 8 other Maxines.'''
         for i in range(0, 8):

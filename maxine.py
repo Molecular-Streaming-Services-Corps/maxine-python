@@ -132,7 +132,8 @@ def draw():
     
     draw_living_background()
 
-    skirt.draw()
+    if game.draw_panels:
+        skirt.draw()
     
     # Draw the microscope video in front of the background and behind the signal ring
     video_ops.draw_video(screen)
@@ -154,32 +155,34 @@ def draw():
     if level == 7 and lwm and constants.DRAW_GRID:
         lwm.draw_grid(screen)
         
-    helpbutton.draw()
-    dataglobe.draw()
-    databutton.draw()
-    brainpod.draw()
-    brainalert.draw()
-    chatwindow.draw()
-    peoplebutton.draw()
-    audioselector.draw()
+    if game.draw_panels:
+        helpbutton.draw()
+        dataglobe.draw()
+        databutton.draw()
+        brainpod.draw()
+        brainalert.draw()
+        chatwindow.draw()
+        peoplebutton.draw()
+        audioselector.draw()
 
-    # Now we draw the controls for both players.
-    controls.draw()
+        # Now we draw the controls for both players.
+        controls.draw()
     
     if dev_control:
         dev_control.draw()
 
-    #Draw Player Images   
-    challenger_image.draw()    
-    console_image.draw()
+    #Draw Player Images
+    if game.draw_panels:
+        challenger_image.draw()    
+        console_image.draw()
 
-    screen.draw.text('instantLife: ' + str(game.challenger_score), (90, 160))
-    screen.draw.text('kemmishTree: ' + str(game.console_score), (90, 220))
+        screen.draw.text('instantLife: ' + str(game.challenger_score), (90, 160))
+        screen.draw.text('kemmishTree: ' + str(game.console_score), (90, 220))
 
-    screen.draw.text(str(data_number), center = (1655, 320), fontname = "ds-digi.ttf", fontsize = 50, color = "red")
-    screen.draw.text(str(data_text), center = (1655, 400), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
+        screen.draw.text(str(data_number), center = (1655, 320), fontname = "ds-digi.ttf", fontsize = 50, color = "red")
+        screen.draw.text(str(data_text), center = (1655, 400), fontname = "ds-digi.ttf", fontsize = 20, color = "red")
 
-    game.draw(screen)
+        game.draw(screen)
 
     # Draw Cannon
     if game.cannon_in_level:
@@ -1000,6 +1003,8 @@ def start_next_level():
         for m in other_maxines:
             m.gridnav = components.PolarGridNavigation(maze,
                 maze.get_random_cell(), game, 15 // constants.SPEED)
+
+        game.draw_panels = False
 
     if level in [6, 7, 8]:
         game.draw_spirals = False
