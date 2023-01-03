@@ -11,11 +11,11 @@ class WorldMap:
         self.viewport_height = viewport_height
 
 class LogarithmicWorldMap(WorldMap):
-    '''Circular world map with a radius of 1000. On screen, objects shrink
+    '''Circular world map with a default radius of 1000. On screen, objects shrink
     and move slower as they get nearer the edge of the map. Specifically they
     move onscreen the logarithm of the distance they move on the map.'''
-    def __init__(self, game):
-        self.map_radius = 1000
+    def __init__(self, game, radius = 1000):
+        self.map_radius = radius
         self.game = game
 
     def convert_coords(self, map_x, map_y):

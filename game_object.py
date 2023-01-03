@@ -40,6 +40,9 @@ class Game:
         
         self.projectiles = set()
         
+        # Only to be used in the simulated Battle Royale mode
+        self.other_maxines = []
+        
         self.challenger_score = 0
         self.console_score = 0
 
@@ -71,6 +74,18 @@ class Game:
         self.step_count = 0
         
         self.rms_last_second = None
+
+    def make_other_maxines(self):
+        '''Make all of the 8 other Maxines.'''
+        for i in range(0, 8):
+            maxine = self.Actor('maxine_neutral')
+            maxine.images = ['maxine_neutral']
+            maxine.pos = MAXINE_START
+            maxine.alive = True
+            maxine.scale = MAXINE_INITIAL_SCALE
+            self.other_maxines.append(maxine)
+       
+        return self.other_maxines
 
     def draw(self, screen):
         #screen.draw.text(self.get_question_section(), center = (255, 835), fontname = "ds-digi.ttf", fontsize = 20, color = "red")

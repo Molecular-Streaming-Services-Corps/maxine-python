@@ -145,7 +145,7 @@ def draw():
         graphs.draw_graph(i, d, graph_type, screen, STANDALONE)
         
     # Dragon Tyrant level
-    if level in [6, 7] and maze:
+    if level in [6, 7, 8] and maze:
         maze.draw(screen, Actor)
         
         if constants.DRAW_CONTROLS and hasattr(game.maxine, 'gridnav'):
@@ -204,6 +204,10 @@ def draw():
         
     for p in game.projectiles:
         p.draw()
+
+    # Only use in Level 8 Battle Royale
+    for m in game.other_maxines:
+        m.draw()
 
     # Draw the signal ring.
     RED = (200, 0, 0)
@@ -508,7 +512,7 @@ def update_for_maxine_player():
     # s is Maxine's speed per frame.
     s = 6 * constants.SPEED
     
-    if game.maxine.alive and level not in [6, 7]:
+    if game.maxine.alive and level not in [6, 7, 8]:
         prev_pos = game.maxine.pos
 
         # Put Maxine back into neutral position when she's not moving.
@@ -563,7 +567,7 @@ def update_for_maxine_player():
             game.maxine.images = ['maxine_' + gn.sprite_direction]
             
     # Move Maxine on the Logarithmic Map
-    if level == 7 and lwm:
+    if level in [7, 8] and lwm:
         FREELY_MOVING = False
         if FREELY_MOVING:
             if keyboard.left:
@@ -590,6 +594,17 @@ def update_for_maxine_player():
                 
             # Update sprite
             game.maxine.images = ['maxine_' + gn.sprite_direction]
+    
+    # Code to give other Maxines a location
+    if level == 8 and lwm:
+        for m in game.other_maxines:
+            if hasattr(m, 'gridnav'):
+                gn = m.gridnav
+                gn.update()
+                m.map_x, m.map_y = gn.get_location()
+                
+                m.center = lwm.convert_coords(m.map_x, m.map_y)
+                m.scale = lwm.convert_scale(m, images)
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -755,14 +770,14 @@ def update_for_maxine_player():
                 game.cannon_blast_timeout = game.cannon_blast_delay
                 game.cannon_shooting = True
 
-    # Level 6 code
+    # Level 6-8 code
     for monster in game.maze_monsters:
         monster.gridnav.update()
         monster.ai.update()
         monster.center = monster.gridnav.get_location()
 
-    # Level 7 code (maze with a world map)
-    if level == 7:
+    # Level 7-8 code (maze with a world map)
+    if level in [7, 8]:
         for monster in game.maze_monsters:
             monster.gridnav.update()
             monster.ai.update()
@@ -775,7 +790,7 @@ def update_for_maxine_player():
             item.center = lwm.convert_coords(item.map_x, item.map_y)
             item.scale = 1 / 8 * lwm.convert_scale(item, images)            
 
-    # Level 6-7 code for collecting items
+    # Level 6-8 code for collecting items
     if hasattr(game.maxine, 'gridnav'):
         items_collected = []
         for item in game.items:
@@ -963,14 +978,30 @@ def start_next_level():
         game.maxine.map_x = 0
         game.maxine.map_y = 0
         
-        lwm = world_map.LogarithmicWorldMap(game)
+        lwm = world_map.LogarithmicWorldMap(game, 1000)
 
         maze = mazes.PolarGrid(20, lwm)
         mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
         maze.braid()
         maze.remove_walls(0.2)
+        
+    if level == 8:
+        game.maxine.map_x = 0
+        game.maxine.map_y = 0
+        
+        lwm = world_map.LogarithmicWorldMap(game, 3000)
 
-    if level in [6, 7]:
+        maze = mazes.PolarGrid(60, lwm)
+        mazes.GrowingTree.on(maze, mazes.GrowingTree.use_random)
+        maze.braid()
+        maze.remove_walls(0.2)
+        
+        other_maxines = game.make_other_maxines()
+        for m in other_maxines:
+            m.gridnav = components.PolarGridNavigation(maze,
+                maze.get_random_cell(), game, 15 // constants.SPEED)
+
+    if level in [6, 7, 8]:
         game.draw_spirals = False
     
         # Give Maxine a Grid Navigation component
@@ -1083,7 +1114,7 @@ def make_cannon_spore():
         game.projectiles.add(spore)
         return spore
 
-# Levels 6-7
+# Levels 6-8
 def make_dragon():
     '''Makes a dragon that moves around inside the maze. Randomly to start
     with.'''
@@ -1159,7 +1190,7 @@ def add_cell():
         elif level in [2, 4, 5]:
             bouncer = make_bouncer()
             game.bouncing_monsters.add(bouncer)
-        elif level in [6, 7]:
+        elif level in [6, 7, 8]:
             dragon = make_dragon()
             game.maze_monsters.add(dragon)
 
