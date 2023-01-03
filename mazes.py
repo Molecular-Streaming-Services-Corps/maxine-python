@@ -321,6 +321,14 @@ class PolarGrid(Grid):
         cells = self.get_cells_near_center(distance)
         return random.choice(cells)
 
+    def get_cells_near_cell(self, cell, distance):
+        cells = cell.distances(self, distance)
+        return cells
+        
+    def get_random_cell_near_cell(self, cell, distance):
+        cells = self.get_cells_near_cell(cell, distance)
+        return random.choice(cells)
+
 # Cell classes
     
 class Cell:
@@ -368,10 +376,15 @@ class Cell:
         
         return distances
     
-    def distances(self, grid):
+    def distances(self, grid, max_dist = None):
         '''This is the complex version of Dijkstra's algorithm based on
-        Wikipedia. It works for mazes with or without loops.'''
+        Wikipedia. It works for mazes with or without loops.
+        
+        If you don't specify max_dist, you get a Distances object with
+        every distance in the grid. If you specify it, you get a list of
+        cells within that distance.'''
         distances = Distances(self)
+        nearby_cells = set()
         # Using a normal list because heapq doesn't support updating priorities
         q = list(grid.get_cells())
         
@@ -389,6 +402,9 @@ class Cell:
                    
             q.remove(cell)
             
+            if max_dist and min_dist > max_dist:
+                return list(nearby_cells)
+            
             for neighbor in cell.get_links():
                 if neighbor not in q:
                     continue
@@ -397,8 +413,14 @@ class Cell:
                 dist_n = distances[neighbor]
                 if dist_n is None or alt < dist_n:
                     distances[neighbor] = alt
+                    
+                    if max_dist and distances[neighbor] <= max_dist:
+                        nearby_cells.add(neighbor)
         
-        return distances
+        if max_dist:
+            return list(nearby_cells)
+        else:
+            return distances
     
     def __repr__(self):
         return f'{self.__class__.__name__}({self.row}, {self.column})'

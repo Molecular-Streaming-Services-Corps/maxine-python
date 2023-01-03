@@ -1134,7 +1134,7 @@ def make_dragon(near_center = False):
     if not near_center:
         loc = maze.get_random_cell()
     else:
-        loc = maze.get_random_cell_near_center(5)
+        loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 4)
     dragon.gridnav = components.PolarGridNavigation(maze, loc , game,
      60 // constants.SPEED)
     dragon.ai = components.RandomMazeAI(dragon.gridnav)
@@ -1201,12 +1201,9 @@ def add_cell():
         elif level in [2, 4, 5]:
             bouncer = make_bouncer()
             game.bouncing_monsters.add(bouncer)
-        elif level in [6, 7]:
-            dragon = make_dragon()
-            game.maze_monsters.add(dragon)
-        elif level == 8:
+        elif level in [6, 7, 8]:
             dragon = make_dragon(True)
-            game.maze_monsters.add(dragon)            
+            game.maze_monsters.add(dragon)
 
     if STANDALONE:
         # Monsters come faster in Battle Royale
