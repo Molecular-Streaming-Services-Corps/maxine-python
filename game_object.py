@@ -256,10 +256,16 @@ class Game:
         '''Gets a set of occupied cells. Only works in maze levels.'''
         cells = set()
         
-        for monster in self.maze_monsters:
-            cell = monster.gridnav.in_cell
+        for entity in self.maze_monsters:
+            cell = entity.gridnav.in_cell
             cells.add(cell)
-        
+        for entity in [self.maxine]:
+            cell = entity.gridnav.in_cell
+            cells.add(cell)           
+        for entity in self.other_maxines:
+            cell = entity.gridnav.in_cell
+            cells.add(cell)
+    
         return cells
     
     def remove_occupied_cells(self, cell_set):

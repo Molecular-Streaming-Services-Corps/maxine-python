@@ -1145,7 +1145,6 @@ def make_maze_monster(near_center = False):
         monster.fps = 2
         monster.initial_scale = 1 / 10
 
-    # TODO don't spawn on top of another monster or Maxine
     if not near_center:
         loc = maze.get_random_cell()
     else:
@@ -1236,6 +1235,7 @@ def add_cell():
 
 def add_lots_of_maze_monsters():
     NUM_MONSTERS = 200
+    logger.info('Adding %s monsters', NUM_MONSTERS)
     for i in range(0, NUM_MONSTERS):
         monster = make_maze_monster(True)
         game.maze_monsters.add(monster)

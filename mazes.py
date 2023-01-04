@@ -322,6 +322,7 @@ class PolarGrid(Grid):
         return random.choice(cells)
 
     def get_cells_near_cell(self, cell, distance):
+        # TODO see if this takes too long and cache the result for making multiple monsters
         cells = cell.distances(self, distance)
         return cells
         
