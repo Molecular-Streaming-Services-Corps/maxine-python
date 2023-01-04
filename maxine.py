@@ -1128,7 +1128,7 @@ def make_maze_monster(near_center = False):
     with.'''
     global maze
     
-    monster_type = random.choice(['dragon', 'ghost'])
+    monster_type = random.choice(['dragon', 'ghost', 'snake'])
     if monster_type == 'dragon':
         monster = Actor('dragon_tyrant_a')
         monster.images = ['dragon_tyrant_a']
@@ -1138,6 +1138,11 @@ def make_maze_monster(near_center = False):
         monster.images = ['ghost1', 'ghost2', 'ghost3']
         monster.fps = 2
         monster.scale = 1 / 32
+    elif monster_type == 'snake':
+        monster = Actor('snalke1')
+        monster.images = ['snalke1', 'snalke2']
+        monster.fps = 2
+        monster.scale = 1 / 16
 
     # TODO don't spawn on top of another monster or Maxine
     if not near_center:
