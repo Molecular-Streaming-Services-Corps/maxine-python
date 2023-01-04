@@ -134,7 +134,7 @@ class PolarGrid(Grid):
 
     def draw(self, screen, Actor):
         wall = colors.RED
-        DRAW_BRICKS = True
+        DRAW_BRICKS = False
 
         if self.world_map:
             cell_size = self.world_map.map_radius // self.rows
