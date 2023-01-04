@@ -788,7 +788,7 @@ def update_for_maxine_player():
             monster.ai.update()
             monster.map_x, monster.map_y = monster.gridnav.get_location()
             monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
-            monster.scale = 1 / 8 * lwm.convert_scale(monster, images)
+            monster.scale = 4 * monster.initial_scale * lwm.convert_scale(monster, images)
 
         for item in game.items:
             item.map_x, item.map_y = item.gridnav.get_location()
@@ -1132,23 +1132,23 @@ def make_maze_monster(near_center = False):
     if monster_type == 'dragon':
         monster = Actor('dragon_tyrant_a')
         monster.images = ['dragon_tyrant_a']
-        monster.scale = 1 / 32
+        monster.initial_scale = 1 / 24
     elif monster_type == 'ghost':
         monster = Actor('ghost1')
         monster.images = ['ghost1', 'ghost2', 'ghost3']
         monster.fps = 2
-        monster.scale = 1 / 32
+        monster.initial_scale = 1 / 24
     elif monster_type == 'snake':
         monster = Actor('snalke1')
         monster.images = ['snalke1', 'snalke2']
         monster.fps = 2
-        monster.scale = 1 / 16
+        monster.initial_scale = 1 / 10
 
     # TODO don't spawn on top of another monster or Maxine
     if not near_center:
         loc = maze.get_random_cell()
     else:
-        loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 4)
+        loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 8)
     monster.gridnav = components.PolarGridNavigation(maze, loc , game,
      60 // constants.SPEED)
     monster.ai = components.RandomMazeAI(monster.gridnav)
