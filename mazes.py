@@ -318,7 +318,7 @@ class PolarGrid(Grid):
         return cells
     
     def get_random_cell_near_center(self, distance):
-        cells = self.get_cells_near_center(distance)
+        cells = list(self.get_cells_near_center(distance))
         return random.choice(cells)
 
     def get_cells_near_cell(self, cell, distance):

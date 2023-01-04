@@ -793,7 +793,7 @@ def update_for_maxine_player():
         for item in game.items:
             item.map_x, item.map_y = item.gridnav.get_location()
             item.center = lwm.convert_coords(item.map_x, item.map_y)
-            item.scale = 1 / 8 * lwm.convert_scale(item, images)            
+            item.scale = 4 * item.initial_scale * lwm.convert_scale(item, images)            
 
     # Level 6-8 code for collecting items
     if hasattr(game.maxine, 'gridnav'):
@@ -1169,10 +1169,11 @@ def make_sword():
     
     sword = Actor('sword')
     sword.images = ['sword']
-    sword.scale = 1 / 32
+    sword.initial_scale = 7 / 32
 
     # Use gridnav to give the sword a location in the maze. It doesn't move.
-    sword.gridnav = components.PolarGridNavigation(maze, maze.get_random_cell(), game)
+    cell = maze.get_random_cell_near_center(5)
+    sword.gridnav = components.PolarGridNavigation(maze, cell, game)
     sword.center = sword.gridnav.get_location()
 
     sword.weapon = components.ShinySword(game)
