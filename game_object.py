@@ -196,9 +196,9 @@ class Game:
         return actor
 
     # Maxine methods
-    def reward_maxine(self):
+    def reward_maxine(self, bonus = 100):
         self.sounds.good.play()
-        self.challenger_score += 100
+        self.challenger_score += bonus
 
     def punish_maxine(self):
         self.sounds.eep.play()
@@ -250,7 +250,7 @@ class Game:
         # Set a disappear timer in frames.
         monster.disappear_timer = 31
         
-        self.reward_maxine()
+        self.reward_maxine(10)
 
     def cannon_dance(self):
         if self.rms_last_second is None or math.isnan(self.rms_last_second):
