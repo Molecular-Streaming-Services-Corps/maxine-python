@@ -800,10 +800,12 @@ def update_for_maxine_player():
         items_collected = []
         for item in game.items:
             if game.maxine.gridnav.in_cell == item.gridnav.in_cell:
-                # Only handle the sword for now
                 if hasattr(item, 'weapon'):
                     items_collected.append(item)
                     game.maxine.fighter.equip_if_improvement(item.weapon)
+                elif hasattr(item, 'item'):
+                    if game.maxine.inventory.add_item(item):
+                        items_collected.append(item)
                     
         for item in items_collected:
             game.items.remove(item)                
@@ -1018,9 +1020,16 @@ def start_next_level():
 
         game.maxine.fighter = components.Fighter(1000, 1, 0)
         
+        game.maxine.inventory = components.Inventory(game)
+        
         # Make a Shiny Sword
         sword = make_sword()
         game.items.add(sword)
+        
+        # Make two keys
+        for i in range(0, 2):
+            key = make_key()
+            game.items.add(key)
 
     # This timer will have been shut down while the victory screen is displayed
     # so we need to start it up again
@@ -1179,6 +1188,22 @@ def make_sword():
     sword.weapon = components.ShinySword(game)
 
     return sword
+    
+def make_key():
+    global maze, game
+    
+    key = Actor('key')
+    key.images = ['key']
+    key.initial_scale = 1 / 6
+
+    # Use gridnav to give the key a location in the maze. It doesn't move.
+    cell = maze.get_random_cell_near_center(5)
+    key.gridnav = components.PolarGridNavigation(maze, cell, game)
+    key.center = key.gridnav.get_location()
+
+    key.item = components.Key(game)
+
+    return key
     
 # Neither of these next two functions work any more due to Jade removing obsolete
 # code. They're just here for reference.

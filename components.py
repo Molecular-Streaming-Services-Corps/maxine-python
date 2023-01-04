@@ -286,6 +286,10 @@ class HealingPotion(Item):
     def consume(self):
         self.game.console_score = max(0, self.game.console_score - 100)
 
+class Key(Item):
+    def __init__(self, game):
+        super().__init__('Key', game)
+
 class Weapon(Item):
     def __init__(self, name, strength_bonus, game):
         super().__init__(name, game)
@@ -300,8 +304,8 @@ class ShinySword(Weapon):
         super().__init__('Shiny sword', 1, game)
         
 class Inventory(BaseComponent):
-    '''An inventory for the player (Maxine). This won't be used for now because
-    it requires a complex on-screen menu to access.'''
+    '''An inventory for the player (Maxine). For now it will just include keys
+    which are used automatically.'''
     def __init__(self, game):
         self.game = game
         self.items = []
@@ -314,3 +318,11 @@ class Inventory(BaseComponent):
     def remove_item(self, index):
         if index < len(self.items):
             del self.items[index]
+    
+    def remove_first_key(self):
+        keys = [(index, item) for item in enumerate(self.items) if item.name == 'Key']
+        if len(keys):
+            self.remove_item(keys[0][0])
+            return True
+        else:
+            return False
