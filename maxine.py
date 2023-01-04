@@ -776,6 +776,7 @@ def update_for_maxine_player():
 
     # Level 6-8 code
     for monster in game.maze_monsters:
+        monster.animate()
         monster.gridnav.update()
         monster.ai.update()
         monster.center = monster.gridnav.get_location()
@@ -1122,27 +1123,35 @@ def make_cannon_spore():
         return spore
 
 # Levels 6-8
-def make_dragon(near_center = False):
-    '''Makes a dragon that moves around inside the maze. Randomly to start
+def make_maze_monster(near_center = False):
+    '''Makes a monster that moves around inside the maze. Randomly to start
     with.'''
     global maze
     
-    dragon = Actor('dragon_tyrant_a')
-    dragon.images = ['dragon_tyrant_a']
-    dragon.scale = 1 / 32
-    # TODO don't spawn on top of another dragon or Maxine
+    monster_type = random.choice(['dragon', 'ghost'])
+    if monster_type == 'dragon':
+        monster = Actor('dragon_tyrant_a')
+        monster.images = ['dragon_tyrant_a']
+        monster.scale = 1 / 32
+    elif monster_type == 'ghost':
+        monster = Actor('ghost1')
+        monster.images = ['ghost1', 'ghost2', 'ghost3']
+        monster.fps = 2
+        monster.scale = 1 / 32
+
+    # TODO don't spawn on top of another monster or Maxine
     if not near_center:
         loc = maze.get_random_cell()
     else:
         loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 4)
-    dragon.gridnav = components.PolarGridNavigation(maze, loc , game,
+    monster.gridnav = components.PolarGridNavigation(maze, loc , game,
      60 // constants.SPEED)
-    dragon.ai = components.RandomMazeAI(dragon.gridnav)
-    dragon.center = dragon.gridnav.get_location()
+    monster.ai = components.RandomMazeAI(monster.gridnav)
+    monster.center = monster.gridnav.get_location()
     
-    dragon.fighter = components.Fighter(2, 1, 0)
+    monster.fighter = components.Fighter(2, 1, 0)
     
-    return dragon
+    return monster
 
 def make_sword():
     global maze, game
@@ -1202,8 +1211,8 @@ def add_cell():
             bouncer = make_bouncer()
             game.bouncing_monsters.add(bouncer)
         elif level in [6, 7, 8]:
-            dragon = make_dragon(True)
-            game.maze_monsters.add(dragon)
+            monster = make_maze_monster(True)
+            game.maze_monsters.add(monster)
 
     if STANDALONE:
         # Monsters come faster in Battle Royale
