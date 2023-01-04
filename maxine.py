@@ -1131,11 +1131,12 @@ def make_cannon_spore():
         game.projectiles.add(spore)
         return spore
 
+cells_near_maxine = None
 # Levels 6-8
 def make_maze_monster(near_center = False):
     '''Makes a monster that moves around inside the maze. Randomly to start
     with.'''
-    global maze, game
+    global maze, game, cells_near_maxine
     
 #    monster_type = random.choice(['dragon', 'ghost', 'snake'])
     monster_type = random.choice(['ghost', 'snake'])
@@ -1157,7 +1158,15 @@ def make_maze_monster(near_center = False):
     if not near_center:
         loc = maze.get_random_cell()
     else:
-        cells = maze.get_cells_near_cell(game.maxine.gridnav.in_cell, 14)
+        # This part takes 3 seconds if you set the distance to 28
+        if cells_near_maxine is None:
+            logger.debug('Starting computation of get_cells_near_cell')
+            cells = maze.get_cells_near_cell(game.maxine.gridnav.in_cell, 28)
+            cells_near_maxine = cells
+            logger.debug('Finished computation of get_cells_near_cell')
+        else:
+            cells = cells_near_maxine
+        # This part has to be repeated because one more cell is occupied
         cells = game.remove_occupied_cells(cells)
         if not len(cells):
             logger.error('No space to put a monster near Maxine')
