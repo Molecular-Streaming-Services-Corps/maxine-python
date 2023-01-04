@@ -1161,7 +1161,7 @@ def make_maze_monster(near_center = False):
         # This part takes 3 seconds if you set the distance to 28
         if cells_near_maxine is None:
             logger.debug('Starting computation of get_cells_near_cell')
-            cells = maze.get_cells_near_cell(game.maxine.gridnav.in_cell, 28)
+            cells = maze.get_cells_near_cell(game.maxine.gridnav.in_cell, 50)
             cells_near_maxine = cells
             logger.debug('Finished computation of get_cells_near_cell')
         else:
@@ -1269,7 +1269,7 @@ def add_cell():
         clock.schedule_unique(add_cell, delay)
 
 def add_lots_of_maze_monsters():
-    NUM_MONSTERS = 200
+    NUM_MONSTERS = 2000
     logger.info('Adding %s monsters', NUM_MONSTERS)
     for i in range(0, NUM_MONSTERS):
         monster = make_maze_monster(True)
