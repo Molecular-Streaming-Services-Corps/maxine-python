@@ -1126,7 +1126,7 @@ def make_cannon_spore():
 def make_maze_monster(near_center = False):
     '''Makes a monster that moves around inside the maze. Randomly to start
     with.'''
-    global maze
+    global maze, game
     
 #    monster_type = random.choice(['dragon', 'ghost', 'snake'])
     monster_type = random.choice(['ghost', 'snake'])
@@ -1149,7 +1149,13 @@ def make_maze_monster(near_center = False):
     if not near_center:
         loc = maze.get_random_cell()
     else:
-        loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 10)
+        cells = maze.get_cells_near_cell(game.maxine.gridnav.in_cell, 14)
+        cells = game.remove_occupied_cells(cells)
+        if not len(cells):
+            logger.error('No space to put a monster near Maxine')
+            raise Exception('Bad design: there isn\'t enough space for monsters')
+        else:
+            loc = random.choice(list(cells))
     monster.gridnav = components.PolarGridNavigation(maze, loc , game,
      60 // constants.SPEED)
     monster.ai = components.RandomMazeAI(monster.gridnav)

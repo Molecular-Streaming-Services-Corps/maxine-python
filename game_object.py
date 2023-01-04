@@ -252,6 +252,19 @@ class Game:
         
         self.reward_maxine(10)
 
+    def get_occupied_cells(self):
+        '''Gets a set of occupied cells. Only works in maze levels.'''
+        cells = set()
+        
+        for monster in self.maze_monsters:
+            cell = monster.gridnav.in_cell
+            cells.add(cell)
+        
+        return cells
+    
+    def remove_occupied_cells(self, cell_set):
+        return cell_set - self.get_occupied_cells()
+
     def cannon_dance(self):
         if self.rms_last_second is None or math.isnan(self.rms_last_second):
             self.cannon.fps = 1

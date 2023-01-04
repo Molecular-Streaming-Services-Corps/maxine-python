@@ -311,10 +311,10 @@ class PolarGrid(Grid):
 
     def get_cells_near_center(self, distance):
         rows = self.get_rows()[0 : distance + 1]
-        cells = []
+        cells = set()
         for row in rows:
             for cell in row:
-                cells.append(cell)
+                cells.add(cell)
         return cells
     
     def get_random_cell_near_center(self, distance):
@@ -326,7 +326,7 @@ class PolarGrid(Grid):
         return cells
         
     def get_random_cell_near_cell(self, cell, distance):
-        cells = self.get_cells_near_cell(cell, distance)
+        cells = list(self.get_cells_near_cell(cell, distance))
         return random.choice(cells)
 
 # Cell classes
@@ -381,7 +381,7 @@ class Cell:
         Wikipedia. It works for mazes with or without loops.
         
         If you don't specify max_dist, you get a Distances object with
-        every distance in the grid. If you specify it, you get a list of
+        every distance in the grid. If you specify it, you get a set of
         cells within that distance.'''
         distances = Distances(self)
         nearby_cells = set()
@@ -403,7 +403,7 @@ class Cell:
             q.remove(cell)
             
             if max_dist and min_dist > max_dist:
-                return list(nearby_cells)
+                return nearby_cells
             
             for neighbor in cell.get_links():
                 if neighbor not in q:
@@ -418,7 +418,7 @@ class Cell:
                         nearby_cells.add(neighbor)
         
         if max_dist:
-            return list(nearby_cells)
+            return nearby_cells
         else:
             return distances
     
