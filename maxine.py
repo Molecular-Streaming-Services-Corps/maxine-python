@@ -1128,7 +1128,8 @@ def make_maze_monster(near_center = False):
     with.'''
     global maze
     
-    monster_type = random.choice(['dragon', 'ghost', 'snake'])
+#    monster_type = random.choice(['dragon', 'ghost', 'snake'])
+    monster_type = random.choice(['ghost', 'snake'])
     if monster_type == 'dragon':
         monster = Actor('dragon_tyrant_a')
         monster.images = ['dragon_tyrant_a']
@@ -1148,7 +1149,7 @@ def make_maze_monster(near_center = False):
     if not near_center:
         loc = maze.get_random_cell()
     else:
-        loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 8)
+        loc = maze.get_random_cell_near_cell(game.maxine.gridnav.in_cell, 10)
     monster.gridnav = components.PolarGridNavigation(maze, loc , game,
      60 // constants.SPEED)
     monster.ai = components.RandomMazeAI(monster.gridnav)
@@ -1227,6 +1228,13 @@ def add_cell():
             delay = random.uniform(5, 8)
         clock.schedule_unique(add_cell, delay)
 
+def add_lots_of_maze_monsters():
+    NUM_MONSTERS = 200
+    for i in range(0, NUM_MONSTERS):
+        monster = make_maze_monster(True)
+        game.maze_monsters.add(monster)
+
+
 import parse_arguments
 args = parse_arguments.parser.parse_args()
 STANDALONE = not args.datadir and not args.live
@@ -1262,7 +1270,10 @@ if DATADIR:
 
 elif STANDALONE:
     if PLAYER == 'maxine':
-        clock.schedule_unique(add_cell, 4.0)   
+        if level != 8:
+            clock.schedule_unique(add_cell, 4.0)   
+        else:
+            clock.schedule_unique(add_lots_of_maze_monsters, 4.0)
 
 elif LIVE:
     lilith_client.MAC = lilith_client.NAME2MAC[BOARD]
