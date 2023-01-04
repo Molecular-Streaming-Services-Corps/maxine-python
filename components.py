@@ -314,6 +314,9 @@ class Inventory(BaseComponent):
     def add_item(self, item):
         if len(self.items) < self.size:
             self.items.append(item)
+            return True
+        else:
+            return False
             
     def remove_item(self, index):
         if index < len(self.items):
