@@ -248,7 +248,7 @@ class Game:
         monster.scale = 0.25
         
         # Set a disappear timer in frames.
-        monster.disappear_timer = 31
+        monster.disappear_timer = 5
         
         self.reward_maxine(10)
 

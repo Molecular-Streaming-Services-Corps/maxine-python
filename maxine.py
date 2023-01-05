@@ -593,8 +593,9 @@ def update_for_maxine_player():
             gn.update()
             game.maxine.map_x, game.maxine.map_y = gn.get_location()
             
-            if gn.just_moved:
-                maze.setup_distances_from_root(gn.in_cell)
+            # This might be used in the future but it is very slow
+            #if gn.just_moved:
+            #    maze.setup_distances_from_root(gn.in_cell)
                 
             # Update sprite
             game.maxine.images = ['maxine_' + gn.sprite_direction]
@@ -609,6 +610,15 @@ def update_for_maxine_player():
                 
                 m.center = lwm.convert_coords(m.map_x, m.map_y)
                 m.scale = lwm.convert_scale(m, images)
+
+    # Make sure that the explosion of a dead monster moves on screen with the maze
+    if level in [6, 7, 8]:
+        for monster in game.dead_monsters:
+            gn = monster.gridnav
+            
+            monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
+            monster.scale = lwm.convert_scale(monster, images)
+ 
 
     # Cannon Behavior
     if level in [3, 4, 5]:
@@ -1272,7 +1282,7 @@ def add_lots_of_maze_monsters():
     NUM_MONSTERS = 2000
     logger.info('Adding %s monsters', NUM_MONSTERS)
     for i in range(0, NUM_MONSTERS):
-        monster = make_maze_monster(True)
+        monster = make_maze_monster(False)
         game.maze_monsters.add(monster)
 
 

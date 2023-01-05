@@ -199,10 +199,10 @@ class PolarGridNavigation(GridNavigation):
             if e.gridnav.in_cell is cell or e.gridnav.next_cell is cell:
                 bumped_entities.append(e)
         
-        if bumped_entities:
-            logger.debug('object at cell %s tried to bump into: %s',
-                repr(self.in_cell),
-                [e.gridnav.in_cell for e in bumped_entities])
+#        if bumped_entities:
+#            logger.debug('object at cell %s tried to bump into: %s',
+#                repr(self.in_cell),
+#                [e.gridnav.in_cell for e in bumped_entities])
         
         return bumped_entities
     
