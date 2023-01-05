@@ -786,6 +786,9 @@ def update_for_maxine_player():
 
     # Level 6-8 code
     for monster in game.maze_monsters:
+        if monster.type == 'snake':
+            change_image_for_snake(monster)
+    
         monster.animate()
         monster.gridnav.update()
         monster.ai.update()
@@ -851,6 +854,17 @@ def update_for_maxine_player():
     # Make the mushroom boss vibrate at a different speed depending on RMS
     if game.cannon_in_level:
         game.cannon_dance()
+
+def change_image_for_snake(monster):
+    if monster.gridnav.need_to_update_images:
+        if monster.gridnav.sprite_direction == 'left':
+            monster.images = ['snalke_left1', 'snalke_left2']
+        else:
+            monster.images = ['snalke_right1', 'snalke_right2']
+    
+    # This is set so that we don't constantly reset the images on every frame
+    # and break animation
+    monster.gridnav.need_to_update_images = False
 
 def point_outside_signal_ring(point):
     '''Calculate if a position is colliding with the torus. From Math StackExchange.'''
@@ -1160,10 +1174,12 @@ def make_maze_monster(near_center = False):
         monster.fps = 2
         monster.initial_scale = 1 / 24
     elif monster_type == 'snake':
-        monster = Actor('snalke1')
-        monster.images = ['snalke1', 'snalke2']
+        monster = Actor('snalke_right1')
+        monster.images = ['snalke_right1', 'snalke_right2']
         monster.fps = 2
         monster.initial_scale = 1 / 10
+
+    monster.type = monster_type
 
     if not near_center:
         loc = maze.get_random_cell()
