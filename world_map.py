@@ -37,17 +37,46 @@ class LogarithmicWorldMap(WorldMap):
         map_x = (map_x - self.game.maxine.map_x) / map_side_width
         map_y = (map_y - self.game.maxine.map_y) / map_side_height
         
-        map_r, map_theta = util.cart2pol(map_x, map_y)
-        # Converts map radiuses between 0 and 1000 into nonlinear radiuses
-        # between 0 and 1
-        viewport_r_log = math.log(map_r * 32 + 1, 32)
-        viewport_r = viewport_r_log * self.game.torus_inner_radius
-        # The angle (theta) remains the same.
-        # x and y are in screen coordinates
-        x, y = util.pol2cart(viewport_r, map_theta)
-        x, y = util.adjust_coords(x, y)
+        USE_LOG = False
+        if USE_LOG:
+            map_r, map_theta = util.cart2pol(map_x, map_y)
+            viewport_r_log = self.log_function(map_r)
+            viewport_r = viewport_r_log * self.game.torus_inner_radius
+            # The angle (theta) remains the same.
+            # x and y are in screen coordinates
+            x, y = util.pol2cart(viewport_r, map_theta)
+            x, y = util.adjust_coords(x, y)
+        else:
+            #viewport_x = self.exponential_function(map_x)
+            #viewport_y = self.exponential_function(map_y)
+            
+            #viewport_x = viewport_x * self.game.torus_inner_radius
+            #viewport_y = viewport_y * self.game.torus_inner_radius
+            
+            #x, y = util.adjust_coords(viewport_x, viewport_y)
+        
+            map_r, map_theta = util.cart2pol(map_x, map_y)
+            viewport_r_exp = self.exponential_function(map_r)
+            viewport_r = viewport_r_exp * self.game.torus_inner_radius
+            
+            x, y = util.pol2cart(viewport_r, map_theta)
+            x, y = util.adjust_coords(x, y)
         
         return x, y
+    
+    def log_function(self, map_r):
+        '''Converts map radiuses between 0 and map_radius into nonlinear radiuses
+        between 0 and 1'''
+        return math.log(map_r * 32 + 1, 32)
+    
+    def exponential_function(self, map_r):
+        '''Does the same thing with a different curve.
+        A value of 2 doesn't work well because it makes the map get larger as
+        you go outward. But taking a root works really well, because it gives
+        enough space for Maxine.'''
+        result = map_r**(1/2.5)
+        
+        return result
     
     def convert_scale(self, actor, images):
         # Old approach, doesn't work with the map shrinking on one side
