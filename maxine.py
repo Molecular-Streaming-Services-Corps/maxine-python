@@ -520,22 +520,24 @@ def update_for_maxine_player():
         prev_pos = game.maxine.pos
 
         # Put Maxine back into neutral position when she's not moving.
-        game.maxine.images = ['maxine_neutral']
+        direction = 'neutral'
 
         # Allow the user to use either the keyboard or the joystick    
         if keyboard.left:
             game.maxine.left -= s
-            game.maxine.images = ['maxine_left']
+            direction = 'left'
         elif keyboard.right:
             game.maxine.left += s
-            game.maxine.images = ['maxine_right']
+            direction = 'right'
         if keyboard.up:
             game.maxine.top -= s
-            game.maxine.images = ['maxine_up']
+            direction = 'up'
         elif keyboard.down:
             game.maxine.bottom += s
-            game.maxine.images = ['maxine_down']
-            
+            direction = 'down'
+        
+        game.maxine.images = ['maxine_' + direction]
+                    
         # The old controls.
         #if keyboard.space:
         #    if not space_pressed_before:
@@ -566,9 +568,6 @@ def update_for_maxine_player():
             
             if gn.just_moved:
                 maze.setup_distances_from_root(gn.in_cell)
-
-            # Update sprite
-            game.maxine.images = ['maxine_' + gn.sprite_direction]
             
     # Move Maxine on the Logarithmic Map
     if level in [7, 8] and lwm:
@@ -596,9 +595,17 @@ def update_for_maxine_player():
             # This might be used in the future but it is very slow
             #if gn.just_moved:
             #    maze.setup_distances_from_root(gn.in_cell)
-                
-            # Update sprite
-            game.maxine.images = ['maxine_' + gn.sprite_direction]
+    
+    if level in [6, 7, 8]:
+        # Update sprite
+        # Use the sprites with the sword if appropriate
+        if hasattr(game.maxine, 'gridnav'):
+            gn = game.maxine.gridnav
+            
+            if game.maxine.fighter.has_sword():
+                game.maxine.images = ['maxine_sword_' + gn.sprite_direction]
+            else:
+                game.maxine.images = ['maxine_' + gn.sprite_direction]
     
     # Code to give other Maxines a location
     if level == 8 and lwm:
@@ -795,7 +802,7 @@ def update_for_maxine_player():
         monster.center = monster.gridnav.get_location()
 
     # Level 7-8 code (maze with a world map)
-    if level in [7, 8]:
+    if level in [7, 8] and lwm:
         for monster in game.maze_monsters:
             monster.gridnav.update()
             monster.ai.update()

@@ -300,6 +300,9 @@ class Fighter(BaseComponent):
            weapon.strength_bonus > self.weapon.strength_bonus):
            
            self.weapon = weapon
+    
+    def has_sword(self):
+        return self.weapon is not None and self.weapon.name == 'Shiny sword'
         
 class Item(BaseComponent):
     def __init__(self, name, game):
