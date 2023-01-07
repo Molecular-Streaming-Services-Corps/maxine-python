@@ -1062,11 +1062,11 @@ def start_next_level():
             key = make_key()
             game.items.add(key)
 
-    # This timer will have been shut down while the victory screen is displayed
-    # so we need to start it up again
     if STANDALONE:
-        delay = random.randrange(5, 8)
-        clock.schedule_unique(add_cell, delay)
+        if level != 8:
+            clock.schedule_unique(add_cell, 4.0)   
+        else:
+            clock.schedule_unique(add_lots_of_maze_monsters, 4.0)
 
 # Monster functions
 # Level 1
@@ -1341,13 +1341,6 @@ TITLE = TITLE + f' ({PLAYER})'
 if DATADIR:
     d = data.PrerecordedData(constants.NUM_BOXES)
     d.load_files(DATADIR)
-
-elif STANDALONE:
-    if PLAYER == 'maxine':
-        if level != 8:
-            clock.schedule_unique(add_cell, 4.0)   
-        else:
-            clock.schedule_unique(add_lots_of_maze_monsters, 4.0)
 
 elif LIVE:
     lilith_client.MAC = lilith_client.NAME2MAC[BOARD]
