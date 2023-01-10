@@ -1288,8 +1288,11 @@ def add_cell():
             bouncer = make_bouncer()
             game.bouncing_monsters.add(bouncer)
         elif level in [6, 7, 8]:
-            monster = make_maze_monster(True)
-            game.maze_monsters.add(monster)
+            # Make 10 monsters
+            add_lots_of_maze_monsters(n = 10)
+            
+            #monster = make_maze_monster(True)
+            #game.maze_monsters.add(monster)
 
     if STANDALONE:
         # Monsters come faster in Battle Royale
@@ -1299,10 +1302,9 @@ def add_cell():
             delay = random.uniform(5, 8)
         clock.schedule_unique(add_cell, delay)
 
-def add_lots_of_maze_monsters():
-    NUM_MONSTERS = 2000
-    logger.info('Adding %s monsters', NUM_MONSTERS)
-    for i in range(0, NUM_MONSTERS):
+def add_lots_of_maze_monsters(n = 2000):
+    logger.info('Adding %s monsters', n)
+    for i in range(0, n):
         monster = make_maze_monster(False)
         game.maze_monsters.add(monster)
 
