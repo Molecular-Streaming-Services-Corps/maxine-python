@@ -318,7 +318,11 @@ class Controls:
                 self.potion_holder.on_button_pushed()
         
             self.button_timeout = 6
-        
+    
+    def let_go_of_button(self):
+        '''Stops the syringe from moving.'''
+        self.pump_speed_index = 0
+    
     def push_left(self):
         '''Called for a single push of the joystick to the left.'''
         if self.control_index == self.voltage_index:

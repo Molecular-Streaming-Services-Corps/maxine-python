@@ -471,6 +471,8 @@ def update_for_console_player():
             controls.select_up()
         elif 'down' in pressed_just_now:
             controls.select_down()
+        
+        controls.let_go_of_button()
     
     # Some controls only respond the moment the button is pressed.
     if 'button' in pressed_just_now:
