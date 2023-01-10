@@ -22,7 +22,7 @@ This file stores constants, usually ones that are used in multiple other files. 
 * NUM_BOXES refers to the number of lines on the signal ring.
 
 *controls_object.py
-Contains the Controls and PotionHolder objects. The Controls object contains code for all the other on-screen controls on the pink panel. Maybe some of them should become separate classes. The joystick or keyboard of the console player can move these controls.
+Contains the Controls and PotionHolder objects. The Controls object contains code for all the other on-screen controls on the pink panel. Maybe some of them should become separate classes. The joystick or keyboard of the console player can move these controls. In 1-player mode the AWSD keys and spacebar can move the controls instead. They won't send signals to the console.
 * update() and draw() are called by those functions in maxine.py.
 * push() is called when the joystick button or spacebar is pressed. Button controls respond to this.
 * push_left() and push_right() are used when the joystick is pushed left or right while the button is held down. Some controls respond to this. It is only called once for each time the joystick is moved.

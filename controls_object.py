@@ -39,6 +39,9 @@ class Controls:
         
         self.zap_timeout = 0
         
+        # Experimental
+        self.single_player_zap_timeout = 0
+        
         # Between 0 and 1.
         self.syringe_value = 0.5
         # We have to callibrate this to the actual number of servomotor steps
@@ -105,16 +108,19 @@ class Controls:
         self.old_voltage = 0
         self.voltage = 0
         self.old_angle = 0
-
+        
     def update(self):
         # Zapper stuff
         if self.PLAYER == 'console':
             if self.zap_timeout > 0:
-                self.zap_timeout -= 1    
+                self.zap_timeout -= 1
+        else:
+            if self.single_player_zap_timeout > 0:
+                self.single_player_zap_timeout -=1
 
         # This code runs on both maxine and console, so maxine can draw the lever correctly
         # when the timeout is updated over the internet
-        if self.zap_timeout > 0:
+        if self.zap_timeout > 0 or self.single_player_zap_timeout > 0:
             self.zap_lever.images = ['switch_big_frame_2']
         else:
             self.zap_lever.images = ['switch_big_frame_1']
@@ -278,6 +284,13 @@ class Controls:
         '''Select the control above the present one. Wraps around.'''
         self.control_index = (self.control_index - 1) % len(self.controls)
 
+    def push_for_maxine(self):
+        if self.control_index == self.zap_index:
+            self.single_player_zap_timeout = 6
+            self.set_voltage(1000)
+        else:
+            self.push()
+
     def push(self):
         if self.control_index == self.zap_index:
             # 100 milliseconds in frames
@@ -432,6 +445,20 @@ class Controls:
         bt = save['button_timeout']
         if bt == 6:
             self.button_timeout = bt
+
+    def do_staged_movements(self, keyboard):
+        '''For the sizzle reel, in standalone or prerecorded mode, you can move the controls
+        without them doing anything by pressing spacebar and WASD instead of the arrow keys.
+        You only run one copy of the game.'''
+        if keyboard.SPACE:
+            if keyboard.W:
+                self.hold_up()
+            if keyboard.S:
+                self.hold_down()
+            if keyboard.A:
+                self.hold_left()
+            if keyboard.D:
+                self.hold_right()
 
 class PotionHolder:
     def __init__(self, Actor, serializer, LIVE):

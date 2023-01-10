@@ -509,6 +509,8 @@ def update_for_maxine_player():
     global spore_count
     # This will update the images used on the controls. It won't send any duplicate signals to the server.
     controls.update()
+    
+    controls.do_staged_movements(keyboard)
 
     game.maxine.animate()
 
@@ -522,7 +524,7 @@ def update_for_maxine_player():
         # Put Maxine back into neutral position when she's not moving.
         direction = 'neutral'
 
-        # Allow the user to use either the keyboard or the joystick    
+        # The user uses the keyboard    
         if keyboard.left:
             game.maxine.left -= s
             direction = 'left'
@@ -887,8 +889,8 @@ def on_key_down(key):
     # Switch between full screen and windowed
     if key == keys.F:
         set_fullscreen()
-    elif key == keys.W:
-        set_windowed()
+    #elif key == keys.W:
+    #    set_windowed()
 
     # Change graph type
     if key == keys.G:
@@ -910,32 +912,26 @@ def on_key_down(key):
     # Temporary hack so you can test out levels more easily
     if key == keys.N:
         finished_level()
-    
-    # Save and load the state of the game to a file.
-    if key == keys.S:
-        # Only save the information that this player is in charge of updating
-        if PLAYER == 'console':
-            data = controls.save_to_dict()
-            serializer.save_dict_to_file(data, 'console.json')
-        else:
-            data = game.save_arena_to_dict()
-            serializer.save_dict_to_file(data, 'maxine.json')
-    elif key == key.L:
-        # Load the Maxine information only for the console player, because
-        # the save information isn't complete enough to continue the game,
-        # just enough to display one frame. But the console information is
-        # enough to continue operating the console.
-        if PLAYER == 'maxine':
-            data = serializer.load_dict_from_file('console.json')
-            controls.load_from_dict(data)
-
-        if PLAYER == 'console':
-            data = serializer.load_dict_from_file('maxine.json')
-            game.load_arena_from_dict(data)
 
     # Move maxine around a grid (maze)
     if hasattr(game.maxine, 'gridnav'):
         game.maxine.gridnav.process_keypress(keyboard)
+
+    # Handle moving the controls in standalone or prerecorded mode
+    # The case of holding a key is handled in Controls
+    if keyboard.SPACE:
+        if key == keys.A:
+            controls.push_left()
+        if key == keys.D:
+            controls.push_right()
+    else:
+        if key == keys.W:
+            controls.select_up()
+        if key == keys.S:
+            controls.select_down()
+    
+    if key == keys.SPACE and controls:
+        controls.push_for_maxine()
 
 # Development tool: when the mouse is clicked, print the mouse coordinates in the window
 def on_mouse_down(pos):
