@@ -1055,8 +1055,8 @@ def start_next_level():
         sword = make_sword()
         game.items.add(sword)
         
-        # Make two keys
-        for i in range(0, 2):
+        # Make some keys
+        for i in range(0, 7):
             key = make_key()
             game.items.add(key)
 
@@ -1209,7 +1209,7 @@ def make_maze_monster(near_center = False):
     monster.ai = components.RandomMazeAI(monster.gridnav)
     monster.center = monster.gridnav.get_location()
     
-    monster.fighter = components.Fighter(2, 1, 0)
+    monster.fighter = components.Fighter(10, 1, 0)
     
     return monster
 
@@ -1221,7 +1221,7 @@ def make_sword():
     sword.initial_scale = 7 / 32
 
     # Use gridnav to give the sword a location in the maze. It doesn't move.
-    cell = maze.get_random_cell_near_center(5)
+    cell = maze.get_random_cell_near_center(3)
     sword.gridnav = components.PolarGridNavigation(maze, cell, game)
     sword.center = sword.gridnav.get_location()
 
@@ -1237,7 +1237,7 @@ def make_key():
     key.initial_scale = 1 / 6
 
     # Use gridnav to give the key a location in the maze. It doesn't move.
-    cell = maze.get_random_cell_near_center(5)
+    cell = maze.get_random_cell_near_center(3)
     key.gridnav = components.PolarGridNavigation(maze, cell, game)
     key.center = key.gridnav.get_location()
 
