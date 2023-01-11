@@ -11,6 +11,10 @@ import game_object
 
 class Grid:
     '''Abstract base class of grids.'''
+    def __init__(self):
+        self.removed_walls = []
+        self.doors = []
+    
     def deadends(self):
         ret = []
         for cell in self.get_cells():
@@ -60,6 +64,8 @@ class Grid:
             
             neighbor = random.choice(best)
             cell.link(neighbor)
+            
+            self.removed_walls.append( (cell, neighbor) )
     
     def remove_walls(self, p=0.2):
         '''Randomly remove a certain percentage of the walls.
@@ -78,13 +84,24 @@ class Grid:
                 cell.link(n)
                 
                 linked.append((cell, n))
+                
+                self.removed_walls.append( (cell, n) )
         
         return linked
+    
+    def add_door(self, cells):
+        cell, neighbor = cells
+        
+        self.doors.append(cells)
+        self.removed_walls.remove(cells)
+        
+        cell.unlink(neighbor)
     
 class PolarGrid(Grid):
     def __init__(self, rows, world_map = None):
         '''rows is the number of rows. world_map is an optional world map to draw the
         maze onto.'''
+        super().__init__()
         self.rows = rows
         self.grid = self.prepare_grid()
         self.configure_cells()
@@ -134,6 +151,7 @@ class PolarGrid(Grid):
 
     def draw(self, screen, Actor):
         wall = colors.RED
+        door = 'yellow'
         DRAW_BRICKS = False
 
         if self.world_map:
@@ -202,7 +220,12 @@ class PolarGrid(Grid):
                     bricks.angle = ac_bricks_angle
                     bricks.draw()
                 else:
-                    pygame.draw.line(screen.surface, wall, (ax, ay), (cx, cy), width = 3)
+                    link1 = (cell, cell.inward)
+                    link2 = (cell.inward, cell)
+                    if link1 in self.doors or link2 in self.doors:
+                        pygame.draw.line(screen.surface, door, (ax, ay), (cx, cy), width = 3)
+                    else:
+                        pygame.draw.line(screen.surface, wall, (ax, ay), (cx, cy), width = 3)
                 
                 # Draw a white point in the center of the line to check the math
                 #pygame.draw.circle(screen.surface, 'white', (acx, acy), 1)
@@ -215,7 +238,12 @@ class PolarGrid(Grid):
                     bricks.angle = cd_bricks_angle
                     bricks.draw()
                 else:
-                    pygame.draw.line(screen.surface, wall, (cx, cy), (dx, dy), width = 3)
+                    link1 = (cell, cell.cw)
+                    link2 = (cell.cw, cell)
+                    if link1 in self.doors or link2 in self.doors:
+                        pygame.draw.line(screen.surface, door, (cx, cy), (dx, dy), width = 3)
+                    else:
+                        pygame.draw.line(screen.surface, wall, (cx, cy), (dx, dy), width = 3)
 
                 #pygame.draw.circle(screen.surface, 'white', (cdx, cdy), 1)
 
@@ -347,7 +375,7 @@ class Cell:
         return self
     
     def unlink(self, cell, bidirectional = True):
-        del links[cell]
+        del self.links[cell]
         if bidirectional:
             cell.unlink(self, False)
         return self

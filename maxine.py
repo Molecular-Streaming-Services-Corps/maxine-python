@@ -1289,7 +1289,9 @@ def add_cell():
             game.bouncing_monsters.add(bouncer)
         elif level in [6, 7, 8]:
             # Make 10 monsters
-            add_lots_of_maze_monsters(n = 10)
+            add_lots_of_maze_monsters(n = 30)
+            
+            add_some_doors(n = 50)
             
             #monster = make_maze_monster(True)
             #game.maze_monsters.add(monster)
@@ -1308,6 +1310,12 @@ def add_lots_of_maze_monsters(n = 2000):
         monster = make_maze_monster(False)
         game.maze_monsters.add(monster)
 
+def add_some_doors(n):
+    for i in range(0, n):
+        if not maze.removed_walls:
+            break
+        cells = random.choice(maze.removed_walls)
+        maze.add_door(cells)
 
 import parse_arguments
 args = parse_arguments.parser.parse_args()
