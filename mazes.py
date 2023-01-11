@@ -96,6 +96,23 @@ class Grid:
         self.removed_walls.remove(cells)
         
         cell.unlink(neighbor)
+        
+    def door_exists(self, cells):
+        cell, neighbor = cells
+        cells2 = (neighbor, cells)
+        
+        return cells in self.doors or cells2 in self.doors
+        
+    def open_door(self, cells):
+        cell, neighbor = cells
+        cells2 = (neighbor, cells)
+        
+        if cells in self.doors:
+            self.doors.remove(cells)
+        if cells2 in self.doors:
+            self.doors.remove(cells2)
+            
+        cell.link(neighbor)
     
 class PolarGrid(Grid):
     def __init__(self, rows, world_map = None):
@@ -269,17 +286,17 @@ class PolarGrid(Grid):
             self.draw_keybinding(maxine_cell, cell, str(i + 1), screen)
     
     def draw_keybinding(self, maxine_cell, neighbor, binding, screen):
-        if neighbor is None or not maxine_cell.is_linked(neighbor):
-            return
+        if neighbor is not None and (maxine_cell.is_linked(neighbor) 
+                or self.door_exists((maxine_cell, neighbor))):
         
-        pos = self.get_center(neighbor)
-        
-        # Convert from map coordinates to screen coordinates if necessary.
-        if self.world_map:
-            pos = self.world_map.convert_coords(pos[0], pos[1])
-        
-        screen.draw.text(binding, pos,
-           fontname = 'segoeuisymbol.ttf', color = "red")
+            pos = self.get_center(neighbor)
+            
+            # Convert from map coordinates to screen coordinates if necessary.
+            if self.world_map:
+                pos = self.world_map.convert_coords(pos[0], pos[1])
+            
+            screen.draw.text(binding, pos,
+               fontname = 'segoeuisymbol.ttf', color = "red")
         
     def make_room_row(self, row, ccw_column, cw_column, connect_inward = False):
         for i in range(ccw_column, cw_column):

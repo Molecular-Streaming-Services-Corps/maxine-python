@@ -34,17 +34,27 @@ class PolarGridNavigation(GridNavigation):
         self.need_to_update_images = True
         
     def move_inward(self):
+        '''These functions are only used by Maxine, not monsters'''
         next_cell =  self.in_cell.inward
-        if next_cell and self.in_cell.is_linked(next_cell):
-            self.next_cell = next_cell
+        if next_cell:
+            if self.in_cell.is_linked(next_cell):
+                self.next_cell = next_cell
+                
+                bumped = self.bump(self.next_cell, True)
+                # Don't move
+                if bumped: self.next_cell = None
+                for monster in bumped:
+                    self.game.hit_maze_monster(monster)
             
-            bumped = self.bump(self.next_cell, True)
-            # Don't move
-            if bumped: self.next_cell = None
-            for monster in bumped:
-                self.game.hit_maze_monster(monster)
-        
-            self.change_sprite_after_moving_inward()
+                self.change_sprite_after_moving_inward()
+            else:
+                self.try_open_door(next_cell)
+
+    def try_open_door(self, next_cell):
+        cells = (self.in_cell, next_cell)
+        if self.grid.door_exists(cells):
+            if self.game.maxine.inventory.remove_first_key():
+                self.grid.open_door(cells)    
             
     def change_sprite_after_moving_inward(self):
         # Change someone's sprite
@@ -62,16 +72,19 @@ class PolarGridNavigation(GridNavigation):
     
     def move_ccw(self):
         next_cell = self.in_cell.ccw
-        if next_cell and self.in_cell.is_linked(next_cell):
-            self.next_cell = next_cell
-            
-            bumped = self.bump(self.next_cell, True)
-            # Don't move
-            if bumped: self.next_cell = None
-            for monster in bumped:
-                self.game.hit_maze_monster(monster)
-            
-            self.change_sprite_after_moving_ccw()
+        if next_cell:
+            if self.in_cell.is_linked(next_cell):
+                self.next_cell = next_cell
+                
+                bumped = self.bump(self.next_cell, True)
+                # Don't move
+                if bumped: self.next_cell = None
+                for monster in bumped:
+                    self.game.hit_maze_monster(monster)
+                
+                self.change_sprite_after_moving_ccw()
+            else:
+                self.try_open_door(next_cell)
 
     def change_sprite_after_moving_ccw(self):
         angle = self.grid.get_angle(self.in_cell)
@@ -88,16 +101,19 @@ class PolarGridNavigation(GridNavigation):
         
     def move_cw(self):
         next_cell = self.in_cell.cw
-        if next_cell and self.in_cell.is_linked(next_cell):
-            self.next_cell = next_cell
-            
-            bumped = self.bump(self.next_cell, True)
-            # Don't move
-            if bumped: self.next_cell = None
-            for monster in bumped:
-                self.game.hit_maze_monster(monster)
+        if next_cell:
+            if self.in_cell.is_linked(next_cell):
+                self.next_cell = next_cell
+                
+                bumped = self.bump(self.next_cell, True)
+                # Don't move
+                if bumped: self.next_cell = None
+                for monster in bumped:
+                    self.game.hit_maze_monster(monster)
 
-            self.change_sprite_after_moving_cw()
+                self.change_sprite_after_moving_cw()
+            else:
+                self.try_open_door(next_cell)
 
     def change_sprite_after_moving_cw(self):
         angle = self.grid.get_angle(self.in_cell)
@@ -116,17 +132,20 @@ class PolarGridNavigation(GridNavigation):
         '''Moves to the nth outward neighbor. Every cell has at least the 0th outward neighbor
         (except edges). The middle cell has 6 outward neighbors. Some cells have 2 outward neighbors.'''
         outward = self.in_cell.outward
-        if len(outward) > n  and self.in_cell.is_linked(outward[n]):
-            self.next_cell = outward[n]
+        if len(outward) > n:
+            if self.in_cell.is_linked(outward[n]):
+                self.next_cell = outward[n]
+                
+                bumped = self.bump(self.next_cell, True)
+                # Don't move
+                if bumped: self.next_cell = None
+                for monster in bumped:
+                    self.game.hit_maze_monster(monster)
             
-            bumped = self.bump(self.next_cell, True)
-            # Don't move
-            if bumped: self.next_cell = None
-            for monster in bumped:
-                self.game.hit_maze_monster(monster)
-        
-            self.change_sprite_after_moving_outward()
-            
+                self.change_sprite_after_moving_outward()
+            else:
+                self.try_open_door(outward[n])
+
     def change_sprite_after_moving_outward(self):
         angle = self.grid.get_angle(self.in_cell)
         if angle < 45 or angle > 315:
@@ -356,7 +375,7 @@ class Inventory(BaseComponent):
             del self.items[index]
     
     def remove_first_key(self):
-        keys = [(index, item) for item in enumerate(self.items) if item.name == 'Key']
+        keys = [(index, item) for (index, item) in enumerate(self.items) if item.name == 'Key']
         if len(keys):
             self.remove_item(keys[0][0])
             return True

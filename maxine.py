@@ -828,7 +828,7 @@ def update_for_maxine_player():
                     items_collected.append(item)
                     game.maxine.fighter.equip_if_improvement(item.weapon)
                 elif hasattr(item, 'item'):
-                    if game.maxine.inventory.add_item(item):
+                    if game.maxine.inventory.add_item(item.item):
                         items_collected.append(item)
                     
         for item in items_collected:
