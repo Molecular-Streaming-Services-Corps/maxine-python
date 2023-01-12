@@ -180,6 +180,10 @@ class SpikeGraph:
         min_ = mins.min()
         range_ = max_ - min_
         
+        # TODO HACK
+        if range_ == 0:
+            return
+        
         h = self.height
         self.tops = np.array([h - int((v - min_) / range_ * h) for v in maxes])
         self.bottoms = np.array([h - int((v - min_) / range_ * h) for v in mins])
@@ -296,6 +300,10 @@ class ContinuousGraph:
         
         mean_ = np.mean(all_data)
         vertical_center = h / 2
+        
+        # TODO HACK Why does this happen?!
+        if range_ == 0:
+            return
         
         self.tops = np.array([vertical_center - int((v - mean_) / range_ * vertical_center * self.zoom_scale) for v in maxes])
         self.bottoms = np.array([vertical_center - int((v - mean_) / range_ * vertical_center * self.zoom_scale) for v in mins])
