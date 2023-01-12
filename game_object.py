@@ -230,11 +230,11 @@ class Game:
             return
 
         hit = self.maxine.fighter.give_hit()
-        monster.fighter.take_hit(hit)
+        damage = monster.fighter.take_hit(hit)
         
         if monster.fighter.is_dead():
             self.kill_maze_monster(monster)
-        else:
+        elif damage > 0:
             self.sounds.good.play()
 
     def kill_maze_monster(self, monster):

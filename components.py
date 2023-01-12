@@ -313,13 +313,15 @@ class Fighter(BaseComponent):
     def take_hit(self, damage):
         # Don't allow damage while we're getting over the last hit
         if self.hit_animation_timeout > 0:
-            return
+            return 0
     
         damage = damage - self.defense
         self.hp = max(0, self.hp - damage)
         
         if not self.is_dead():
             self.hit_animation_timeout = 15
+        
+        return damage
         
     def is_dead(self):
         return self.hp == 0
