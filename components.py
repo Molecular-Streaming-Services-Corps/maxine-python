@@ -32,7 +32,7 @@ class PolarGridNavigation(GridNavigation):
         self.num_frames_moved = 0
         self.sprite_direction = 'neutral'
         self.need_to_update_images = True
-        
+                
     def move_inward(self):
         '''These functions are only used by Maxine, not monsters'''
         next_cell =  self.in_cell.inward
@@ -300,6 +300,9 @@ class Fighter(BaseComponent):
         self.strength = strength
         self.defense = defense
         self.weapon = None
+        
+        self.hit_animation_timeout = 0
+        self.jitter = 0
     
     def give_hit(self):
         hit = self.strength
@@ -308,8 +311,15 @@ class Fighter(BaseComponent):
         return hit
         
     def take_hit(self, damage):
+        # Don't allow damage while we're getting over the last hit
+        if self.hit_animation_timeout > 0:
+            return
+    
         damage = damage - self.defense
         self.hp = max(0, self.hp - damage)
+        
+        if not self.is_dead():
+            self.hit_animation_timeout = 15
         
     def is_dead(self):
         return self.hp == 0
@@ -323,6 +333,19 @@ class Fighter(BaseComponent):
     def has_sword(self):
         return self.weapon is not None and self.weapon.name == 'Shiny sword'
         
+    def update(self):
+        if self.hit_animation_timeout > 0:
+            self.hit_animation_timeout -= 1
+            if self.jitter == 0:
+                self.jitter = 2
+            else:
+                self.jitter = self.jitter * -1
+        else:
+            self.jitter = 0
+
+    def get_jitter(self):
+        return self.jitter
+
 class Item(BaseComponent):
     def __init__(self, name, game):
         self.name = name

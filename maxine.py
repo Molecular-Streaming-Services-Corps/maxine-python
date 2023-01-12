@@ -814,6 +814,10 @@ def update_for_maxine_player():
             monster.center = lwm.convert_coords(monster.map_x, monster.map_y)
             monster.scale = 4 * monster.initial_scale * lwm.convert_scale(monster, images)
 
+            monster.fighter.update()
+            monster.center = (monster.center[0] + monster.fighter.get_jitter(),
+                              monster.center[1])
+
         for item in game.items:
             item.map_x, item.map_y = item.gridnav.get_location()
             item.center = lwm.convert_coords(item.map_x, item.map_y)
