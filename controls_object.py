@@ -38,6 +38,7 @@ class Controls:
         self.zap_lever.pos = (1730, 579)
         
         self.zap_timeout = 0
+        self.using_zap = False
         
         # Experimental
         self.single_player_zap_timeout = 0
@@ -125,9 +126,12 @@ class Controls:
         else:
             self.zap_lever.images = ['switch_big_frame_1']
             
-            if self.voltage != self.old_voltage:
-                self.set_voltage(self.old_voltage)
-            self.voltage_knob.angle = self.old_angle
+            if self.using_zap:
+                if self.voltage != self.old_voltage:
+                    self.set_voltage(self.old_voltage)
+                self.voltage_knob.angle = self.old_angle
+            
+            self.using_zap = False
         
         self.zap_lever.animate()
 
@@ -298,6 +302,9 @@ class Controls:
             
             # Send a message to change the voltage
             self.set_voltage(1000)
+            
+            self.using_zap = True
+            
         elif self.control_index == self.hydrowag_index:
             self.hydrowag_on = not self.hydrowag_on
             # hydrowag has just been turned on now
@@ -440,6 +447,7 @@ class Controls:
         zt = save['zap_timeout']
         if zt == 6:
             self.zap_timeout = zt
+            self.using_zap = True
         
         self.hydrowag_on = save['hydrowag_on']
         self.sawtooth_on = save['sawtooth_on']
