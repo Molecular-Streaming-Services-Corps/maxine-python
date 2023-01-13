@@ -1238,7 +1238,7 @@ def make_key():
     
     key = Actor('key')
     key.images = ['key']
-    key.initial_scale = 1 / 6
+    key.initial_scale = 1 / 30
 
     # Use gridnav to give the key a location in the maze. It doesn't move.
     cell = maze.get_random_cell_near_center(3)
