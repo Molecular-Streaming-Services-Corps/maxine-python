@@ -60,14 +60,14 @@ class Controls:
         
         self.hydrowag_switch = Actor('switch_green_off')
         self.hydrowag_switch.images = ['switch_green_off']
-        self.hydrowag_switch.pos = (1731, 665)
+        self.hydrowag_switch.pos = (1731, 725)
         self.hydrowag_on = False
         self.hydrowag_moving_forward = True
         self.hydrowag_timeout = 0
         
         self.sawtooth_switch = Actor('switch_blue_off')
         self.sawtooth_switch.images = ['switch_blue_off']
-        self.sawtooth_switch.pos = (1731, 719)
+        self.sawtooth_switch.pos = (1731, 780)
         self.sawtooth_on = False
         self.sawtooth_frame = 0
 
