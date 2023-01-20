@@ -38,7 +38,8 @@ KENT_MAC = '04e9e50cc5b9'
 KENT_OLD_MAC = '04e9e50c6a0b'
 JONATHAN_MAC = '04e9e50c6a0b'
 MAC = JONATHAN_MAC
-NAME2MAC = {'Jonathan': JONATHAN_MAC, 'Kent': KENT_MAC}
+NAME2MAC = {'Jonathan': JONATHAN_MAC, 'Kent': KENT_MAC,
+    'Hackerboard4', '04e9e50cc5ba', 'Hackerboard5', '04e9e50cc5df'}
 
 def setup():
     global PATH
@@ -208,8 +209,8 @@ class SampleData:
         #s = struct_definitions.numbers_1667
         #self.samples = s.unpack(samples_bytes)
         dt = np.dtype(np.int16)
-        #dt = dt.newbyteorder('>')
-        dt = dt.newbyteorder('<')
+        dt = dt.newbyteorder('>')
+        #dt = dt.newbyteorder('<')
         self.samples = np.frombuffer(message, dtype=dt, offset=16)
         
         logger.debug('samples: %s %s %s %s', len(self.samples), self.samples[0 : 10], self.start, self.end)

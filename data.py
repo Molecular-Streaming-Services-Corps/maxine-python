@@ -144,7 +144,7 @@ class Data:
             return False
         
         SDS_FOR_SPIKE = 3
-                
+
         index = - len(last_samples) // num_boxes
         last_box = last_samples[index:]
         earlier_samples = last_samples[:index]
@@ -153,6 +153,10 @@ class Data:
         sd = np.std(earlier_samples)
         
         logger.debug('mean, sd: %s %s', mean, sd)
+        
+        # TODO HACK why does this happen?
+        if sd == 0:
+            return False
         
         # Check for a positive spike
         possible_spike = np.max(last_box)
@@ -273,7 +277,7 @@ class LiveData(Data):
                 data = self.data_frames[i].samples
             else:
                 data = empty_frame
-                logger.info('Used empty_frame')
+                #logger.info('Used empty_frame')
             
             samples[start:end] = data
             #logger.info('%s %s %s', samples[start:end].shape, data.shape, (start, end))
