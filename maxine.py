@@ -136,6 +136,20 @@ def draw():
     if game.draw_panels:
         skirt.draw()
     
+    if game.draw_panels:
+        helpbutton.draw()
+        dataglobe.draw()
+        databutton.draw()
+        brainpod.draw()
+        brainalert.draw()
+        chatwindow.draw()
+        peoplebutton.draw()
+        audioselector.draw()
+
+        # Now we draw the controls for both players.
+        controls.draw()
+
+    
     # Draw the microscope video in front of the background and behind the signal ring
     video_ops.draw_video(screen)
     
@@ -155,19 +169,6 @@ def draw():
         
     if level == 7 and lwm and constants.DRAW_GRID:
         lwm.draw_grid(screen)
-        
-    if game.draw_panels:
-        helpbutton.draw()
-        dataglobe.draw()
-        databutton.draw()
-        brainpod.draw()
-        brainalert.draw()
-        chatwindow.draw()
-        peoplebutton.draw()
-        audioselector.draw()
-
-        # Now we draw the controls for both players.
-        controls.draw()
     
     if dev_control:
         dev_control.draw()

@@ -143,8 +143,8 @@ class SpikeGraph:
         The frame will be the numpy array of current data containing the latest spike'''
         self.screen = screen
         self.frame = None
-        self.top_left = (1464, 44)
-        self.bottom_right = (1785, 251)
+        self.top_left = (1484 + 10, 24 + 10)
+        self.bottom_right = (1750 + 10, 214 + 10)
         self.width = self.bottom_right[0] - self.top_left[0]
         self.height = self.bottom_right[1] - self.top_left[1]
         
@@ -223,8 +223,8 @@ class ContinuousGraph:
         self.frames_to_keep = 100 * self.lilith_fps 
         self.last_frames = []
 
-        self.top_left = (1484, 24)
-        self.bottom_right = (1750, 214)
+        self.top_left = (1484 + 10, 24 + 10)
+        self.bottom_right = (1750 + 10, 214 + 10)
         # Settings for unselected TV if we want to change the size of the graph
         #self.top_left = (1515, 46)
         #self.bottom_right = (1724, 197)

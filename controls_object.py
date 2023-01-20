@@ -88,7 +88,7 @@ class Controls:
         # Place a TV frame over the corner display.
         tv = Actor('tv')
         tv.images = ['tv']
-        tv.center = (1467 + 158, 20 + 100)
+        tv.center = (1467 + 168, 20 + 110)
         tv.fps = 1
         self.tv = tv
         
@@ -235,8 +235,12 @@ class Controls:
         # Set the control that's presently selected to be a bit bigger.
         for control in self.controls:
             control.scale = 1
-        self.controls[self.control_index].scale = 1.2
+        if self.control_index == self.tv_index:
+            self.tv.scale = 1.1
+        else:
+            self.controls[self.control_index].scale = 1.2
         self.drop_button.scale *= 0.5
+        self.tv.scale *= 1.1
      
         self.voltage_knob.draw()
         
