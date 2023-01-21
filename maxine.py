@@ -358,7 +358,8 @@ def update():
         d.advance_frame()
         
         if PLAYER == 'maxine' and spike_exists:
-            add_cell()
+            angle = vlr.get_present_angle()
+            add_cell(angle)
     elif LIVE:
         MONSTERS_PER_SPIKE = 1
         #lilith_client.request_data(lilith_client.ws, 1)
@@ -378,7 +379,8 @@ def update():
     
         if PLAYER == 'maxine':
             for i in range(0, spikes * MONSTERS_PER_SPIKE):
-                add_cell() 
+                angle = vlr.get_present_angle()
+                add_cell(angle)
                 
         # 5 seconds at 20 FPS
         last_n_samples = d.get_last_n_frames(20 * 5)
@@ -1026,6 +1028,11 @@ def start_next_level():
         maze.braid()
         maze.remove_walls(0.2)
         
+        other_maxines = game.make_other_maxines()
+        for m in other_maxines:
+            m.gridnav = components.PolarGridNavigation(maze,
+                maze.get_random_cell(), game, 15 // constants.SPEED)
+
     if level == 8:
         game.maxine.map_x = 0
         game.maxine.map_y = 0
@@ -1088,14 +1095,17 @@ def make_spore(shroom):
 def get_spore_timeout():
     return random.randrange(60 * 2.5, 60 * 5)
 
-def make_mushroom():
+def make_mushroom(angle):
     mush = Actor('pink_oyster1')
     mush.images = ['pink_oyster1', 'pink_oyster2']
     mush.fps = 2
     mush.scale = 0.5
     
     # Set up the spiraling behavior with a component
-    rotation = random.randrange(0, 360)
+    if angle is not None:
+        rotation = angle - 20 # HACK arbitrary adjustment
+    else:
+        rotation = random.randrange(0, 360)
     mush.spiral_state = util.SpiralState(
         0.5, rotation, game.torus_inner_height, 1 * constants.SPEED, constants.CENTER, game.torus_inner_width / game.torus_inner_height)
     
@@ -1105,7 +1115,7 @@ def make_mushroom():
     return mush
 
 # Level 2
-def make_bouncer():
+def make_bouncer(angle = None):
 #    monster_type = random.choice(['monster1_right', 'monster2', 'monster3', 'monster4',
 #        'monster5', 'monster6', 'monster7', 'monster8', 'monster9', 'monster10'])
     bouncer = Actor('purple_mushroom')
@@ -1115,7 +1125,10 @@ def make_bouncer():
     
     # Give it an initial position on the signal ring
     r = game.torus_inner_radius
-    theta = random.randrange(0, 360)
+    if angle is not None:
+        theta = angle
+    else:
+        theta = random.randrange(0, 360)
     (x, y) = util.pol2cart(r, theta)
     coords = util.adjust_coords(x, y)
 
@@ -1271,7 +1284,7 @@ def make_sars_monster():
     cell.animation = animation
     return cell
 
-def add_cell():
+def add_cell(angle = None):
     # This is called by the clock, not the update function (in standalone mode)
     global game_state
     if game_state != 'playing':
@@ -1287,10 +1300,10 @@ def add_cell():
     
     if make_normal_monster:
         if level in [1, 3]:
-            mush = make_mushroom()
+            mush = make_mushroom(angle)
             game.spiraling_monsters.add(mush)
         elif level in [2, 4, 5]:
-            bouncer = make_bouncer()
+            bouncer = make_bouncer(angle)
             game.bouncing_monsters.add(bouncer)
         elif level in [6, 7, 8]:
             # Make 10 monsters

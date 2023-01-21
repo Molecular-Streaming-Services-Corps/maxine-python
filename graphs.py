@@ -109,10 +109,13 @@ class VerticalLineRing:
             self.draw_line(angle, top, bottom, color)
         
         # Draw the red line at present_angle
-        self.draw_line(self.present_box * 360 / constants.NUM_BOXES, -2*self.line_extent, 0, colors.MEDIUM_RED)
+        self.draw_line(self.get_present_angle(), -2*self.line_extent, 0, colors.MEDIUM_RED)
         
         after = time.perf_counter()
         logger.debug('Drawing VLR took %s seconds', after - before)
+        
+    def get_present_angle(self):
+        return self.present_box * 360 / constants.NUM_BOXES
         
     def draw_line(self, theta, top, bottom, color):
         # Calculate the coordinates for the inner end of the line
