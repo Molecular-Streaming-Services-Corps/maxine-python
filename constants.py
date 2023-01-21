@@ -19,3 +19,6 @@ MIN_RMS = 800
 MAX_RMS = 4000
 
 NUM_LEVELS = 8
+
+# The speed of moving the voltage knob, in degrees per frame.
+VOLTAGE_KNOB_SPEED = 1

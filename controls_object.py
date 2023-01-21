@@ -336,30 +336,14 @@ class Controls:
     
     def push_left(self):
         '''Called for a single push of the joystick to the left.'''
-        if self.control_index == self.voltage_index:
-            if self.voltage_knob.angle != 170: # +17 * 10
-                self.voltage_knob.angle = (self.voltage_knob.angle + 17) % 360
-
-            voltage = self.find_voltage_from_angle(self.voltage_knob.angle)
-            self.set_voltage(voltage)
-            self.old_voltage = voltage
-            self.old_angle = self.voltage_knob.angle
-        elif self.control_index == self.syringe_index:
+        if self.control_index == self.syringe_index:
             self.pump_speed_index = min(len(self.pump_speed_delays), 
                                         self.pump_speed_index + 1)
         elif self.control_index == self.potion_index:
             self.potion_holder.push_left()
         
     def push_right(self):
-        if self.control_index == self.voltage_index:
-            if self.voltage_knob.angle != 190: # -17 * 10
-                self.voltage_knob.angle = (self.voltage_knob.angle - 17) % 360
-            
-            voltage = self.find_voltage_from_angle(self.voltage_knob.angle)
-            self.set_voltage(voltage)
-            self.old_voltage = voltage
-            self.old_angle = self.voltage_knob.angle
-        elif self.control_index == self.syringe_index:
+        if self.control_index == self.syringe_index:
             self.pump_speed_index = max(-len(self.pump_speed_delays), 
                                         self.pump_speed_index - 1)
         elif self.control_index == self.potion_index:
@@ -367,10 +351,28 @@ class Controls:
 
     def hold_left(self):
         '''Called continuously every frame that the joystick is held left.'''
-        if self.control_index == self.tv_index:
+        if self.control_index == self.voltage_index:
+            if self.voltage_knob.angle != 170: # +17 * 10
+                self.voltage_knob.angle = (self.voltage_knob.angle +
+                    constants.VOLTAGE_KNOB_SPEED) % 360
+
+            voltage = self.find_voltage_from_angle(self.voltage_knob.angle)
+            self.set_voltage(voltage)
+            self.old_voltage = voltage
+            self.old_angle = self.voltage_knob.angle
+        elif self.control_index == self.tv_index:
             self.cg.change_time_setting_continuous(self.cg.time_setting + 0.05)
         
     def hold_right(self):
+        if self.control_index == self.voltage_index:
+            if self.voltage_knob.angle != 190: # -17 * 10
+                self.voltage_knob.angle = (self.voltage_knob.angle -
+                    constants.VOLTAGE_KNOB_SPEED) % 360
+            
+            voltage = self.find_voltage_from_angle(self.voltage_knob.angle)
+            self.set_voltage(voltage)
+            self.old_voltage = voltage
+            self.old_angle = self.voltage_knob.angle
         # Zoom into the time axis when the console player presses right
         if self.control_index == self.tv_index:
             self.cg.change_time_setting_continuous(self.cg.time_setting - 0.05)    
