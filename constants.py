@@ -17,3 +17,5 @@ SPEED = 1
 # Should this be determined dynamically?
 MIN_RMS = 800
 MAX_RMS = 4000
+
+NUM_LEVELS = 8
