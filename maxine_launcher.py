@@ -22,6 +22,9 @@ class MLFrame(wx.Frame):
         self.pd_btn = wx.Button(self.panel, -1, "Open poredata") 
         self.pd_btn.Bind(wx.EVT_BUTTON, self.OpenPoredata) 
         
+        self.video_btn = wx.Button(self.panel, -1, "Choose background video")
+        self.video_btn.Bind(wx.EVT_BUTTON, self.ChooseVideo)
+        
         levels = []
         for lvl in range(1, constants.NUM_LEVELS + 1):
             levels.append(str(lvl))
@@ -38,11 +41,13 @@ class MLFrame(wx.Frame):
         self.launch_btn.Bind(wx.EVT_BUTTON, self.Launch)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([self.mode_box, self.pd_btn, self.levels_box, self.launch_btn])
+        sizer.AddMany([self.mode_box, self.pd_btn, 
+            self.video_btn, self.levels_box, self.launch_btn])
         self.panel.SetSizer(sizer)
         
         self.data_dir = None
         self.level = 1
+        self.video = None
         self.mode = "Standalone"
 
     def OnExit(self, event):
@@ -51,6 +56,9 @@ class MLFrame(wx.Frame):
 
     def OpenPoredata(self, event):
         self.data_dir = choose_data_dir(self)
+
+    def ChooseVideo(self, event):
+        self.video = choose_video(self)
 
     def ChooseLevel(self, event):
         lvl = int(event.GetEventObject().GetStringSelection())
@@ -64,6 +72,9 @@ class MLFrame(wx.Frame):
         arguments = []
         
         arguments += ['--level', str(self.level)]
+        
+        if self.video is not None:
+            arguments += ['--video', self.video]
         
         live = False
         
@@ -104,7 +115,17 @@ def choose_data_dir(frame):
         # Return the directory where poredata.bin was found
         pathname = fileDialog.GetPath()
         return os.path.dirname(pathname)
+
+def choose_video(frame):
+    with wx.FileDialog(frame, "Open video file", 
+        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
         
+        if fileDialog.ShowModal() == wx.ID_CANCEL:
+            return None
+            
+        pathname = fileDialog.GetPath()
+        return pathname
+
 if __name__ == '__main__':
     setup_UI()
 
