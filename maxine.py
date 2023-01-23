@@ -151,7 +151,8 @@ def draw():
 
     
     # Draw the microscope video in front of the background and behind the signal ring
-    video_ops.draw_video(screen)
+    if constants.VIDEO_FILE is not None:
+        video_ops.draw_video(screen)
     
     graphs.draw_torus(screen, images)
     
@@ -302,7 +303,8 @@ def update():
         #print('update(): i:', i)
 
     # Update the microscope video
-    video_ops.update_video()
+    if constants.VIDEO_FILE is not None:
+        video_ops.update_video()
 
     if not vlr:
         if LIVE:
@@ -1351,6 +1353,8 @@ BOARD = args.live # Could be None
 
 if args.level:
     level = int(args.level)
+
+constants.VIDEO_FILE = args.video
 
 # Detect Kent's computer and apply default parameters (can be overridden)
 import platform

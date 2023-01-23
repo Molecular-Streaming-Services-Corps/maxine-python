@@ -22,3 +22,9 @@ NUM_LEVELS = 8
 
 # The speed of moving the voltage knob, in degrees per frame.
 VOLTAGE_KNOB_SPEED = 1
+
+# The video file shown in the background.
+VIDEO_FILE = None
+VIDEO_WIDTH = None
+VIDEO_HEIGHT = None
+
