@@ -1188,7 +1188,7 @@ def make_maze_monster(near_center = False):
     global maze, game, cells_near_maxine
     
 #    monster_type = random.choice(['dragon', 'ghost', 'snake'])
-    monster_type = random.choice(['ghost', 'snake'])
+    monster_type = random.choice(['ghost', 'snake', 'zombreydegrey'])
     if monster_type == 'dragon':
         monster = Actor('dragon_tyrant_a')
         monster.images = ['dragon_tyrant_a']
@@ -1203,6 +1203,11 @@ def make_maze_monster(near_center = False):
         monster.images = ['snalke_right1', 'snalke_right2']
         monster.fps = 2
         monster.initial_scale = 1 / 10
+    elif monster_type == 'zombreydegrey':
+        monster = Actor('zombreydegrey')
+        monster.images = ['zombreydegrey']
+        monster.fps = 1
+        monster.initial_scale = 1 / 24
 
     monster.type = monster_type
 
