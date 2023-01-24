@@ -1,5 +1,6 @@
 Tested on Ubuntu 22.04, pygame 2.1.2 (SDL 2.0.16, Python 3.10.4)
 
+For Maxine:
 
 Install Python 3.10.
 
@@ -9,3 +10,10 @@ pip3 install pgzero websocket-client opencv-python
 
 This will install numpy and pygame as well.
 
+If you want the optional but very useful Maxine Launcher (GUI):
+
+Run
+
+pip3 install wxPython
+
+To get wxWidgets for Python.
