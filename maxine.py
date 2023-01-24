@@ -1312,15 +1312,16 @@ def add_cell(angle = None):
         elif level in [2, 4, 5]:
             bouncer = make_bouncer(angle)
             game.bouncing_monsters.add(bouncer)
-        elif level in [6, 7, 8]:
-            # Make 10 monsters
+        elif level in [6, 7]:
+            add_lots_of_maze_monsters(n = 10)
+            
+            add_some_doors(n = 10)
+            
+        elif level == 8:
             add_lots_of_maze_monsters(n = 30)
             
             add_some_doors(n = 50)
             
-            #monster = make_maze_monster(True)
-            #game.maze_monsters.add(monster)
-
     if STANDALONE:
         # Monsters come faster in Battle Royale
         if level == 8:
