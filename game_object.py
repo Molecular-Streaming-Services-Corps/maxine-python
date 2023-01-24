@@ -103,7 +103,7 @@ class Game:
             maxine.images = ['maxine_neutral']
             maxine.pos = MAXINE_START
             maxine.alive = True
-            maxine.scale = MAXINE_INITIAL_SCALE
+            maxine.initial_scale = 0.3
             self.other_maxines.append(maxine)
        
         return self.other_maxines

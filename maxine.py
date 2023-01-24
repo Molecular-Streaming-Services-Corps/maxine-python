@@ -625,7 +625,7 @@ def update_for_maxine_player():
                 m.map_x, m.map_y = gn.get_location()
                 
                 m.center = lwm.convert_coords(m.map_x, m.map_y)
-                m.scale = lwm.convert_scale(m, images)
+                m.scale = m.initial_scale * lwm.convert_scale(m, images)
 
     # Make sure that the explosion of a dead monster moves on screen with the maze
     if level in [6, 7, 8]:
