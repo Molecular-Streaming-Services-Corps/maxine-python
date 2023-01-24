@@ -617,7 +617,7 @@ def update_for_maxine_player():
                 game.maxine.images = ['maxine_' + gn.sprite_direction]
     
     # Code to give other Maxines a location
-    if level == 8 and lwm:
+    if level in [7, 8] and lwm:
         for m in game.other_maxines:
             if hasattr(m, 'gridnav'):
                 gn = m.gridnav
