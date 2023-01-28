@@ -1182,13 +1182,15 @@ def make_cannon_spore():
 
 cells_near_maxine = None
 # Levels 6-8
-def make_maze_monster(near_center = False):
+def make_maze_monster(near_center = False, monster_type = None):
     '''Makes a monster that moves around inside the maze. Randomly to start
     with.'''
     global maze, game, cells_near_maxine
     
 #    monster_type = random.choice(['dragon', 'ghost', 'snake'])
-    monster_type = random.choice(['ghost', 'snake', 'zombreydegrey'])
+    if monster_type is None:
+        monster_type = random.choice(['ghost', 'snake', 'zombreydegrey'])
+    
     if monster_type == 'dragon':
         monster = Actor('dragon_tyrant_a')
         monster.images = ['dragon_tyrant_a']
@@ -1313,12 +1315,12 @@ def add_cell(angle = None):
             bouncer = make_bouncer(angle)
             game.bouncing_monsters.add(bouncer)
         elif level in [6, 7]:
-            add_lots_of_maze_monsters(n = 10)
+            add_specified_maze_monsters()
             
             add_some_doors(n = 10)
             
         elif level == 8:
-            add_lots_of_maze_monsters(n = 30)
+            add_specified_maze_monsters()
             
             add_some_doors(n = 50)
             
@@ -1331,9 +1333,26 @@ def add_cell(angle = None):
         clock.schedule_unique(add_cell, delay)
 
 def add_lots_of_maze_monsters(n = 2000):
+    '''Add a certain number of maze monsters chosen at random.'''
     logger.info('Adding %s monsters', n)
     for i in range(0, n):
         monster = make_maze_monster(False)
+        game.maze_monsters.add(monster)
+
+def add_specified_maze_monsters():
+    '''Add the maze monsters chosen on the command line.'''
+    zombies, snakes, ghosts = constants.MONSTER_RATIO
+    
+    for i in range(0, zombies):
+        monster = make_maze_monster(False, 'zombreydegrey')
+        game.maze_monsters.add(monster)
+    
+    for i in range(0, snakes):
+        monster = make_maze_monster(False, 'snake')
+        game.maze_monsters.add(monster)
+        
+    for i in range(0, ghosts):
+        monster = make_maze_monster(False, 'ghost')
         game.maze_monsters.add(monster)
 
 def add_some_doors(n):
@@ -1361,6 +1380,9 @@ if args.level:
     level = int(args.level)
 
 constants.VIDEO_FILE = args.video
+
+if args.monster_ratio:
+    constants.MONSTER_RATIO = eval(args.monster_ratio)
 
 # Detect Kent's computer and apply default parameters (can be overridden)
 import platform
