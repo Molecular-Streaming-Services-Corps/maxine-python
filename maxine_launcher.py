@@ -19,11 +19,20 @@ class MLFrame(wx.Frame):
         # create a panel in the frame
         self.panel = wx.Panel(self)
         
+        self.modes_label = wx.StaticText(self.panel, label = "Choose mode")
+        
+        modes = ["Standalone", "Prerecorded", "Live"]
+        
+        self.mode_box = wx.ListBox(self.panel, choices = modes, style = wx.LB_SINGLE)
+        self.mode_box.Bind(wx.EVT_LISTBOX, self.ChooseMode)
+        
         self.pd_btn = wx.Button(self.panel, -1, "Open poredata") 
         self.pd_btn.Bind(wx.EVT_BUTTON, self.OpenPoredata) 
         
         self.video_btn = wx.Button(self.panel, -1, "Choose background video")
         self.video_btn.Bind(wx.EVT_BUTTON, self.ChooseVideo)
+        
+        self.levels_label = wx.StaticText(self.panel, label = "Choose level")
         
         levels = []
         for lvl in range(1, constants.NUM_LEVELS + 1):
@@ -31,18 +40,26 @@ class MLFrame(wx.Frame):
         
         self.levels_box = wx.ListBox(self.panel, choices = levels, style = wx.LB_SINGLE)
         self.levels_box.Bind(wx.EVT_LISTBOX, self.ChooseLevel)
+                
+        self.zombies_label = wx.StaticText(self.panel,
+            label = "Choose number of zombies that appear with each spike")
+        self.snakes_label = wx.StaticText(self.panel, label = "Snakes")
+        self.ghosts_label = wx.StaticText(self.panel, label = "Ghosts")
         
-        modes = ["Standalone", "Prerecorded", "Live"]
-        
-        self.mode_box = wx.ListBox(self.panel, choices = modes, style = wx.LB_SINGLE)
-        self.mode_box.Bind(wx.EVT_LISTBOX, self.ChooseMode)
-        
+        self.zombies_box = wx.TextCtrl(self.panel)
+        self.snakes_box = wx.TextCtrl(self.panel)
+        self.ghosts_box = wx.TextCtrl(self.panel)
+                
         self.launch_btn = wx.Button(self.panel, -1, "Launch Maxine")
         self.launch_btn.Bind(wx.EVT_BUTTON, self.Launch)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([self.mode_box, self.pd_btn, 
-            self.video_btn, self.levels_box, self.launch_btn])
+        sizer.AddMany([self.modes_label, self.mode_box, self.pd_btn, 
+            self.video_btn, self.levels_label, self.levels_box,
+            self.zombies_label, self.zombies_box,
+            self.snakes_label, self.snakes_box,
+            self.ghosts_label, self.ghosts_box,
+            self.launch_btn])
         self.panel.SetSizer(sizer)
         
         self.data_dir = None
