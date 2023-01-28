@@ -20,3 +20,12 @@ Choose the starting level. Level 1 is mushrooms, level 2 is MidJourney monsters,
 Optional video argument (defaults to no video)
 python3 maxine.py --video VIDEOFILE
 Display a video file in the background. It must be around 640x360 or the game slows down.
+
+Optional monster ratio argument (for maze levels).
+python3 maxine.py --monster-ratio ZOMBIES,SNAKES,GHOSTS
+Choose the number of each monster type that appears with every spike.
+
+Optional doors argument (for maze levels).
+python3 maxine.py --doors NUMBER
+Choose the number of doors that appear with every spike.
+

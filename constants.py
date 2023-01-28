@@ -31,4 +31,5 @@ VIDEO_HEIGHT = None
 # A tuple containing the number of zombies, snakes and ghosts to produce each
 # spike (in that order)
 MONSTER_RATIO = (3, 3, 3)
-
+# The number of doors added per spike
+DOORS = 10

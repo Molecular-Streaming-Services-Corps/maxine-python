@@ -1317,12 +1317,12 @@ def add_cell(angle = None):
         elif level in [6, 7]:
             add_specified_maze_monsters()
             
-            add_some_doors(n = 10)
+            add_some_doors(constants.DOORS)
             
         elif level == 8:
             add_specified_maze_monsters()
             
-            add_some_doors(n = 50)
+            add_some_doors(constants.DOORS)
             
     if STANDALONE:
         # Monsters come faster in Battle Royale
@@ -1383,6 +1383,9 @@ constants.VIDEO_FILE = args.video
 
 if args.monster_ratio:
     constants.MONSTER_RATIO = eval(args.monster_ratio)
+
+if args.doors:
+    constants.DOORS = int(args.doors)
 
 # Detect Kent's computer and apply default parameters (can be overridden)
 import platform

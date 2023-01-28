@@ -49,7 +49,11 @@ class MLFrame(wx.Frame):
         self.zombies_box = wx.TextCtrl(self.panel)
         self.snakes_box = wx.TextCtrl(self.panel)
         self.ghosts_box = wx.TextCtrl(self.panel)
-                
+        
+        self.doors_label = wx.StaticText(self.panel,
+            label = "Choose the number of doors that appear with each spike")
+        self.doors_box = wx.TextCtrl(self.panel)
+        
         self.launch_btn = wx.Button(self.panel, -1, "Launch Maxine")
         self.launch_btn.Bind(wx.EVT_BUTTON, self.Launch)
         
@@ -59,6 +63,7 @@ class MLFrame(wx.Frame):
             self.zombies_label, self.zombies_box,
             self.snakes_label, self.snakes_box,
             self.ghosts_label, self.ghosts_box,
+            self.doors_label, self.doors_box,
             self.launch_btn])
         self.panel.SetSizer(sizer)
         
@@ -103,6 +108,11 @@ class MLFrame(wx.Frame):
             ratio = str((zombies, snakes, ghosts))
             
             arguments += ['--monster-ratio', ratio]
+        
+        if self.doors_box.GetLineText(0) != '':
+            doors = int(self.doors_box.GetLineText(0))
+            
+            arguments += ['--doors', str(doors)]
         
         live = False
         
