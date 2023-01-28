@@ -93,6 +93,17 @@ class MLFrame(wx.Frame):
         if self.video is not None:
             arguments += ['--video', self.video]
         
+        if (self.zombies_box.GetLineText(0) != '' and
+                self.snakes_box.GetLineText(0) != '' and
+                self.ghosts_box.GetLineText(0) != ''):
+            zombies = int(self.zombies_box.GetLineText(0))
+            snakes = int(self.snakes_box.GetLineText(0))
+            ghosts = int(self.ghosts_box.GetLineText(0))
+            
+            ratio = str((zombies, snakes, ghosts))
+            
+            arguments += ['--monster-ratio', ratio]
+        
         live = False
         
         if self.mode == 'Standalone':
