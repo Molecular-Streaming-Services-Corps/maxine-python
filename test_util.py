@@ -1,3 +1,5 @@
+import numpy as np
+
 import util
 
 def test_process_joystick_string():
@@ -10,6 +12,15 @@ def test_process_joystick_string():
     correct_list = ['js1_up', 'js1_b1']
     print(button_on_list == correct_list)
 
+def test_kurtosis():
+    data = np.array([55.0, 78, 65, 98, 97, 60, 67, 65, 83, 65])
+    
+    K = util.kurtosis(data)
+    
+    print(K)
+    print(K == 2.0453729382893173)
+
 if __name__ == '__main__':
     test_process_joystick_string()
+    test_kurtosis()
 

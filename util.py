@@ -89,3 +89,16 @@ def all_zeros(a):
     are_zeros = a == 0
     az = np.all(are_zeros)
     return az and len(a)
+
+# Functions to calculate useful features of a spike.
+
+def kurtosis(data):
+    '''Calculates the kurtosis of a 1 dimensional numpy array representing a spike.'''
+    data = data.astype('double')
+    sd = np.std(data)
+    
+    moment_4 = np.mean((data - np.mean(data))**4)
+    
+    K = moment_4 / sd**4
+    return K
+
