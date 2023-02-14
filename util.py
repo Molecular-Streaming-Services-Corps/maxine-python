@@ -102,3 +102,12 @@ def kurtosis(data):
     K = moment_4 / sd**4
     return K
 
+def objectivity(data):
+    '''Calculates a/b, where a is the time before the peak and b is the time
+    after the peak within the duration of the spike.'''
+    peak_index = np.argmax(data)
+    a = peak_index
+    b = len(data) - 1 - peak_index
+    
+    return a / b
+

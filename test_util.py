@@ -20,7 +20,15 @@ def test_kurtosis():
     print(K)
     print(K == 2.0453729382893173)
 
+def test_objectivity():
+    data = np.array([1, 1, 1, 1, 2, 1, 1])
+    
+    obj = util.objectivity(data)
+    print(obj)
+    print(obj == 2)
+
 if __name__ == '__main__':
     test_process_joystick_string()
     test_kurtosis()
+    test_objectivity()
 
