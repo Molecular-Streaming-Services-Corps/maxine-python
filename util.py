@@ -92,6 +92,12 @@ def all_zeros(a):
 
 # Functions to calculate useful features of a spike.
 
+def peak(data):
+    return np.max(data)
+
+def duration(data):
+    return len(data)
+
 def kurtosis(data):
     '''Calculates the kurtosis of a 1 dimensional numpy array representing a spike.'''
     data = data.astype('double')
@@ -110,4 +116,18 @@ def objectivity(data):
     b = len(data) - 1 - peak_index
     
     return a / b
+
+def time_ten_values(data):
+    '''Creates 10 values that correspond to the means of 10 equal parts of
+    the spike. Only works if the spike has at least duration 10 samples.
+    
+    "Vector of one ionic current-time waveform divided into 10 equal parts
+    in the time direction."'''
+    sections = np.array_split(data, 10)
+    values = np.mean(sections)
+    
+    return values
+
+# Should make "The vector of one ionic current-time waveform divided into 10
+# equal parts in the current direction"
 
