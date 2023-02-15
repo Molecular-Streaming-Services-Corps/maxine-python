@@ -119,15 +119,66 @@ def objectivity(data):
 
 def time_ten_values(data):
     '''Creates 10 values that correspond to the means of 10 equal parts of
-    the spike. Only works if the spike has at least duration 10 samples.
+    the spike. If the spike has less than 10 samples, just uses the mean
+    sample for all 10 values.
     
     "Vector of one ionic current-time waveform divided into 10 equal parts
     in the time direction."'''
+    data = data.astype('double')
+    
+    if len(data) < 10:
+        return np.concatenate([np.mean(data)] * 10)
+    
     sections = np.array_split(data, 10)
     values = np.mean(sections)
     
     return values
 
-# Should make "The vector of one ionic current-time waveform divided into 10
-# equal parts in the current direction"
+def current_twenty_values(data):
+    '''Creates 20 values. 10 on each side of the peak. They are divided into
+    10 buckets of equal size and the mean of each bucket is used.
 
+    If the spike has less than 10 samples on either side of the peak,
+    just uses the mean sample for all 20 values.
+
+    "The vector of one ionic current-time waveform divided into 10
+    equal parts in the current direction"
+    '''    
+    data = data.astype('double')
+    
+    peak_index = np.argmax(data)
+    
+    before = data[0 : peak_index]
+    after = data[peak_index : ]
+
+    if len(before) < 10 or len(after) < 10:
+        return np.concatenate([np.mean(data)] * 20)
+
+    means_before = bucketify_section_(before)
+    means_after = bucketify_section_(after)
+    
+    means = np.concatenate([means_before, means_after])
+    return means
+
+def bucketify_section_(section):
+    NUM_BUCKETS = 10
+    min_ = np.min(section)
+    bucket_size = (np.max(section) - min_) / NUM_BUCKETS
+    
+    print(bucket_size)
+    
+    # TODO do more efficiently if necessary
+    buckets = [[] for i in range(10)]
+
+    for sample in section:
+        location = (sample - min_) // bucket_size
+        location = int(location)
+        location = min(9, location)
+        buckets[location].append(sample)
+    
+    means = np.zeros(10)
+    for i, bucket in enumerate(buckets):
+        means[i] = np.mean(bucket)
+
+    return means
+    

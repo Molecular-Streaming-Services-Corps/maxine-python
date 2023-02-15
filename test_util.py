@@ -27,8 +27,16 @@ def test_objectivity():
     print(obj)
     print(obj == 2)
 
+def test_current_twenty_values():
+    data = np.array(list(range(0, 21)) + list(range(20, -1, -1)), dtype='double')
+    
+    means = util.current_twenty_values(data)
+    
+    print(means)
+
 if __name__ == '__main__':
     test_process_joystick_string()
     test_kurtosis()
     test_objectivity()
+    test_current_twenty_values()
 
