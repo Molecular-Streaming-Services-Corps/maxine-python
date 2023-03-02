@@ -141,6 +141,12 @@ class VerticalLineRing:
         self.box_is_spike[self.present_box] = True
 
 class CornerGraph:
+    def __init__(self):
+        self.should_draw_axes = False
+        
+        self.x_axis = [0, 60]
+        self.y_axis = [-1000, 1000]
+
     def enlarge_on_left(self):
         self.top_left = (60, 60)
         self.bottom_right = (800, 800)
@@ -152,9 +158,31 @@ class CornerGraph:
         self.tops = np.zeros(self.width) + 10
         self.bottoms = np.ones(self.width) + 15
         self.middles = np.zeros(self.width) + 13
+        
+        self.should_draw_axes = True
+    
+    def draw_axes(self):
+        '''Draw the x and y axes. For now, assumes only 2 values on each.'''
+        # Top of y
+        text = str(int(self.y_axis[1]))
+        coords = (self.top_left[0] - 50, self.top_left[1])
+        self.screen.draw.text(text, coords)
+        
+        text = str(int(self.y_axis[0]))
+        coords = (self.top_left[0] - 50, self.bottom_right[1] - 25)
+        self.screen.draw.text(text, coords)
+        
+        text = str(self.x_axis[0])
+        coords = (self.top_left[0], self.bottom_right[1])
+        self.screen.draw.text(text, coords)
+        
+        text = str(self.x_axis[1])
+        coords = (self.bottom_right[0], self.bottom_right[1])
+        self.screen.draw.text(text, coords)
 
 class SpikeGraph(CornerGraph):
     def __init__(self, screen, live):
+        super().__init__()
         '''screen: the pgzero screen object.
         The frame will be the numpy array of current data containing the latest spike'''
         self.screen = screen
@@ -172,7 +200,7 @@ class SpikeGraph(CornerGraph):
             self.frame_size = 5120
         else:
             self.frame_size = 1667
-
+            
     def set_frame(self, frame):
         global logger
         w = self.width
@@ -206,6 +234,10 @@ class SpikeGraph(CornerGraph):
         
         #logger.info('tops: %s', self.tops)
         #logger.info('bottoms: %s', self.bottoms)
+        
+        # Set axes
+        self.y_axis[0] = min_
+        self.y_axis[1] = max_
     
     def draw(self):
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
@@ -220,9 +252,13 @@ class SpikeGraph(CornerGraph):
             y2 = self.bottoms[i] + top
             
             l((x, y1), (x, y2), 'red')
+        
+        if self.should_draw_axes:
+            self.draw_axes()
 
 class ContinuousGraph(CornerGraph):
     def __init__(self, screen, live):
+        super().__init__()
         '''screen: the pgzero screen object.
         The frames will be the numpy arrays of current data containing the signal
         that was recorded during each frame of animation.'''
@@ -258,7 +294,7 @@ class ContinuousGraph(CornerGraph):
             self.frame_size = 5120
         else:
             self.frame_size = 1667
-    
+        
     def change_time_setting_continuous(self, seconds):
         if seconds > 0 and seconds <= 100:
             self.time_setting = seconds
@@ -330,6 +366,10 @@ class ContinuousGraph(CornerGraph):
         self.bottoms = np.maximum(0, np.minimum(h, self.bottoms))
         self.middles = np.maximum(0, np.minimum(h, self.middles))        
     
+        # Set axes
+        self.y_axis[0] = min_
+        self.y_axis[1] = max_
+
     def draw(self):
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
         self.screen.draw.filled_rect(BOX, 'black')
@@ -353,6 +393,9 @@ class ContinuousGraph(CornerGraph):
             l((x, my1), (x, my2), 'white')
             
             #print(y1, y2, my1, my2)
+        
+        if self.should_draw_axes:
+            self.draw_axes()
 
 def draw_graph(i, d, graph_type, screen, STANDALONE):
     # Draw a rectangle behind the graph
