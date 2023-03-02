@@ -7,8 +7,9 @@ import constants
 import graphs
 
 class Controls:
-    def __init__(self, Actor, serializer, LIVE, PLAYER, screen):
+    def __init__(self, Actor, serializer, LIVE, DATAVIEW, PLAYER, screen):
         self.LIVE = LIVE
+        self.DATAVIEW = DATAVIEW
         self.PLAYER = PLAYER
         self.screen = screen
     
@@ -282,7 +283,9 @@ class Controls:
             self.cg.draw()
 
         # Draw the TV frame after the graph so it is on top of the graph.
-        self.tv.draw()
+        # Don't draw the frame in DataView.
+        if not self.DATAVIEW:
+            self.tv.draw()
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''

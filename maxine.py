@@ -313,7 +313,8 @@ def update():
             vlr = graphs.VerticalLineRing(screen, game, LIVE, constants.NUM_BOXES)
     
     if not controls:
-        controls = controls_object.Controls(Actor, serializer, LIVE, PLAYER, screen)
+        controls = controls_object.Controls(
+            Actor, serializer, LIVE, DATAVIEW, PLAYER, screen)
     
     brainpod.animate()
     
@@ -1378,6 +1379,8 @@ BOARD = args.live # Could be None
 
 if args.level:
     level = int(args.level)
+
+DATAVIEW = args.dataview
 
 constants.VIDEO_FILE = args.video
 

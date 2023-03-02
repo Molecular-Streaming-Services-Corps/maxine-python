@@ -29,3 +29,5 @@ Optional doors argument (for maze levels).
 python3 maxine.py --doors NUMBER
 Choose the number of doors that appear with every spike.
 
+Turn on DataView. Displays big moving graphs of various information instead of the game.
+python3 maxine..py --dataview
