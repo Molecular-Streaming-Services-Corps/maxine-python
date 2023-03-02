@@ -320,6 +320,9 @@ def update():
     
     game.update()
     
+    if DATAVIEW and not LIVE:
+        game.draw_panels = False
+    
     # Advance the datafile and make a monster appear on a spike.
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
@@ -409,18 +412,19 @@ def update():
         vlr.give_samples([])   
 
     if PLAYER == 'maxine':
-        if game_state in ['playing', 'won']:
-            update_for_maxine_player()
-        
-            # Send updates to the other player    
-            if MULTIPLAYER:
-                wrapper = game.save_arena_to_dict()
-                json_string = serializer.save_dict_to_string(wrapper)
-                lilith_client.send_status(json_string)
+        if not DATAVIEW:
+            if game_state in ['playing', 'won']:
+                update_for_maxine_player()
+            
+                # Send updates to the other player    
+                if MULTIPLAYER:
+                    wrapper = game.save_arena_to_dict()
+                    json_string = serializer.save_dict_to_string(wrapper)
+                    lilith_client.send_status(json_string)
     else:
         update_for_console_player()
 
-        if MULTIPLAYER:
+        if MULTIPLAYER and not DATAVIEW:
             wrapper = controls.save_to_dict()
             json_string = serializer.save_dict_to_string(wrapper)
             lilith_client.send_status(json_string)
