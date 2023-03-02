@@ -19,7 +19,9 @@ class MLFrame(wx.Frame):
         # create a panel in the frame
         self.panel = wx.Panel(self)
         
-        self.modes_label = wx.StaticText(self.panel, label = "Choose mode")
+        self.dataview = wx.CheckBox(self.panel, label = "DataView")
+        
+        self.modes_label = wx.StaticText(self.panel, label = "Choose data mode")
         
         modes = ["Standalone", "Prerecorded", "Live"]
         
@@ -58,7 +60,8 @@ class MLFrame(wx.Frame):
         self.launch_btn.Bind(wx.EVT_BUTTON, self.Launch)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([self.modes_label, self.mode_box, self.pd_btn, 
+        sizer.AddMany([self.dataview,
+            self.modes_label, self.mode_box, self.pd_btn, 
             self.video_btn, self.levels_label, self.levels_box,
             self.zombies_label, self.zombies_box,
             self.snakes_label, self.snakes_box,
@@ -95,6 +98,7 @@ class MLFrame(wx.Frame):
         
         arguments += ['--level', str(self.level)]
         
+        # These shouldn't be used with DataView
         if self.video is not None:
             arguments += ['--video', self.video]
         
@@ -113,6 +117,11 @@ class MLFrame(wx.Frame):
             doors = int(self.doors_box.GetLineText(0))
             
             arguments += ['--doors', str(doors)]
+        
+        # These should be used with DataView
+        dataview = self.dataview.GetValue()
+        if dataview:
+            arguments += ['--dataview']
         
         live = False
         
@@ -133,7 +142,9 @@ class MLFrame(wx.Frame):
             subprocess.Popen(command + arguments)
         else:
             subprocess.Popen(command + arguments + ['--player', 'console'])
-            subprocess.Popen(command + arguments + ['--player', 'maxine'])
+            # We don't want the Maxine game with DataView
+            if not dataview:
+                subprocess.Popen(command + arguments + ['--player', 'maxine'])
     
 app = None
 def setup_UI():
