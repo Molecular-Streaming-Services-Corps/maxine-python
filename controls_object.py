@@ -275,16 +275,16 @@ class Controls:
         top = 830
         rect = pygame.Rect((left - 5, top), (10, syringe_height))
         self.screen.draw.filled_rect(rect, colors.BLACK)
-        
-        if self.corner_display == 'spike_graph':
-            self.sg.draw()
-    
-        if self.corner_display == 'continuous_graph':
-            self.cg.draw()
 
-        # Draw the TV frame after the graph so it is on top of the graph.
-        # Don't draw the frame in DataView.
+        # Don't draw the corner display in DataView.
         if not self.DATAVIEW:
+            if self.corner_display == 'spike_graph':
+                self.sg.draw()
+        
+            if self.corner_display == 'continuous_graph':
+                self.cg.draw()
+
+            # Draw the TV frame after the graph so it is on top of the graph.
             self.tv.draw()
 
     def select_down(self):
