@@ -140,7 +140,20 @@ class VerticalLineRing:
         '''Sets the box represented by present_box to be a spike.'''
         self.box_is_spike[self.present_box] = True
 
-class SpikeGraph:
+class CornerGraph:
+    def enlarge_on_left(self):
+        self.top_left = (60, 60)
+        self.bottom_right = (800, 800)
+
+        self.width = self.bottom_right[0] - self.top_left[0]
+        self.height = self.bottom_right[1] - self.top_left[1]
+        
+        # These are in the range from 0 to height, with 0 representing the top
+        self.tops = np.zeros(self.width) + 10
+        self.bottoms = np.ones(self.width) + 15
+        self.middles = np.zeros(self.width) + 13
+
+class SpikeGraph(CornerGraph):
     def __init__(self, screen, live):
         '''screen: the pgzero screen object.
         The frame will be the numpy array of current data containing the latest spike'''
@@ -208,7 +221,7 @@ class SpikeGraph:
             
             l((x, y1), (x, y2), 'red')
 
-class ContinuousGraph:
+class ContinuousGraph(CornerGraph):
     def __init__(self, screen, live):
         '''screen: the pgzero screen object.
         The frames will be the numpy arrays of current data containing the signal

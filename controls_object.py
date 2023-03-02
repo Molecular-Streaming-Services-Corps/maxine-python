@@ -82,6 +82,10 @@ class Controls:
         self.sg = graphs.SpikeGraph(screen, LIVE)
         self.cg = graphs.ContinuousGraph(screen, LIVE)
         
+        if self.DATAVIEW:
+            self.sg.enlarge_on_left()
+            self.cg.enlarge_on_left()
+        
         #corner_display = 'tv'
         #corner_display = 'spike_graph'
         self.corner_display = 'continuous_graph'
@@ -231,6 +235,9 @@ class Controls:
         self.screen.blit(surface, coords)
 
     def draw(self):
+        '''In game mode, this draws all the controls and the corner display.
+        In DataView mode, it draws the controls for Live with no TV, and
+        simply isn't called for Prerecorded.'''
         self.panel.draw()
     
         # Set the control that's presently selected to be a bit bigger.
@@ -286,6 +293,13 @@ class Controls:
 
             # Draw the TV frame after the graph so it is on top of the graph.
             self.tv.draw()
+
+    def draw_dataview(self):
+        if self.corner_display == 'spike_graph':
+            self.sg.draw()
+    
+        if self.corner_display == 'continuous_graph':
+            self.cg.draw()        
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''

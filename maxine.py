@@ -127,6 +127,10 @@ def draw():
     global game, lwm, maze
     global game_state
     
+    if DATAVIEW:
+        draw_dataview()
+        return
+    
     if game_state == 'title':
         game.draw_title_screen(screen)
         return
@@ -148,7 +152,6 @@ def draw():
 
         # Now we draw the controls for both players.
         controls.draw()
-
     
     # Draw the microscope video in front of the background and behind the signal ring
     if constants.VIDEO_FILE is not None:
@@ -237,6 +240,21 @@ def draw():
             victory = Actor('victory')
             victory.pos = constants.CENTER
             victory.draw()
+
+def draw_dataview():
+    global game, game_state, controls
+
+    if game_state == 'title':
+        game.draw_title_screen(screen)
+        return
+    
+    draw_living_background()
+
+    if game.draw_panels:
+        # Now we draw the controls for both players.
+        controls.draw()
+        
+    controls.draw_dataview()
 
 def draw_living_background():
     global step_count
@@ -363,7 +381,7 @@ def update():
         
         d.advance_frame()
         
-        if PLAYER == 'maxine' and spike_exists:
+        if PLAYER == 'maxine' and spike_exists and not DATAVIEW:
             angle = vlr.get_present_angle()
             add_cell(angle)
     elif LIVE:
@@ -383,7 +401,7 @@ def update():
         if controls.corner_display == 'continuous_graph' and frame is not None and len(frame):
             controls.cg.set_frame(frame)
     
-        if PLAYER == 'maxine':
+        if PLAYER == 'maxine' and not DATAVIEW:
             for i in range(0, spikes * MONSTERS_PER_SPIKE):
                 angle = vlr.get_present_angle()
                 add_cell(angle)
