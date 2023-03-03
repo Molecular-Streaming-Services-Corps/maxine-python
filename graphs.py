@@ -146,6 +146,9 @@ class CornerGraph:
         
         self.x_axis = [0, 60]
         self.y_axis = [-1000, 1000]
+        
+        self.sample_index = 0
+        self.samples_per_second = 100000
 
     def enlarge_on_left(self):
         self.top_left = (60, 60)
@@ -161,14 +164,18 @@ class CornerGraph:
         
         self.should_draw_axes = True
     
+    def set_axes(self, x_axis, y_axis):
+        self.x_axis = [int(x) for x in x_axis]
+        self.y_axis = [int(y) for y in y_axis]
+    
     def draw_axes(self):
         '''Draw the x and y axes. For now, assumes only 2 values on each.'''
         # Top of y
-        text = str(int(self.y_axis[1]))
+        text = str(self.y_axis[1])
         coords = (self.top_left[0] - 50, self.top_left[1])
         self.screen.draw.text(text, coords)
         
-        text = str(int(self.y_axis[0]))
+        text = str(self.y_axis[0])
         coords = (self.top_left[0] - 50, self.bottom_right[1] - 25)
         self.screen.draw.text(text, coords)
         
@@ -203,6 +210,9 @@ class SpikeGraph(CornerGraph):
             
     def set_frame(self, frame):
         global logger
+        
+        self.sample_index += self.frame_size
+        
         w = self.width
         self.frame = frame
         box_width = self.frame_size // w
@@ -256,6 +266,7 @@ class SpikeGraph(CornerGraph):
         if self.should_draw_axes:
             self.draw_axes()
 
+# TODO set the current axis appropriately when zoomed
 class ContinuousGraph(CornerGraph):
     def __init__(self, screen, live):
         super().__init__()
@@ -315,6 +326,8 @@ class ContinuousGraph(CornerGraph):
     def set_frame(self, frame):
         global logger
         
+        self.sample_index += self.frame_size
+        
         # Add it to the end of last_six_frames
         if len(self.last_frames) < self.frames_to_keep:
             self.last_frames.append(frame)
@@ -367,8 +380,8 @@ class ContinuousGraph(CornerGraph):
         self.middles = np.maximum(0, np.minimum(h, self.middles))        
     
         # Set axes
-        self.y_axis[0] = min_
-        self.y_axis[1] = max_
+        t = self.sample_index / self.samples_per_second
+        self.set_axes([t - self.time_setting, t], [min_, max_])
 
     def draw(self):
         BOX = pygame.Rect(self.top_left, (self.width, self.height))

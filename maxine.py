@@ -1429,7 +1429,7 @@ if DATADIR:
     d.load_files(DATADIR)
 
 elif LIVE:
-    lilith_client.MAC = lilith_client.NAME2MAC[BOARD]
+    lilith_client.MAC = constants.NAME2MAC[BOARD]
     lilith_client.setup()
 
     # Run the Lilith interaction loop in another thread
@@ -1442,7 +1442,7 @@ elif LIVE:
 
 if MULTIPLAYER and not LIVE:
     name = 'Kent'
-    lilith_client.MAC = lilith_client.NAME2MAC[name]
+    lilith_client.MAC = constants.NAME2MAC[name]
     lilith_client.setup()
 
     print('Initializing lilith_client')

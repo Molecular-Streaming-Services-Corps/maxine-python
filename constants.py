@@ -33,3 +33,11 @@ VIDEO_HEIGHT = None
 MONSTER_RATIO = (3, 3, 3)
 # The number of doors added per spike
 DOORS = 10
+
+# The MAC addresses of various consoles.
+KENT_MAC = '04e9e50cc5b9'
+KENT_OLD_MAC = '04e9e50c6a0b'
+JONATHAN_MAC = '04e9e50c6a0b'
+NAME2MAC = {'Jonathan': JONATHAN_MAC, 'Kent': KENT_MAC,
+    'Hackerboard4': '04e9e50cc5ba', 'Hackerboard5': '04e9e50cc5df'}
+

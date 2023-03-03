@@ -6,7 +6,7 @@ import platform
 
 import constants
 
-CONSOLE_NAME = 'Kent'
+DEFAULT_CONSOLE_NAME = 'Kent'
 
 class MLFrame(wx.Frame):
     """
@@ -19,6 +19,10 @@ class MLFrame(wx.Frame):
         # create a panel in the frame
         self.panel = wx.Panel(self)
         
+        # Data options section
+        
+        self.data_options_label = wx.StaticText(self.panel, label = "Data options")
+        
         self.dataview = wx.CheckBox(self.panel, label = "DataView")
         
         self.modes_label = wx.StaticText(self.panel, label = "Choose data mode")
@@ -30,6 +34,15 @@ class MLFrame(wx.Frame):
         
         self.pd_btn = wx.Button(self.panel, -1, "Open poredata") 
         self.pd_btn.Bind(wx.EVT_BUTTON, self.OpenPoredata) 
+        
+        self.console_label = wx.StaticText(self.panel, label = "Choose console")
+        
+        consoles = list(constants.NAME2MAC.keys())
+        self.console_box = wx.ListBox(self.panel, choices = consoles, style = wx.LB_SINGLE)
+        
+        # Game options section
+        
+        self.game_options_label = wx.StaticText(self.panel, label = "Game options")
         
         self.video_btn = wx.Button(self.panel, -1, "Choose background video")
         self.video_btn.Bind(wx.EVT_BUTTON, self.ChooseVideo)
@@ -60,8 +73,10 @@ class MLFrame(wx.Frame):
         self.launch_btn.Bind(wx.EVT_BUTTON, self.Launch)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddMany([self.dataview,
-            self.modes_label, self.mode_box, self.pd_btn, 
+        sizer.AddMany([self.data_options_label, self.dataview,
+            self.modes_label, self.mode_box, self.pd_btn,
+            self.console_label, self.console_box,
+            self.game_options_label,
             self.video_btn, self.levels_label, self.levels_box,
             self.zombies_label, self.zombies_box,
             self.snakes_label, self.snakes_box,
@@ -129,8 +144,14 @@ class MLFrame(wx.Frame):
             pass
         elif self.mode == 'Prerecorded' and self.data_dir is not None:
             arguments += ['--datadir', self.data_dir]
-        elif self.mode == 'Live':
-            arguments += ['--live', CONSOLE_NAME]
+        elif self.mode == 'Live':            
+            selection = self.console_box.GetSelection()
+            if selection == -1:
+                console_name = DEFAULT_CONSOLE_NAME
+            else:
+                console_name = self.console_box.GetString(selection)
+            
+            arguments += ['--live', console_name]
             live = True
     
         if platform.system() == 'Windows':
