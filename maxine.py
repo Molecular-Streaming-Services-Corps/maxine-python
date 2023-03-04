@@ -345,13 +345,14 @@ def update():
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
         d.get_one_frame_current()
+        d.get_one_frame_conductance()
 
         last_second = d.get_last_n_samples(100000)
         game.rms_last_second = data.Data.rms(last_second)
 
-        frame = d.get_frame()
+        frame = d.get_frame(conductance = True)
                 
-        last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES)
+        last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES, conductance = True)
         vlr.give_samples(last_n_samples)
 
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, 1667)
@@ -365,7 +366,9 @@ def update():
         
         # The length of the frame must be 1667. At the end of the data it will
         # be less, so we skip the last partial frame.
-        if controls.corner_display == 'continuous_graph' and frame is not None and len(frame) == 1667:
+        # Also, we must update this every frame so that the ContinuousGraph
+        # can keep track of the sample index accurately.
+        if frame is not None and len(frame) == 1667:
             controls.cg.set_frame(frame)
             
         if spike_exists:

@@ -300,6 +300,9 @@ class PrerecordedData(Data):
         self.num_boxes = num_boxes
         self.init_boxes()
         self.no_more_data = False
+        #self.latest_frame_current = []
+        self.samples_per_frame = 1667
+        self.conductance = []
     
     def init_boxes(self):
         self.boxes = [0] * self.num_boxes    
@@ -316,12 +319,15 @@ class PrerecordedData(Data):
         
         if 'joystick' in settings:
             self.joystick_data = settings['joystick']
+        
+        if 'bias_settings_history' in settings:
+            self.voltage_data = settings['bias_settings_history']
+        else: # Not sure if this is ever needed.
+            self.voltage_data = [[0, 0]]
             
     def get_one_frame_current(self):
-        samples_per_frame = 1667
-        
-        start = samples_per_frame * self.latest_frame
-        end = samples_per_frame * (self.latest_frame + 1)
+        start = self.samples_per_frame * self.latest_frame
+        end = self.samples_per_frame * (self.latest_frame + 1)
         
         cd = self.sample_data[start : end]
         if len(cd) > 0:
@@ -332,7 +338,41 @@ class PrerecordedData(Data):
             self.init_boxes()
             self.no_more_data = True
         
+        #self.latest_frame_current = cd
         return None
+    
+    # TODO not the most efficient algorithm
+    def get_voltage_at_sample_index(self, sample_index):
+        voltage = None
+        
+        for index, bias in self.voltage_data:
+            if sample_index <= index:
+                voltage = bias
+        
+        assert(voltage is not None)
+        return voltage
+        
+    # TODO not the most efficient algorithm. And there seems to be a memory
+    # leak somewhere.
+    def get_one_frame_conductance(self):
+        start = self.samples_per_frame * self.latest_frame
+        end = self.samples_per_frame * (self.latest_frame + 1)
+        
+        self.conductance = list(self.conductance)
+        
+        for index in range(start, end):
+            voltage = self.get_voltage_at_sample_index(index)
+            current = self.sample_data[index]
+            
+            conductance = current / voltage
+            
+            #logger.debug('current, voltage, conductance: %s, %s, %s', current, voltage, conductance)
+            
+            self.conductance.append(conductance)
+        
+        # Must convert it into a Numpy array so later-used functions can use
+        # Numpy array methods.
+        self.conductance = np.asarray(self.conductance)
     
     def get_one_frame_joystick(self):
         # If we are past the end of the data, the joystick isn't being used.
@@ -362,28 +402,35 @@ class PrerecordedData(Data):
     def advance_frame(self):
         self.latest_frame += 1
     
-    def get_frame(self):
-        samples_per_frame = 1667
+    def get_frame(self, conductance = False):
+        if not conductance:
+            data = self.sample_data
+        else:
+            data = self.conductance
+    
+        start = self.samples_per_frame * self.latest_frame
+        end = self.samples_per_frame * (self.latest_frame + 1)      
         
-        start = samples_per_frame * self.latest_frame
-        end = samples_per_frame * (self.latest_frame + 1)
-        
-        cd = self.sample_data[start : end]
+        cd = data[start : end]
 
         return cd
         
-    def get_last_n_samples(self, n):
+    def get_last_n_samples(self, n, conductance = False):
         '''Return the last n samples up to the present frame. Returns all the
-        samples if there are less than n samples'''
+        samples if there are less than n samples. If conductance is False,
+        uses the current data. If it is true, uses the conductance data.'''
+        if not conductance:
+            data = self.sample_data
+        else:
+            data = self.conductance
+        
         before = time.perf_counter()
         
-        samples_per_frame = 1667
-        
-        start = samples_per_frame * (self.latest_frame + 1) - n
+        start = self.samples_per_frame * (self.latest_frame + 1) - n
         start = max(start, 0)
-        end = samples_per_frame * (self.latest_frame + 1)
+        end = self.samples_per_frame * (self.latest_frame + 1)
         
-        cd = self.sample_data[start : end]
+        cd = data[start : end]
         
         after = time.perf_counter()
         logger.debug('get_last_n_samples took %s seconds', after - before)

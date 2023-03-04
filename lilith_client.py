@@ -422,6 +422,9 @@ def start_button():
         packed_data = s.pack(*data)
         ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
 
+def get_latest_voltage():
+    return metadata[-1][1]
+
 if __name__ == '__main__':
     setup()
 
