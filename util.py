@@ -90,95 +90,33 @@ def all_zeros(a):
     az = np.all(are_zeros)
     return az and len(a)
 
-# Functions to calculate useful features of a spike.
+# Memoized class from the Python Decorator Library
+import collections
+import functools
 
-def peak(data):
-    return np.max(data)
+class memoized(object):
+   '''Decorator. Caches a function's return value each time it is called.
+   If called later with the same arguments, the cached value is returned
+   (not reevaluated).
+   '''
+   def __init__(self, func):
+      self.func = func
+      self.cache = {}
+   def __call__(self, *args):
+      if not isinstance(args, collections.abc.Hashable):
+         # uncacheable. a list, for instance.
+         # better to not cache than blow up.
+         return self.func(*args)
+      if args in self.cache:
+         return self.cache[args]
+      else:
+         value = self.func(*args)
+         self.cache[args] = value
+         return value
+   def __repr__(self):
+      '''Return the function's docstring.'''
+      return self.func.__doc__
+   def __get__(self, obj, objtype):
+      '''Support instance methods.'''
+      return functools.partial(self.__call__, obj)
 
-def duration(data):
-    return len(data)
-
-def kurtosis(data):
-    '''Calculates the kurtosis of a 1 dimensional numpy array representing a spike.'''
-    data = data.astype('double')
-    sd = np.std(data)
-    
-    moment_4 = np.mean((data - np.mean(data))**4)
-    
-    K = moment_4 / sd**4
-    return K
-
-def objectivity(data):
-    '''Calculates a/b, where a is the time before the peak and b is the time
-    after the peak within the duration of the spike.'''
-    peak_index = np.argmax(data)
-    a = peak_index
-    b = len(data) - 1 - peak_index
-    
-    return a / b
-
-def time_ten_values(data):
-    '''Creates 10 values that correspond to the means of 10 equal parts of
-    the spike. If the spike has less than 10 samples, just uses the mean
-    sample for all 10 values.
-    
-    "Vector of one ionic current-time waveform divided into 10 equal parts
-    in the time direction."'''
-    data = data.astype('double')
-    
-    if len(data) < 10:
-        return np.concatenate([np.mean(data)] * 10)
-    
-    sections = np.array_split(data, 10)
-    values = np.mean(sections)
-    
-    return values
-
-def current_twenty_values(data):
-    '''Creates 20 values. 10 on each side of the peak. They are divided into
-    10 buckets of equal size and the mean of each bucket is used.
-
-    If the spike has less than 10 samples on either side of the peak,
-    just uses the mean sample for all 20 values.
-
-    "The vector of one ionic current-time waveform divided into 10
-    equal parts in the current direction"
-    '''    
-    data = data.astype('double')
-    
-    peak_index = np.argmax(data)
-    
-    before = data[0 : peak_index]
-    after = data[peak_index : ]
-
-    if len(before) < 10 or len(after) < 10:
-        return np.concatenate([np.mean(data)] * 20)
-
-    means_before = bucketify_section_(before)
-    means_after = bucketify_section_(after)
-    
-    means = np.concatenate([means_before, means_after])
-    return means
-
-def bucketify_section_(section):
-    NUM_BUCKETS = 10
-    min_ = np.min(section)
-    bucket_size = (np.max(section) - min_) / NUM_BUCKETS
-    
-    print(bucket_size)
-    
-    # TODO do more efficiently if necessary
-    buckets = [[] for i in range(10)]
-
-    for sample in section:
-        location = (sample - min_) // bucket_size
-        location = int(location)
-        location = min(9, location)
-        buckets[location].append(sample)
-    
-    means = np.zeros(10)
-    for i, bucket in enumerate(buckets):
-        means[i] = np.mean(bucket)
-
-    return means
-    

@@ -79,6 +79,9 @@ This file belongs to the PyGameZeroHelper github library. It has to be included 
 *serialization.py
 Just functions to convert Python dictionaries to/from JSON. Used in the obsolete load/save feature as well as Challenge Mode.
 
+*spikes.py
+Contains the Spike class, which is used to store data (a waveform) from one spike. It has helper methods to calculate lots of ML features from the waveform which are also memoized for efficiency.
+
 *struct_definitions.py
 A struct.Struct is an object that stores a binary format used in a message to/from Lilith. We could store all of the Structs used in lilith_client.py here instead of recreating them each time a function is called. That would be more efficient, but it doesn't seem to matter.
 
