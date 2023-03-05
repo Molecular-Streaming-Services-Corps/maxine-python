@@ -15,11 +15,19 @@ class Spike:
         return len(self.data)
 
     @memoized
+    def skewness(self):
+        mean = np.mean(self.data)
+        median = np.median(self.data)
+        sd = np.std(self.data)
+        
+        return 3 * (mean - median) / sd
+
+    @memoized
     def kurtosis(self):
         '''Calculates the kurtosis of a 1 dimensional numpy array representing a spike.'''
         sd = np.std(self.data)
         
-        moment_4 = np.mean((data - np.mean(self.data))**4)
+        moment_4 = np.mean((self.data - np.mean(self.data))**4)
         
         K = moment_4 / sd**4
         return K
@@ -43,10 +51,10 @@ class Spike:
         "Vector of one ionic current-time waveform divided into 10 equal parts
         in the time direction."'''
         if self.duration() < 10:
-            return np.concatenate([np.mean(self.data)] * 10)
+            return [np.mean(self.data)] * 10
         
         sections = np.array_split(self.data, 10)
-        values = np.mean(sections)
+        values = [np.mean(s) for s in sections]
         
         return values
 
@@ -63,14 +71,14 @@ class Spike:
         '''    
         peak_index = np.argmax(self.data)
         
-        before = data[0 : peak_index]
-        after = data[peak_index : ]
+        before = self.data[0 : peak_index]
+        after = self.data[peak_index : ]
 
         if len(before) < 10 or len(after) < 10:
-            return np.concatenate([np.mean(self.data)] * 20)
+            return [np.mean(self.data)] * 20
 
-        means_before = bucketify_section_(before)
-        means_after = bucketify_section_(after)
+        means_before = self.bucketify_section_(before)
+        means_after = self.bucketify_section_(after)
         
         means = np.concatenate([means_before, means_after])
         return means
