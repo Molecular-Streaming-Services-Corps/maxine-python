@@ -82,6 +82,8 @@ class Controls:
         self.sg = graphs.SpikeGraph(screen, LIVE)
         self.cg = graphs.ContinuousGraph(screen, LIVE)
         
+        self.sp = graphs.ScatterPlot(screen, 'dt', 'G', use_test_data=False)
+        
         if self.DATAVIEW:
             self.sg.enlarge_on_left()
             self.cg.enlarge_on_left()
@@ -299,7 +301,9 @@ class Controls:
             self.sg.draw()
     
         if self.corner_display == 'continuous_graph':
-            self.cg.draw()        
+            self.cg.draw()
+            
+        self.sp.draw() 
 
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''

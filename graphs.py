@@ -410,6 +410,89 @@ class ContinuousGraph(CornerGraph):
         if self.should_draw_axes:
             self.draw_axes()
 
+class ScatterPlot:
+    def __init__(self, screen, x_label, y_label, use_test_data = False):
+        self.screen = screen
+    
+        self.datapoints = []
+
+        self.min_x = None
+        self.min_y = None
+        self.max_x = None
+        self.max_y = None
+        
+        if use_test_data:
+            self.add_datapoint((1000, 3))
+            self.add_datapoint((500, 2))
+            self.add_datapoint((500, 10))
+
+        self.top_left = (882, 66)
+        self.bottom_right = (1354, 477)
+        
+        self.width = self.bottom_right[0] - self.top_left[0]
+        self.height = self.bottom_right[1] - self.top_left[1]
+
+    def add_datapoint(self, datapoint):
+        x, y = datapoint
+        if len(self.datapoints) == 0:
+            self.min_x = x
+            self.max_x = x
+            self.min_y = y
+            self.max_y = y
+        else:
+            if x < self.min_x:
+                self.min_x = x
+            if x > self.max_x:
+                self.max_x = x
+            if y < self.min_y:
+                self.min_y = y
+            if y > self.max_y:
+                self.max_y = y
+
+        self.datapoints.append(datapoint)
+
+    def draw(self):
+        if len(self.datapoints) < 2:
+            return
+    
+        BOX = pygame.Rect(self.top_left, (self.width, self.height))
+        self.screen.draw.filled_rect(BOX, 'black')
+        
+        self.draw_axes()
+        
+        left, top =  self.top_left
+        right, bottom = self.bottom_right
+        
+        data_width = self.max_x - self.min_x
+        data_height = self.max_y - self.min_y
+        
+        for x, y in self.datapoints:
+            x_screen = (x - self.min_x) / data_width * self.width + left
+            y_screen = (y - self.min_y) / data_height * -self.height + bottom
+            
+            self.screen.draw.filled_circle((x_screen, y_screen), 1, 'green')
+            
+            print((x_screen, y_screen))
+        
+    def draw_axes(self):
+        '''Draw the x and y axes.'''
+        # Top of y
+        text = str(self.max_y)
+        coords = (self.top_left[0] - 50, self.top_left[1])
+        self.screen.draw.text(text, coords)
+        
+        text = str(self.min_y)
+        coords = (self.top_left[0] - 50, self.bottom_right[1] - 25)
+        self.screen.draw.text(text, coords)
+        
+        text = str(self.min_x)
+        coords = (self.top_left[0], self.bottom_right[1])
+        self.screen.draw.text(text, coords)
+        
+        text = str(self.max_x)
+        coords = (self.bottom_right[0], self.bottom_right[1])
+        self.screen.draw.text(text, coords)
+
 def draw_graph(i, d, graph_type, screen, STANDALONE):
     # Draw a rectangle behind the graph
     if graph_type not in ['boxes_ring','line_ring']:
