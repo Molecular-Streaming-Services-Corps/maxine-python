@@ -345,7 +345,7 @@ def update():
     # If we're in STANDALONE mode, a timer will make the monster appear.
     if DATADIR:
         d.get_one_frame_current()
-        d.get_one_frame_conductance()
+        #d.get_one_frame_conductance()
 
         last_second = d.get_last_n_samples(100000)
         game.rms_last_second = data.Data.rms(last_second)
@@ -387,6 +387,15 @@ def update():
         if PLAYER == 'maxine' and spike_exists and not DATAVIEW:
             angle = vlr.get_present_angle()
             add_cell(angle)
+            
+        if spike_exists:
+            spikes = data.Data.find_spikes_in_last_frame(last_n_samples, 1667)
+            
+            for spike in spikes:
+                controls.spikes.append(spike)
+                
+                datapoint = (spike.duration(), spike.peak())
+                controls.sp.add_datapoint(datapoint)
     elif LIVE:
         MONSTERS_PER_SPIKE = 1
         #lilith_client.request_data(lilith_client.ws, 1)

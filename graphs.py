@@ -451,20 +451,20 @@ class ScatterPlot:
 
         self.datapoints.append(datapoint)
 
-    def draw(self):
-        if len(self.datapoints) < 2:
-            return
-    
+    def draw(self):    
         BOX = pygame.Rect(self.top_left, (self.width, self.height))
         self.screen.draw.filled_rect(BOX, 'black')
+        
+        if len(self.datapoints) < 1:
+            return
         
         self.draw_axes()
         
         left, top =  self.top_left
         right, bottom = self.bottom_right
         
-        data_width = self.max_x - self.min_x
-        data_height = self.max_y - self.min_y
+        data_width = self.max_x - self.min_x + 1
+        data_height = self.max_y - self.min_y + 1
         
         for x, y in self.datapoints:
             x_screen = (x - self.min_x) / data_width * self.width + left
@@ -477,7 +477,7 @@ class ScatterPlot:
     def draw_axes(self):
         '''Draw the x and y axes.'''
         # Top of y
-        text = str(self.max_y)
+        text = str(self.max_y + 1) 
         coords = (self.top_left[0] - 50, self.top_left[1])
         self.screen.draw.text(text, coords)
         
@@ -489,7 +489,7 @@ class ScatterPlot:
         coords = (self.top_left[0], self.bottom_right[1])
         self.screen.draw.text(text, coords)
         
-        text = str(self.max_x)
+        text = str(self.max_x + 1)
         coords = (self.bottom_right[0], self.bottom_right[1])
         self.screen.draw.text(text, coords)
 

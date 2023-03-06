@@ -1,3 +1,5 @@
+#from memory_profiler import profile
+
 import numpy as np
 import json
 import os
@@ -8,6 +10,7 @@ import logging
 import lilith_client
 import util
 import constants
+import spike_object
 
 # Set up logger for this module
 logger = logging.getLogger('data')
@@ -169,6 +172,56 @@ class Data:
             return True
             
         return False
+
+    @staticmethod
+    def find_spikes_in_last_frame(last_samples, num_boxes):
+        '''Iterate through the whole box, finding contiguous segments that
+        are above the mean.'''
+
+        spikes = []
+    
+        if len(last_samples) < 20000:
+            return spikes
+        
+        SDS_FOR_SPIKE = 3
+     
+        index = - len(last_samples) // num_boxes
+        last_box = last_samples[index:]
+        earlier_samples = last_samples[:index]
+
+        mean = np.mean(earlier_samples)
+        sd = np.std(earlier_samples)
+
+        # TODO HACK why does this happen?
+        if sd == 0:
+            return spikes
+        
+        # Only allow positive spikes
+        spike_start_index = None
+        j = 0
+        
+        while j < len(last_box):
+            sample = last_box[j]
+            
+            if sample > mean + sd * SDS_FOR_SPIKE:
+                # Find the rest of the spike
+                spike_start_index = j
+                j += 1
+                while j < len(last_box):
+                    sample = last_box[j]
+            
+                    if sample > mean + sd * SDS_FOR_SPIKE:
+                        j += 1
+                    else:
+                        break
+                spike = spike_object.Spike(
+                    last_box[spike_start_index : j] - mean,
+                    mean)
+                spikes.append(spike)
+                
+            j += 1
+            
+        return spikes
 
     @staticmethod
     def rms(samples):
@@ -352,12 +405,53 @@ class PrerecordedData(Data):
         assert(voltage is not None)
         return voltage
         
-    # TODO not the most efficient algorithm. And there seems to be a memory
-    # leak somewhere.
-    def get_one_frame_conductance(self):
+    def get_conductance_for_range(self, start, end):
+        voltages = [self.get_voltage_at_sample_index(index) for index in range(start, end)]
+        currents = self.sample_data[start : end]
+        
+        if len(currents) == 0:
+            return []
+
+        conductances = currents / voltages
+    
+        return conductances
+        
+    # Solves the memory leak but too slow
+    def get_conductance_at_sample_index(self, index):
+        voltage = self.get_voltage_at_sample_index(index)
+        current = self.sample_data[index]
+        
+        conductance = current / voltage
+        
+        return conductance
+        
+    # Fast but doesn't solve the memory leak. You can't store the conductance,
+    # it just breaks Python and causes a memory leak.
+#    @profile
+    def get_one_frame_conductance(self):    
         start = self.samples_per_frame * self.latest_frame
         end = self.samples_per_frame * (self.latest_frame + 1)
         
+        voltages = [self.get_voltage_at_sample_index(index) for index in range(start, end)]
+        currents = self.sample_data[start : end]
+        
+        if len(currents) == 0:
+            return
+
+        conductances = currents / voltages
+
+        # This view creates a memory leak which we solve with copy
+        cc = np.concatenate([self.conductance, conductances])
+        
+        self.conductance = cc.copy()
+        
+        del cc
+
+    # not the most efficient algorithm. And has a memory leak
+    def get_one_frame_conductance_slow(self):
+        start = self.samples_per_frame * self.latest_frame
+        end = self.samples_per_frame * (self.latest_frame + 1)
+
         self.conductance = list(self.conductance)
         
         for index in range(start, end):
@@ -403,35 +497,35 @@ class PrerecordedData(Data):
         self.latest_frame += 1
     
     def get_frame(self, conductance = False):
-        if not conductance:
-            data = self.sample_data
-        else:
-            data = self.conductance
-    
         start = self.samples_per_frame * self.latest_frame
         end = self.samples_per_frame * (self.latest_frame + 1)      
-        
-        cd = data[start : end]
 
-        return cd
+        if not conductance:
+            cd = self.sample_data[start : end]
+            
+            return cd
+        else:
+            gd = self.get_conductance_for_range(start, end)
+
+            return gd
         
     def get_last_n_samples(self, n, conductance = False):
         '''Return the last n samples up to the present frame. Returns all the
         samples if there are less than n samples. If conductance is False,
         uses the current data. If it is true, uses the conductance data.'''
-        if not conductance:
-            data = self.sample_data
-        else:
-            data = self.conductance
-        
         before = time.perf_counter()
         
         start = self.samples_per_frame * (self.latest_frame + 1) - n
         start = max(start, 0)
         end = self.samples_per_frame * (self.latest_frame + 1)
         
-        cd = data[start : end]
-        
+        if not conductance:
+            cd = self.sample_data[start : end]
+        else:
+            gd = self.get_conductance_for_range(start, end)
+
+            return gd
+            
         after = time.perf_counter()
         logger.debug('get_last_n_samples took %s seconds', after - before)
         

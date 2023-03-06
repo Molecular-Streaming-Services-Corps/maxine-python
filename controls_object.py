@@ -83,6 +83,7 @@ class Controls:
         self.cg = graphs.ContinuousGraph(screen, LIVE)
         
         self.sp = graphs.ScatterPlot(screen, 'dt', 'G', use_test_data=False)
+        self.spikes = []
         
         if self.DATAVIEW:
             self.sg.enlarge_on_left()

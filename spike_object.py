@@ -3,16 +3,19 @@ import numpy as np
 from util import memoized
 
 class Spike:
-    def __init__(self, data):
+    def __init__(self, data, mean):
+        '''Create a spike based on the data for the spike and the mean at the
+        time of the spike. The data is the height at each sample in the spike.'''
         self.data = np.array(data, dtype='double')
+        self.mean = mean
 
     @memoized
     def peak(self):
-        return np.max(self.data)
+        return int(np.max(self.data))
 
     @memoized
     def duration(self):
-        return len(self.data)
+        return int(len(self.data))
 
     @memoized
     def skewness(self):
