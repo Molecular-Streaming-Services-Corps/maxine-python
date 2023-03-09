@@ -68,12 +68,12 @@ class VerticalLineRing:
         self.tops = np.array([- int((v - min_) / range_ * h) for v in maxes])
         self.bottoms = np.array([- int((v - min_) / range_ * h) for v in mins])
 
-        logger.debug('len(self.tops): %s', len(self.tops))
-        logger.debug('self.tops: %s', self.tops)
-        logger.debug('self.bottoms: %s', self.bottoms)        
+        #logger.debug('len(self.tops): %s', len(self.tops))
+        #logger.debug('self.tops: %s', self.tops)
+        #logger.debug('self.bottoms: %s', self.bottoms)        
 
         after = time.perf_counter()
-        logger.debug('give_samples took %s seconds', after - before)
+        #logger.debug('give_samples took %s seconds', after - before)
 
     def advance_n_frames(self, n):
         # Remove the spikes from boxes that are being overwritten on the graph.
@@ -186,6 +186,12 @@ class CornerGraph:
         text = str(self.x_axis[1])
         coords = (self.bottom_right[0], self.bottom_right[1])
         self.screen.draw.text(text, coords)
+
+    def draw_border(self):
+        '''Draw a border around the screen. For when it's selected in dataview mode.'''
+        rect = pygame.Rect(self.top_left, (self.width, self.height))
+        color = 'red'
+        self.screen.draw.rect(rect, color)
 
 class SpikeGraph(CornerGraph):
     def __init__(self, screen, live):
@@ -310,10 +316,12 @@ class ContinuousGraph(CornerGraph):
         if seconds > 0 and seconds <= 100:
             self.time_setting = seconds
             self.n_frames = int(seconds * self.lilith_fps)
+            logger.debug('new time setting: %s', self.time_setting)
    
     def zoom_current_axis(self, scale):
         if scale > 0 and scale < self.height:
             self.zoom_scale = scale
+            logger.debug('new zoom scale: %s', self.zoom_scale)
    
     def change_time_setting(self, index):
         '''Obsolete discrete zoom function'''

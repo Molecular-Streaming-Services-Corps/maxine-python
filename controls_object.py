@@ -300,9 +300,14 @@ class Controls:
     def draw_dataview(self):
         if self.corner_display == 'spike_graph':
             self.sg.draw()
+            # Draw a border around the screen if it's selected.
+            if self.control_index == self.tv_index:
+                self.sg.draw_border()
     
         if self.corner_display == 'continuous_graph':
             self.cg.draw()
+            if self.control_index == self.tv_index:
+                self.sg.draw_border()
             
         self.sp.draw() 
 
