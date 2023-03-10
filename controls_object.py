@@ -311,6 +311,11 @@ class Controls:
             
         self.sp.draw() 
 
+    def select_tv(self):
+        '''Called automatically in DataView for Prerecorded mode, which has
+        no other controls because they wouldn't do anything.'''
+        self.control_index = self.tv_index
+
     def select_down(self):
         '''Select the control below the present one. Wraps around.'''
         self.control_index = (self.control_index + 1) % len(self.controls)

@@ -350,9 +350,9 @@ def update():
         last_second = d.get_last_n_samples(100000)
         game.rms_last_second = data.Data.rms(last_second)
 
-        frame = d.get_frame(conductance = True)
+        frame = d.get_frame(conductance = False)
                 
-        last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES, conductance = True)
+        last_n_samples = d.get_last_n_samples(1667*constants.NUM_BOXES, conductance = False)
         vlr.give_samples(last_n_samples)
 
         maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, 1667)
@@ -458,6 +458,11 @@ def update():
             wrapper = controls.save_to_dict()
             json_string = serializer.save_dict_to_string(wrapper)
             lilith_client.send_status(json_string)
+
+    if DATAVIEW and PLAYER == 'maxine':
+        controls.select_tv()
+        # This is to allow you to zoom the graph.
+        controls.do_staged_movements(keyboard)
 
     # Process updates only from the other player.
     state_d_list = lilith_client.consume_latest_samples(lilith_client.state_q)
