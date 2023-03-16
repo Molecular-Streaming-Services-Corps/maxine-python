@@ -421,6 +421,9 @@ class ContinuousGraph(CornerGraph):
 class ScatterPlot:
     def __init__(self, screen, x_label, y_label, use_test_data = False):
         self.screen = screen
+        
+        self.x_label = x_label
+        self.y_label = y_label
     
         self.datapoints = []
 
@@ -475,6 +478,7 @@ class ScatterPlot:
             return
         
         self.draw_axes()
+        self.draw_axis_labels()
         
         left, top =  self.top_left
         right, bottom = self.bottom_right
@@ -506,6 +510,18 @@ class ScatterPlot:
         text = str(self.max_x + 1)
         coords = (self.bottom_right[0], self.bottom_right[1])
         self.screen.draw.text(text, coords)
+
+    def draw_axis_labels(self):
+        y_label_pos = (
+            self.top_left[0] - 50,
+            self.top_left[1] + self.height // 2)
+        x_label_pos = (
+            self.top_left[0] + self.width // 2,
+            self.bottom_right[1])
+        
+        self.screen.draw.text(self.x_label, x_label_pos)
+        self.screen.draw.text(self.y_label, y_label_pos)
+        
 
 def draw_graph(i, d, graph_type, screen, STANDALONE):
     # Draw a rectangle behind the graph
