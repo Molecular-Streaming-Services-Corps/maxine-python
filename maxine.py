@@ -395,7 +395,13 @@ def update():
                 controls.spikes.append(spike)
                 
                 datapoint = (spike.duration(), spike.peak())
-                controls.sp.add_datapoint(datapoint)
+                controls.sp0.add_datapoint(datapoint)
+                
+                S = spike.skewness()
+                if not math.isnan(S):
+                    datapoint = (spike.duration(), S)
+                    controls.sp1.add_datapoint(datapoint)
+
     elif LIVE:
         MONSTERS_PER_SPIKE = 1
         #lilith_client.request_data(lilith_client.ws, 1)

@@ -82,7 +82,10 @@ class Controls:
         self.sg = graphs.SpikeGraph(screen, LIVE)
         self.cg = graphs.ContinuousGraph(screen, LIVE)
         
-        self.sp = graphs.ScatterPlot(screen, 'dt', 'G', use_test_data=False)
+        self.sp0 = graphs.ScatterPlot(screen, 'dt', 'G', use_test_data=False)
+        self.sp0.set_position(0)
+        self.sp1 = graphs.ScatterPlot(screen, 'dt', 'S', use_test_data=False)
+        self.sp1.set_position(1)
         self.spikes = []
         
         if self.DATAVIEW:
@@ -309,7 +312,8 @@ class Controls:
             if self.control_index == self.tv_index:
                 self.sg.draw_border()
             
-        self.sp.draw() 
+        self.sp0.draw()
+        self.sp1.draw()
 
     def select_tv(self):
         '''Called automatically in DataView for Prerecorded mode, which has

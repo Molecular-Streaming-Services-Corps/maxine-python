@@ -434,11 +434,19 @@ class ScatterPlot:
             self.add_datapoint((500, 2))
             self.add_datapoint((500, 10))
 
-        self.top_left = (882, 66)
-        self.bottom_right = (1354, 477)
+        self.set_position(0)
         
         self.width = self.bottom_right[0] - self.top_left[0]
         self.height = self.bottom_right[1] - self.top_left[1]
+
+    def set_position(self, index):
+        '''Sets the position on a grid, from 0 to 2.'''
+        position_1 = ((882, 66), (1354, 400))
+        position_2 = ((882, 450), (1354, 790))
+        
+        positions = [position_1, position_2]
+        
+        self.top_left, self.bottom_right = positions[index]
 
     def add_datapoint(self, datapoint):
         x, y = datapoint
@@ -479,8 +487,6 @@ class ScatterPlot:
             y_screen = (y - self.min_y) / data_height * -self.height + bottom
             
             self.screen.draw.filled_circle((x_screen, y_screen), 1, 'green')
-            
-            print((x_screen, y_screen))
         
     def draw_axes(self):
         '''Draw the x and y axes.'''

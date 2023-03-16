@@ -19,6 +19,8 @@ class Spike:
 
     @memoized
     def skewness(self):
+        '''Calculate the skewness of the Spike. Returns NaN for spikes of
+        length 1.'''
         mean = np.mean(self.data)
         median = np.median(self.data)
         sd = np.std(self.data)
