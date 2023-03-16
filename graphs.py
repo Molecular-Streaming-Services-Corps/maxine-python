@@ -495,7 +495,7 @@ class ScatterPlot:
     def draw_axes(self):
         '''Draw the x and y axes.'''
         # Top of y
-        y = self.max_y + 1
+        y = self.max_y
         text = f'{y:.1f}'
         coords = (self.top_left[0] - 50, self.top_left[1])
         self.screen.draw.text(text, coords)
@@ -508,7 +508,7 @@ class ScatterPlot:
         coords = (self.top_left[0], self.bottom_right[1])
         self.screen.draw.text(text, coords)
         
-        text = str(self.max_x + 1)
+        text = str(self.max_x)
         coords = (self.bottom_right[0], self.bottom_right[1])
         self.screen.draw.text(text, coords)
 
