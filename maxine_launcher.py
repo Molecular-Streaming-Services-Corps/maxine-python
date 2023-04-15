@@ -37,7 +37,7 @@ class MLFrame(wx.Frame):
         
         self.console_label = wx.StaticText(self.panel, label = "Choose console")
         
-        consoles = list(constants.NAME2MAC.keys())
+        consoles = list(constants.MACS)
         self.console_box = wx.ListBox(self.panel, choices = consoles, style = wx.LB_SINGLE)
         
         # Game options section

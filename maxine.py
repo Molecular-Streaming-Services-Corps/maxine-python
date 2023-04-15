@@ -1435,16 +1435,6 @@ if args.monster_ratio:
 if args.doors:
     constants.DOORS = int(args.doors)
 
-# Detect Kent's computer and apply default parameters (can be overridden)
-import platform
-import sys
-if platform.system() == 'Windows' and len(sys.argv) == 1:
-    BOARD = 'Kent'
-    LIVE = True
-    PLAYER = 'console'
-    STANDALONE = False
-    DATADIR = None
-
 TITLE = TITLE + f' ({PLAYER})'
 
 if DATADIR:
@@ -1452,7 +1442,7 @@ if DATADIR:
     d.load_files(DATADIR)
 
 elif LIVE:
-    lilith_client.MAC = constants.NAME2MAC[BOARD]
+    lilith_client.MAC = BOARD
     lilith_client.setup()
 
     # Run the Lilith interaction loop in another thread
@@ -1464,8 +1454,7 @@ elif LIVE:
     d = data.LiveData(constants.NUM_BOXES)
 
 if MULTIPLAYER and not LIVE:
-    name = 'Kent'
-    lilith_client.MAC = constants.NAME2MAC[name]
+    lilith_client.MAC = '04e9e50cc5b9'
     lilith_client.setup()
 
     print('Initializing lilith_client')

@@ -35,9 +35,6 @@ MONSTER_RATIO = (3, 3, 3)
 DOORS = 10
 
 # The MAC addresses of various consoles.
-KENT_MAC = '04e9e50cc5b9'
-KENT_OLD_MAC = '04e9e50c6a0b'
-JONATHAN_MAC = '04e9e50c6a0b'
-NAME2MAC = {'Jonathan': JONATHAN_MAC, 'JustinsBoardFromKent': KENT_MAC,
-    'JustinsBoardFromJonathan': '04e9e50cc5ba', 'Hackerboard5': '04e9e50cc5df', 'JustinsOtherBoard': '04e9e50c69f3'}
+MACS = ['04e9e50c6a0b', '04e9e50cc5b9', '04e9e50cc5ba', 
+    '04e9e50cc5df', '04e9e50c69f3']
 
