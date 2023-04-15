@@ -49,7 +49,7 @@ graph_type = 'line_ring'
 game_state = 'title' # becomes 'playing', 'won' or 'lost'
 level = 1
 switch_level_timeout = 120
-playing_music = True
+playing_music = False
 
 '''Vertical Line Ring'''
 vlr = None
@@ -397,9 +397,9 @@ def update():
                 datapoint = (spike.duration(), spike.peak())
                 controls.sp0.add_datapoint(datapoint)
                 
-                S = spike.skewness()
-                if not math.isnan(S):
-                    datapoint = (spike.duration(), S)
+                K = spike.kurtosis()
+                if not math.isnan(K):
+                    datapoint = (spike.duration(), K)
                     controls.sp1.add_datapoint(datapoint)
 
     elif LIVE:

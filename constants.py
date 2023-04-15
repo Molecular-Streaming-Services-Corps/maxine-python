@@ -39,5 +39,5 @@ KENT_MAC = '04e9e50cc5b9'
 KENT_OLD_MAC = '04e9e50c6a0b'
 JONATHAN_MAC = '04e9e50c6a0b'
 NAME2MAC = {'Jonathan': JONATHAN_MAC, 'JustinsBoardFromKent': KENT_MAC,
-    'JustinsBoardFromJonathan': '04e9e50cc5ba', 'Hackerboard5': '04e9e50cc5df',}
+    'JustinsBoardFromJonathan': '04e9e50cc5ba', 'Hackerboard5': '04e9e50cc5df', 'JustinsOtherBoard': '04e9e50c69f3'}
 

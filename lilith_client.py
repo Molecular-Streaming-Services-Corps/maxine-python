@@ -35,7 +35,7 @@ import constants
 
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
 HOST = 'lilith.demonpore.tv:3000/'
-MAC = constants.JONATHAN_MAC
+MAC = constants.NAME2MAC['JustinsBoardFromKent']
 
 def setup():
     global PATH
