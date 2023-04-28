@@ -5,13 +5,15 @@ import colors
 import lilith_client
 import constants
 import graphs
+import pgzero_textbox
 
 class Controls:
-    def __init__(self, Actor, serializer, LIVE, DATAVIEW, PLAYER, screen):
+    def __init__(self, Actor, serializer, LIVE, DATAVIEW, PLAYER, screen, keys):
         self.LIVE = LIVE
         self.DATAVIEW = DATAVIEW
         self.PLAYER = PLAYER
         self.screen = screen
+        self.keys = keys
     
         # Pink panel in the bottom right
         self.panel = Actor('panel')
@@ -121,7 +123,16 @@ class Controls:
         self.voltage = 0
         self.old_angle = 0
         
+        box = pgzero_textbox.InputBox(1560, 840, 200, 32, screen, keys)
+        box.active = True
+        pgzero_textbox.input_boxes.append(box)
+        
     def update(self):
+        et = pgzero_textbox.input_boxes[0].get_entered_text()
+        if et:
+            voltage = int(et)
+            self.set_voltage(voltage)
+    
         # Zapper stuff
         if self.PLAYER == 'console':
             if self.zap_timeout > 0:
@@ -227,6 +238,9 @@ class Controls:
         
         # TV
         self.tv.animate()
+        
+        for box in pgzero_textbox.input_boxes:
+            box.update()
 
     # TODO callibrate the number of steps the syringe pump actually moves.
     def update_syringe_position(self, steps):
@@ -300,6 +314,9 @@ class Controls:
             # Draw the TV frame after the graph so it is on top of the graph.
             self.tv.draw()
 
+        for box in pgzero_textbox.input_boxes:
+            box.draw()
+
     def draw_dataview(self):
         if self.corner_display == 'spike_graph':
             self.sg.draw()
@@ -314,6 +331,12 @@ class Controls:
             
         self.sp0.draw()
         self.sp1.draw()
+        
+    def on_key_down(self, key):
+        '''This is used to process input inside the textbox(es).'''
+        for box in pgzero_textbox.input_boxes:
+            box.on_key_down(key)
+
 
     def select_tv(self):
         '''Called automatically in DataView for Prerecorded mode, which has

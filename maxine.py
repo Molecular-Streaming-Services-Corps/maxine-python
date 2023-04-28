@@ -332,7 +332,7 @@ def update():
     
     if not controls:
         controls = controls_object.Controls(
-            Actor, serializer, LIVE, DATAVIEW, PLAYER, screen)
+            Actor, serializer, LIVE, DATAVIEW, PLAYER, screen, keys)
     
     brainpod.animate()
     
@@ -989,6 +989,9 @@ def on_key_down(key):
     
     if key == keys.SPACE and controls:
         controls.push_for_maxine()
+
+    if controls:
+        controls.on_key_down(key)
 
 # Development tool: when the mouse is clicked, print the mouse coordinates in the window
 def on_mouse_down(pos):
