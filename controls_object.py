@@ -130,8 +130,11 @@ class Controls:
     def update(self):
         et = pgzero_textbox.input_boxes[0].get_entered_text()
         if et:
-            voltage = int(et)
-            self.set_voltage(voltage)
+            try:
+                voltage = int(et)
+                self.set_voltage(voltage)
+            except ValueError:
+                print(f'Error: invalid voltage typed: {et}')
     
         # Zapper stuff
         if self.PLAYER == 'console':
