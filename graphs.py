@@ -411,7 +411,7 @@ class ContinuousGraph(CornerGraph):
             my1 = self.middles[i] + 2 + top
             my2 = self.middles[i] - 2 + top
             
-            l((x, my1), (x, my2), 'white')
+            l((x, my1), (x, my2), 'black')
             
             #print(y1, y2, my1, my2)
         
