@@ -44,7 +44,7 @@ class InputBox:
                 self.text = self.text[:-1]
             else:
                 # Filter out letters and arrows
-                if key.value >= ord('0') and key.value <= ord('9'):
+                if key.value >= ord('0') and key.value <= ord('9') or key.value == ord('-'):
                     c = chr(key.value)
                     self.text += c
             # Re-render the text.
