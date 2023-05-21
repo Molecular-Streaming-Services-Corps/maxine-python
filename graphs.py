@@ -288,7 +288,7 @@ class ContinuousGraph(CornerGraph):
         #self.change_time_setting(0)
         # The number of frames to keep. This has to be the maximum
         # ever shown at once.
-        self.change_time_setting_continuous(1.0)
+        self.change_time_setting_continuous(10.0)
         self.frames_to_keep = 100 * self.lilith_fps 
         self.last_frames = []
 
