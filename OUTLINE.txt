@@ -28,6 +28,9 @@ Contains the Controls and PotionHolder objects. The Controls object contains cod
 * push_left() and push_right() are used when the joystick is pushed left or right while the button is held down. Some controls respond to this. It is only called once for each time the joystick is moved.
 * save_to_dict() and load_from_dict() are used for sharing the state of controls with the Maxine player.
 
+*convert_elements_csv.py
+Converts an Elements CSV file created by the signals repository into poredata.bin files. Each of the 4 channels creates one folder with its own poredata.bin file which can be used in Maxine's Quest, especially DataView mode.
+
 *data.py
 Has objects for processing either prerecorded data or live data.
 
