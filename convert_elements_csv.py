@@ -20,8 +20,8 @@ for channel in range(1, 4 + 1):
     max_ = max(elements_samples)
     range_ = max_ - min_
     
-    console_samples = [int((s - min_) / range_ * 65000) for s in elements_samples]
-    cs_array = np.asarray(console_samples, dtype='uint16')
+    console_samples = [int((s - min_) / range_ * 64000 - 32000) for s in elements_samples]
+    cs_array = np.asarray(console_samples, dtype='int16')
     
     channel_dir_name = f'{csv_filename}_console_channel{channel}'
     if not os.path.exists(channel_dir_name):
