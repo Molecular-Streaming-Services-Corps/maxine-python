@@ -364,18 +364,23 @@ class PrerecordedData(Data):
         # Load current data
         filename = os.path.join(data_dir, 'poredata.bin')
         self.sample_data = np.fromfile(filename, 'int16')
-    
-        # Load joystick data
-        meta_filename = os.path.join(data_dir, 'meta.json')
-        meta_file = open(meta_filename)
-        settings = json.load(meta_file)
+
+        meta_filename = os.path.join(data_dir, 'meta.json')    
+        # Handle missing meta.json file. Lilith sometimes doesn't create one,
+        # and the Elements converter doesn't ever.
+        if not os.path.exists(meta_filename):
+            settings = {}
+        else:
+            # Load meta.json file to get joystick and bias data
+            meta_file = open(meta_filename)
+            settings = json.load(meta_file)
         
         if 'joystick' in settings:
             self.joystick_data = settings['joystick']
         
         if 'bias_settings_history' in settings:
             self.voltage_data = settings['bias_settings_history']
-        else: # Not sure if this is ever needed.
+        else:
             self.voltage_data = [[0, 0]]
             
     def get_one_frame_current(self):
@@ -484,6 +489,9 @@ class PrerecordedData(Data):
         # This setting means no buttons pressed on either joystick.
         # Some of the bits are ignored and are supposed to be 0, but that's ok.
         last_value = 65535
+        
+        if not hasattr(self, "joystick_data"):
+            return 65535
         
         for index, controls in self.joystick_data:
             if index > current_sample_index:
