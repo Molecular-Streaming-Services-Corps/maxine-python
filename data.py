@@ -381,11 +381,14 @@ class PrerecordedData(Data):
         #self.latest_frame_current = []
         self.samples_per_frame = 1667
         self.conductance = []
+        self._data_dir = None
     
     def init_boxes(self):
         self.boxes = [0] * self.num_boxes    
     
     def load_files(self, data_dir):
+        self._data_dir = data_dir
+    
         # Load current data
         filename = os.path.join(data_dir, 'poredata.bin')
         self.sample_data = np.fromfile(filename, 'int16')
@@ -407,6 +410,9 @@ class PrerecordedData(Data):
             self.voltage_data = settings['bias_settings_history']
         else:
             self.voltage_data = [[0, 0]]
+            
+    def get_data_dir(self):
+        return self._data_dir
             
     def get_one_frame_current(self):
         start = self.samples_per_frame * self.latest_frame

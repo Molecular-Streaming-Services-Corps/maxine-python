@@ -26,6 +26,7 @@ import components
 import game_object
 import controls_object
 import world_map
+import spike_object
 
 # Set up logger for this module
 logger = logging.getLogger('maxine')
@@ -370,7 +371,11 @@ def update():
         # can keep track of the sample index accurately.
         if frame is not None and len(frame) == 1667:
             controls.cg.set_frame(frame)
-            
+        else:
+            # Save the spike statistics to an ARFF file at the end of
+            # prerecorded data.
+            spike_object.spikes.save_separate_spikes_as_arff(d.get_data_dir())
+        
         if spike_exists:
             vlr.add_spike()
             data_number += 1
@@ -392,7 +397,7 @@ def update():
             spikes = data.Data.find_spikes_in_last_frame(last_n_samples, len(last_n_samples)//1667)
             
             for spike in spikes:
-                controls.spikes.append(spike)
+                spike_object.spikes.add_spike(spike)
                 
                 datapoint = (spike.duration(), spike.peak())
                 controls.sp0.add_datapoint(datapoint)

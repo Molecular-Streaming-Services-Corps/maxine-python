@@ -88,7 +88,6 @@ class Controls:
         self.sp0.set_position(0)
         self.sp1 = graphs.ScatterPlot(screen, 'dt', 'K', use_test_data=False)
         self.sp1.set_position(1)
-        self.spikes = []
         
         if self.DATAVIEW:
             self.sg.enlarge_on_left()

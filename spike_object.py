@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 from util import memoized
 
@@ -108,4 +109,58 @@ class Spike:
             means[i] = np.mean(bucket)
 
         return means
+
+class Spikes:
+    '''Stores all the spikes in a dataset or live data session.'''
+    def __init__(self):
+        self._spikes = []
         
+    def add_spike(self, spike):
+        self._spikes.append(spike)
+    
+    def save_separate_spikes_as_arff(self, data_dir):
+        string = self.separate_spikes_to_arff_string()
+    
+        filename = os.path.join(data_dir, 'separate_spikes.arff')
+        with open(filename, mode='w') as f:
+            f.write(string)
+    
+    def separate_spikes_to_arff_string(self):
+        # Make ARFF header
+        header = '''
+% Auto-generated Molecular Reality file containing separate spikes.
+@RELATION spikes
+
+@ATTRIBUTE peak NUMERIC
+@ATTRIBUTE duration NUMERIC
+@ATTRIBUTE skewness NUMERIC
+@ATTRIBUTE kurtosis NUMERIC
+@ATTRIBUTE objectivity NUMERIC
+'''
+        for part in range(1, 10 + 1):
+            header += self._make_attribute(f'time{part}', 'NUMERIC')
+        for part in range(1, 20 + 1):
+            header += self._make_attribute(f'current{part}', 'NUMERIC')
+            
+        # Make ARFF data section
+        data_section = '@DATA\n'
+        
+        for s in self._spikes:
+            entry = f'{s.peak()},{s.duration()},{s.skewness()},{s.kurtosis()},{s.objectivity()},{self._list_to_arff(s.time_ten_values())},{self._list_to_arff(s.current_twenty_values())}\n'
+            data_section += entry
+            
+        return f'{header}\n{data_section}'
+        
+    def _make_attribute(self, name, datatype):
+        return f'@ATTRIBUTE {name} {datatype}\n'
+        
+    def _list_to_arff(self, L):
+        out = ''
+        for i, value in enumerate(L):
+            out += str(i)
+            if i != len(L) - 1:
+                out += ','
+        return out
+
+spikes = Spikes()
+
