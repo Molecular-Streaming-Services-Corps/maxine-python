@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import math
 
 from util import memoized
 
@@ -145,8 +146,15 @@ class Spikes:
         # Make ARFF data section
         data_section = '@DATA\n'
         
+        def m(number):
+            '''Replace nan and inf with '?'.'''
+            if math.isnan(number) or math.isinf(number):
+                return '?'
+            else:
+                return number
+        
         for s in self._spikes:
-            entry = f'{s.peak()},{s.duration()},{s.skewness()},{s.kurtosis()},{s.objectivity()},{self._list_to_arff(s.time_ten_values())},{self._list_to_arff(s.current_twenty_values())}\n'
+            entry = f'{s.peak()},{s.duration()},{m(s.skewness())},{m(s.kurtosis())},{m(s.objectivity())},{self._list_to_arff(s.time_ten_values())},{self._list_to_arff(s.current_twenty_values())}\n'
             data_section += entry
             
         return f'{header}\n{data_section}'
