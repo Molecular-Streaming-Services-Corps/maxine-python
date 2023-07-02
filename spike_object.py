@@ -5,7 +5,8 @@ from util import memoized
 class Spike:
     def __init__(self, data, mean):
         '''Create a spike based on the data for the spike and the mean at the
-        time of the spike. The data is the height at each sample in the spike.'''
+        time of the spike. The data is the height at each sample in the spike
+        minus the mean.'''
         self.data = np.array(data, dtype='double')
         self.mean = mean
 

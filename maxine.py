@@ -389,7 +389,7 @@ def update():
             add_cell(angle)
             
         if spike_exists:
-            spikes = data.Data.find_spikes_in_last_frame(last_n_samples, 1667)
+            spikes = data.Data.find_spikes_in_last_frame(last_n_samples, len(last_n_samples)//1667)
             
             for spike in spikes:
                 controls.spikes.append(spike)
