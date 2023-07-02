@@ -196,7 +196,7 @@ class Data:
         if sd == 0:
             return spikes
         
-        # Only allow positive spikes
+        # Find positive spikes
         spike_start_index = None
         j = 0
         
@@ -220,7 +220,32 @@ class Data:
                 spikes.append(spike)
                 
             j += 1
+
+        # Find negative spikes
+        spike_start_index = None
+        j = 0
+        
+        while j < len(last_box):
+            sample = last_box[j]
             
+            if sample < mean - sd * SDS_FOR_SPIKE:
+                # Find the rest of the spike
+                spike_start_index = j
+                j += 1
+                while j < len(last_box):
+                    sample = last_box[j]
+            
+                    if sample < mean - sd * SDS_FOR_SPIKE:
+                        j += 1
+                    else:
+                        break
+                spike = spike_object.Spike(
+                    last_box[spike_start_index : j] - mean,
+                    mean)
+                spikes.append(spike)
+                
+            j += 1
+
         return spikes
 
     @staticmethod
