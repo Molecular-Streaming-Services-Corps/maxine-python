@@ -5,7 +5,8 @@ import os
 
 csv_filename = sys.argv[1]
 
-# Assume there are four channels; they are columns 1-4. 0 is the timestamp.
+# There are up to four channels; they are columns 1-4. 0 is the timestamp.
+# Sometimes there are less.
 for channel in range(1, 4 + 1):
     elements_samples = []
 
