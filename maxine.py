@@ -374,7 +374,9 @@ def update():
         else:
             # Save the spike statistics to an ARFF file at the end of
             # prerecorded data.
-            spike_object.spikes.save_separate_spikes_as_arff(d.get_data_dir())
+            if not spike_object.spikes.get_has_saved():
+                spike_object.spikes.save_separate_spikes_as_arff(d.get_data_dir())
+                logger.info('Saved ARFF file if we have spikes.')
         
         if spike_exists:
             vlr.add_spike()

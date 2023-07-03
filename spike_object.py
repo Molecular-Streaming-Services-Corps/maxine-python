@@ -115,16 +115,25 @@ class Spikes:
     '''Stores all the spikes in a dataset or live data session.'''
     def __init__(self):
         self._spikes = []
+        self._has_saved = False
         
     def add_spike(self, spike):
         self._spikes.append(spike)
     
     def save_separate_spikes_as_arff(self, data_dir):
+        if len(self._spikes) == 0:
+            return
+    
         string = self.separate_spikes_to_arff_string()
     
         filename = os.path.join(data_dir, 'separate_spikes.arff')
         with open(filename, mode='w') as f:
             f.write(string)
+        
+        self._has_saved = True
+    
+    def get_has_saved(self):
+        return self._has_saved
     
     def separate_spikes_to_arff_string(self):
         # Make ARFF header
@@ -142,7 +151,9 @@ class Spikes:
             header += self._make_attribute(f'time{part}', 'NUMERIC')
         for part in range(1, 20 + 1):
             header += self._make_attribute(f'current{part}', 'NUMERIC')
-            
+        
+        header += '@ATTRIBUTE class {fourmicron, pacman}\n'
+        
         # Make ARFF data section
         data_section = '@DATA\n'
         
@@ -154,7 +165,8 @@ class Spikes:
                 return number
         
         for s in self._spikes:
-            entry = f'{s.peak()},{s.duration()},{m(s.skewness())},{m(s.kurtosis())},{m(s.objectivity())},{self._list_to_arff(s.time_ten_values())},{self._list_to_arff(s.current_twenty_values())}\n'
+            # TODO determine the class
+            entry = f'{s.peak()},{s.duration()},{m(s.skewness())},{m(s.kurtosis())},{m(s.objectivity())},{self._list_to_arff(s.time_ten_values())},{self._list_to_arff(s.current_twenty_values())},fourmicron\n'
             data_section += entry
             
         return f'{header}\n{data_section}'
@@ -165,7 +177,7 @@ class Spikes:
     def _list_to_arff(self, L):
         out = ''
         for i, value in enumerate(L):
-            out += str(i)
+            out += str(value)
             if i != len(L) - 1:
                 out += ','
         return out
