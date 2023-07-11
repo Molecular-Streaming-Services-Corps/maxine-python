@@ -1448,7 +1448,11 @@ if args.doors:
 TITLE = TITLE + f' ({PLAYER})'
 
 if DATADIR:
-    d = data.PrerecordedData(constants.NUM_BOXES)
+    if args.start_at is None:
+        start_at = 0
+    else:
+        start_at = int(args.start_at)
+    d = data.PrerecordedData(constants.NUM_BOXES, start_at)
     d.load_files(DATADIR)
 
 elif LIVE:

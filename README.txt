@@ -6,6 +6,9 @@ Runs in stand-alone mode (default).
 python3 maxine.py --datadir DIR
 Run Maxine's Quest based on some stored current data.
 
+Start partway through a file. Takes a time in seconds. Use with --datadir.
+python3 maxine.py --start-at TIME
+
 python3 maxine.py --live Jonathan|Kent|Hackerboard4|Hackerboard5
 Connect to Lilith server to play using the live current and joystick data from a MR Games Console(TM).
 
@@ -31,3 +34,4 @@ Choose the number of doors that appear with every spike.
 
 Turn on DataView. Displays big moving graphs of various information instead of the game.
 python3 maxine..py --dataview
+

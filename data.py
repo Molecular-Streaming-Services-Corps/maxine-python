@@ -373,7 +373,7 @@ class LiveData(Data):
         return self.recent_frames_contain_spikes
 
 class PrerecordedData(Data):
-    def __init__(self, num_boxes):
+    def __init__(self, num_boxes, start_at):
         super().__init__()
         self.num_boxes = num_boxes
         self.init_boxes()
@@ -382,6 +382,10 @@ class PrerecordedData(Data):
         self.samples_per_frame = 1667
         self.conductance = []
         self._data_dir = None
+        
+        # Set self.latest_frame according to the number of seconds we start at
+        frame_rate = 60
+        self.latest_frame = (start_at * frame_rate)
     
     def init_boxes(self):
         self.boxes = [0] * self.num_boxes    
