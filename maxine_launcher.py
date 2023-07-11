@@ -35,6 +35,10 @@ class MLFrame(wx.Frame):
         self.pd_btn = wx.Button(self.panel, -1, "Open poredata") 
         self.pd_btn.Bind(wx.EVT_BUTTON, self.OpenPoredata) 
         
+        self.start_at_label = wx.StaticText(self.panel, label = "Start at time (in seconds)")
+        
+        self.start_at_box = wx.TextCtrl(self.panel)
+        
         self.console_label = wx.StaticText(self.panel, label = "Choose console")
         
         consoles = list(constants.MACS)
@@ -75,6 +79,7 @@ class MLFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.AddMany([self.data_options_label, self.dataview,
             self.modes_label, self.mode_box, self.pd_btn,
+            self.start_at_label, self.start_at_box,
             self.console_label, self.console_box,
             self.game_options_label,
             self.video_btn, self.levels_label, self.levels_box,
@@ -116,6 +121,10 @@ class MLFrame(wx.Frame):
         # These shouldn't be used with DataView
         if self.video is not None:
             arguments += ['--video', self.video]
+        
+        sab_text = self.start_at_box.GetLineText(0)
+        if (sab_text != ''):
+            arguments += ['--start-at', sab_text]
         
         if (self.zombies_box.GetLineText(0) != '' and
                 self.snakes_box.GetLineText(0) != '' and
