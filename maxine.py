@@ -1455,6 +1455,8 @@ if DATADIR:
     d = data.PrerecordedData(constants.NUM_BOXES, start_at)
     d.load_files(DATADIR)
 
+    TITLE += f' ({DATADIR})'
+
 elif LIVE:
     lilith_client.MAC = BOARD
     lilith_client.setup()
