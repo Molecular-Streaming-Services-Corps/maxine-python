@@ -34,6 +34,9 @@ Converts an Elements CSV file created by the signals repository into poredata.bi
 *data.py
 Has objects for processing either prerecorded data or live data.
 
+*data_to_wave.py
+Converts a poredata file into two wave audio files, one based on volume and one based on frequency.
+
 *game_object.py
 The Game object stores variables related to the state of the game, and references to Actors that operate in the game. Variables should be put here to reduce the size of maxine.py and so they can be accessed in other classes. If a method uses only variables that have already been moved here, then that method can be moved here as well.
 * load_arena_from_dict()/save_arena_to_dict() store the state of the game from the perspective of the Maxine player. So it can be displayed for the console player.
