@@ -415,7 +415,7 @@ def update():
     
         spikes = d.load_received_samples_and_count_spikes()
     
-        last_second = d.get_last_n_frames(100000 // 5120)
+        last_second = d.get_last_n_frames(100000 // constants.LIVE_SAMPLES_PER_MESSAGE)
         game.rms_last_second = data.Data.rms(last_second)
 
         frame = d.get_frame()
@@ -444,7 +444,7 @@ def update():
                 vlr.add_spike()
         
         if playing_music:
-            maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, 5120)
+            maxes_mins = data.Data.calculate_maxes_and_mins(last_n_samples, constants.LIVE_SAMPLES_PER_MESSAGE)
             #music_ops.current_to_frequency(frame)
             #music_ops.current_to_volume(frame)
             music_ops.stats_to_frequency(maxes_mins)

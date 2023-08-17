@@ -28,7 +28,7 @@ class VerticalLineRing:
         self.line_extent = 25
         
         if live:
-            self.frame_size = 5120
+            self.frame_size = constants.LIVE_SAMPLES_PER_MESSAGE
         else:
             self.frame_size = 1667
 
@@ -210,7 +210,7 @@ class SpikeGraph(CornerGraph):
         self.bottoms = np.ones(self.width) + 15
     
         if live:
-            self.frame_size = 5120
+            self.frame_size = constants.LIVE_SAMPLES_PER_MESSAGE
         else:
             self.frame_size = 1667
             
@@ -308,7 +308,7 @@ class ContinuousGraph(CornerGraph):
         self.middles = np.zeros(self.width) + 13
         
         if live:
-            self.frame_size = 5120
+            self.frame_size = constants.LIVE_SAMPLES_PER_MESSAGE
         else:
             self.frame_size = 1667
         

@@ -299,8 +299,8 @@ def set_game_subscription(ws):
     # setting copied from Spyke Hunter which doesn't need to detect spikes
     # or display comprehensive statistics
     # stride = 2048
-    stride = 1
-    subscribe_data(ws, 2, UUID, 0, stride, 0)
+    stride = 1 # Must be 1 because of a hack on Lilith
+    subscribe_data(ws, INDEX, bytearray.fromhex(MAC), 0, stride, 0)
 
 def subscribe_data(ws, id, mac, file_id, stride, filter):
     # Subscribe code = 102
