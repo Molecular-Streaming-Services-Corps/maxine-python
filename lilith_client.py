@@ -14,7 +14,7 @@ import logging
 
 # Set up logger for this module
 logger = logging.getLogger('lilith_client')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 import sys
 handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
@@ -22,7 +22,7 @@ logger.addHandler(handler)
 
 # Enable websocket logging of exceptions
 wslogger = logging.getLogger('websocket')
-wslogger.setLevel(logging.DEBUG)
+wslogger.setLevel(logging.INFO)
 wslogger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Must set the root logger to debug or info to allow messages to show
@@ -34,8 +34,8 @@ import struct_definitions
 import constants
 
 PROTOCOL = 'ws://' # Lilith doesn't use HTTPS
-HOST = 'lilith.demonpore.tv:3000/'
-MAC = '04e9e50cc5b9'
+HOST = 'streaming.molecularreality.com:3000/'
+MAC = '04e9e50c6a0b'
 
 def setup():
     global PATH
@@ -48,8 +48,9 @@ HEADERS = {'Authorization': 'Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='}
 
 UUID = b'\x04\xe9\xe5\x0c\xc5\xb9' # Seems to be the MAC address of Hackerboard.
 
-# For Player 3. Might be arbitrary. Included in all received packets.
-INDEX = 2
+# For Player 5. Players 1-4 are used by Spyke Hunter. Included in all received
+# packets.
+INDEX = 4
 
 metadata = {}
 pressed = []
@@ -299,8 +300,8 @@ def set_game_subscription(ws):
     # setting copied from Spyke Hunter which doesn't need to detect spikes
     # or display comprehensive statistics
     # stride = 2048
-    stride = 1 # Must be 1 because of a hack on Lilith
-    subscribe_data(ws, INDEX, bytearray.fromhex(MAC), 0, stride, 0)
+    stride = 1 # Always changed to 1 inside Lilith
+    subscribe_data(ws, INDEX, bytearray.fromhex(MAC), 2, stride, 0)
 
 def subscribe_data(ws, id, mac, file_id, stride, filter):
     # Subscribe code = 102
@@ -312,6 +313,7 @@ def subscribe_data(ws, id, mac, file_id, stride, filter):
     s = struct.Struct('!HL6sLLL')
     data = [102, id, mac, file_id, stride, filter]
     packed_data = s.pack(*data)
+    logger.debug('subscribe_data: Size of packed_data: %s', len(packed_data))
     ws.send(packed_data, websocket.ABNF.OPCODE_BINARY)
     
     return None
@@ -326,6 +328,8 @@ def request_data(ws, sample_stride):
     
     if ws and ws_connected:
         waiting = True
+
+        logger.debug('request_data main part running')
 
         # Start code = 12
         # Device id (0 now)

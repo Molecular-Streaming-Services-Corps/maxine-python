@@ -39,4 +39,4 @@ MACS = ['04e9e50c6a0b', '04e9e50cc5b9', '04e9e50cc5ba',
     '04e9e50cc5df', '04e9e50c69f3','04e9e50c6a09']
 
 # The number of samples Lilith sends per message.
-LIVE_SAMPLES_PER_MESSAGE = 10240
+LIVE_SAMPLES_PER_MESSAGE = 5120
