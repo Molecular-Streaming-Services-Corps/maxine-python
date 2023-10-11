@@ -211,7 +211,7 @@ class Controls:
         #self.voltage_knob.angle = int((self.voltage_knob.angle - 1) % 360)
         
         # Move the pump if required (controlled by the syringe)
-        if self.LIVE and self.PLAYER == 'console':
+        if constants.USE_PUMP and self.LIVE and self.PLAYER == 'console':
             #logger.debug('pump_speed_index: %s', self.pump_speed_index)
             if self.pump_speed_index == 0:
                 # Override the current number of steps and stop the pump

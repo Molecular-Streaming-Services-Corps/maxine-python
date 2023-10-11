@@ -40,3 +40,6 @@ MACS = ['04e9e50c6a0b', '04e9e50cc5b9', '04e9e50cc5ba',
 
 # The number of samples Lilith sends per message.
 LIVE_SAMPLES_PER_MESSAGE = 5120
+
+# Whether or not to send signals to the pump.
+USE_PUMP = False

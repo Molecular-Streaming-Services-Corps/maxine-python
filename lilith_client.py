@@ -14,7 +14,7 @@ import logging
 
 # Set up logger for this module
 logger = logging.getLogger('lilith_client')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 import sys
 handler = logging.StreamHandler(sys.stdout)
 handler.formatter = logging.Formatter('%(asctime)s  %(name)s %(levelname)s: %(message)s')
